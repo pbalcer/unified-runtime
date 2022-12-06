@@ -124,10 +124,7 @@ def main():
         specs, input['meta'], input['ref'] = parse_specs.parse(config['name'], args['ver'], config['tags'], input['meta'], input['ref'])
         input['specs'].append(specs)
 
-    if args['debug']:
-        util.jsonWrite("input.json", input)
-
-    util.jsonWrite("level_zero.json", input['ref'])
+    util.jsonWrite("unified_runtime.json", input)
 
     # phase 3: generate files
     if args['clean']:
