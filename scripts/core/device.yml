@@ -57,7 +57,8 @@ params:
       name: NumEntries
       desc: |
             [in] the number of devices to be added to phDevices.
-            If phDevices in not NULL then NumEntries should be greater than zero.
+            If phDevices in not NULL then NumEntries should be greater than zero, otherwise $X_RESULT_ERROR_INVALID_SIZE,
+            will be returned.
     - type: "$x_device_handle_t*"
       name: phDevices
       desc: |
@@ -68,6 +69,8 @@ params:
       desc: |
             [out][optional] pointer to the number of devices.
             pNumDevices will be updated with the total number of devices available.
+returns:
+    - $X_RESULT_ERROR_INVALID_SIZE
 --- #--------------------------------------------------------------------------
 type: enum
 desc: "Supported device info"
@@ -78,6 +81,8 @@ etors:
       desc: "$x_device_type_t: type of the device"
     - name: VENDOR_ID
       desc: "uint32_t: vendor Id of the device"
+    - name: DEVICE_ID
+      desc: "uint32_t: Id of the device"
     - name: MAX_COMPUTE_UNITS
       desc: "uint32_t: the number of compute units"
     - name: MAX_WORK_ITEM_DIMENSIONS
@@ -89,7 +94,7 @@ etors:
     - name: SINGLE_FP_CONFIG
       desc: "Return a bit field of $x_fp_capability_flags_t: single precision floating point capability"
     - name: HALF_FP_CONFIG
-      desc: "Return a bit field of $x_fp_capability_flags_t: half precsion floating point capability"
+      desc: "Return a bit field of $x_fp_capability_flags_t: half precision floating point capability"
     - name: DOUBLE_FP_CONFIG
       desc: "Return a bit field of $x_fp_capability_flags_t: double precision floating point capability"
     - name: QUEUE_PROPERTIES
@@ -124,6 +129,8 @@ etors:
       desc: "uint32_t: native vector width for half float"
     - name: MAX_CLOCK_FREQUENCY
       desc: "uint32_t: max clock frequency in MHz"
+    - name: MEMORY_CLOCK_RATE
+      desc: "uint32_t: memory clock frequency in MHz"
     - name: ADDRESS_BITS
       desc: "uint32_t: address bits"
     - name: MAX_MEM_ALLOC_SIZE
@@ -148,7 +155,7 @@ etors:
       desc: "size_t: max depth of Image3D object"
     - name: IMAGE_MAX_BUFFER_SIZE
       desc: "size_t: max image buffer size"
-    - name: IMAGE_MAX_ARRAR_SIZE
+    - name: IMAGE_MAX_ARRAY_SIZE
       desc: "size_t: max image array size"
     - name: MAX_SAMPLERS
       desc: "uint32_t: max number of samplers that can be used in a kernel"
@@ -164,6 +171,8 @@ etors:
       desc: "uint64_t: size of global memory cache in bytes"
     - name: GLOBAL_MEM_SIZE
       desc: "uint64_t: size of global memory in bytes"
+    - name: GLOBAL_MEM_FREE
+      desc: "uint64_t: size of global memory which is free in bytes"
     - name: MAX_CONSTANT_BUFFER_SIZE
       desc: "uint64_t: max constant buffer size in bytes"
     - name: MAX_CONSTANT_ARGS
@@ -173,9 +182,9 @@ etors:
     - name: LOCAL_MEM_SIZE
       desc: "uint64_t: local memory size in bytes"
     - name: ERROR_CORRECTION_SUPPORT
-      desc: "bool: support error correction to gloal and local memory"
+      desc: "bool: support error correction to global and local memory"
     - name: HOST_UNIFIED_MEMORY
-      desc: "bool: unifed host device memory"
+      desc: "bool: unified host device memory"
     - name: PROFILING_TIMER_RESOLUTION
       desc: "size_t: profiling timer resolution in nanoseconds"
     - name: ENDIAN_LITTLE
@@ -210,6 +219,8 @@ etors:
       desc: "char[]: Device profile"
     - name: VERSION
       desc: "char[]: Device version"
+    - name: BACKEND_RUNTIME_VERSION
+      desc: "char[]: Version of backend runtime"
     - name: EXTENSIONS
       desc: "char[]: Return a space separated list of extension names"
     - name: PRINTF_BUFFER_SIZE
@@ -262,6 +273,13 @@ etors:
       desc: "bool: support 64 bit atomics"
     - name: ATOMIC_MEMORY_ORDER_CAPABILITIES
       desc: "uint32_t: atomics memory order capabilities"
+    - name: BFLOAT16
+      desc: "bool: support for bfloat16"
+    - name: MAX_COMPUTE_QUEUE_INDICES
+      desc: |
+            uint32_t: Returns 1 if the device doesn't have a notion of a 
+            queue index. Otherwise, returns the number of queue indices that are
+            available for this device.
 --- #--------------------------------------------------------------------------
 type: function
 desc: "Retrieves various information about device"
@@ -544,14 +562,40 @@ details:
     - "The application may call this function from simultaneous threads for the same context."
     - "The implementation of this function should be thread-safe."
 params:
-    - type: $x_platform_handle_t
-      name: hPlatform
-      desc: "[in] handle of the platform instance"
     - type: $x_native_handle_t
       name: hNativeDevice
       desc: |
             [in] the native handle of the device.
+    - type: $x_platform_handle_t
+      name: hPlatform
+      desc: "[in] handle of the platform instance"
     - type: "$x_device_handle_t*"
       name: phDevice
       desc: |
             [out] pointer to the handle of the device object created.
+--- #--------------------------------------------------------------------------
+type: function
+desc: "Returns synchronized Host and Device global timestamps."
+class: $xDevice
+name: GetGlobalTimestamps
+desc: static
+ordinal: "0"
+analogue:
+    - "**clGetDeviceAndHostTimer**"
+details:
+    - "The application may call this function from simultaneous threads for the same context."
+    - "The implementation of this function should be thread-safe."
+params:
+    - type: $x_device_handle_t
+      name: hDevice
+      desc:  "[in] handle of the device instance"
+    - type: "uint64_t*"
+      name: pDeviceTimestamp
+      desc: | 
+            [out][optional] pointer to the Device's global timestamp that 
+            correlates with the Host's global timestamp value
+    - type: "uint64_t*"
+      name: pHostTimestamp
+      desc: |
+            [out][optional] pointer to the Host's global timestamp that 
+            correlates with the Device's global timestamp value

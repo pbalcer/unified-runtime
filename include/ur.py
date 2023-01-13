@@ -114,83 +114,79 @@ def UR_BIT( _i ):
 ## @brief Defines Return/Error codes
 class ur_result_v(IntEnum):
     SUCCESS = 0                                     ## Success
-    INVALID_KERNEL_NAME = 1                         ## Invalid kernel name
-    INVALID_OPERATION = 2                           ## Invalid operation
-    INVALID_KERNEL = 3                              ## Invalid kernel
-    INVALID_QUEUE_PROPERTIES = 4                    ## Invalid queue properties
-    INVALID_VALUE = 5                               ## Invalid Value
-    INVALID_CONTEXT = 6                             ## Invalid context
-    INVALID_PLATFORM = 7                            ## Invalid platform
-    INVALID_DEVICE = 8                              ## Invalid device
-    INVALID_BINARY = 9                              ## Invalid binary
-    INVALID_QUEUE = 10                              ## Invalid queue
-    OUT_OF_HOST_MEMORY = 11                         ## Out of host memory
-    INVALID_PROGRAM = 12                            ## Invalid program
-    INVALID_PROGRAM_EXECUTABLE = 13                 ## Invalid program executable
-    INVALID_SAMPLER = 14                            ## Invalid sampler
-    INVALID_BUFFER_SIZE = 15                        ## Invalid buffer size
-    INVALID_MEM_OBJECT = 16                         ## Invalid memory object
-    OUT_OF_RESOURCES = 17                           ## Out of resources
-    INVALID_EVENT = 18                              ## Invalid event
-    INVALID_EVENT_WAIT_LIST = 19                    ## Invalid event wait list
-    MISALIGNED_SUB_BUFFER_OFFSET = 20               ## Misaligned sub buffer offset
-    BUILD_PROGRAM_FAILURE = 21                      ## Build program failure
-    INVALID_WORK_GROUP_SIZE = 22                    ## Invalid work group size
-    COMPILER_NOT_AVAILABLE = 23                     ## Compiler not available
-    PROFILING_INFO_NOT_AVAILABLE = 24               ## Profiling info not available
-    DEVICE_NOT_FOUND = 25                           ## Device not found
-    INVALID_WORK_ITEM_SIZE = 26                     ## Invalid work item size
-    INVALID_WORK_DIMENSION = 27                     ## Invalid work dimension
-    INVALID_KERNEL_ARGS = 28                        ## Invalid kernel args
-    INVALID_IMAGE_SIZE = 29                         ## Invalid image size
-    INVALID_IMAGE_FORMAT_DESCRIPTOR = 30            ## Invalid image format descriptor
-    IMAGE_FORMAT_NOT_SUPPORTED = 31                 ## Image format not supported
-    MEM_OBJECT_ALLOCATION_FAILURE = 32              ## Memory object allocation failure
-    ERROR_INVALID_PROGRAM_EXECUTABLE = 33           ## Program object parameter is invalid.
-    ERROR_UNINITIALIZED = 0x78000001                ## [Validation] driver is not initialized
-    ERROR_DEVICE_LOST = 0x78000002                  ## Device hung, reset, was removed, or driver update occurred
-    ERROR_OUT_OF_HOST_MEMORY = 0x78000003           ## Insufficient host memory to satisfy call
-    ERROR_OUT_OF_DEVICE_MEMORY = 0x78000004         ## Insufficient device memory to satisfy call
-    ERROR_MODULE_BUILD_FAILURE = 0x78000005         ## Error occurred when building module, see build log for details
-    ERROR_MODULE_LINK_FAILURE = 0x78000006          ## Error occurred when linking modules, see build log for details
-    ERROR_DEVICE_REQUIRES_RESET = 0x78000007        ## Device requires a reset
-    ERROR_DEVICE_IN_LOW_POWER_STATE = 0x78000008    ## Device currently in low power state
-    ERROR_UNSUPPORTED_VERSION = 0x78000009          ## [Validation] generic error code for unsupported versions
-    ERROR_UNSUPPORTED_FEATURE = 0x7800000a          ## [Validation] generic error code for unsupported features
-    ERROR_INVALID_ARGUMENT = 0x7800000b             ## [Validation] generic error code for invalid arguments
-    ERROR_INVALID_NULL_HANDLE = 0x7800000c          ## [Validation] handle argument is not valid
-    ERROR_HANDLE_OBJECT_IN_USE = 0x7800000d         ## [Validation] object pointed to by handle still in-use by device
-    ERROR_INVALID_NULL_POINTER = 0x7800000e         ## [Validation] pointer argument may not be nullptr
-    ERROR_INVALID_SIZE = 0x7800000f                 ## [Validation] size argument is invalid (e.g., must not be zero)
-    ERROR_UNSUPPORTED_SIZE = 0x78000010             ## [Validation] size argument is not supported by the device (e.g., too
+    ERROR_INVALID_OPERATION = 1                     ## Invalid operation
+    ERROR_INVALID_QUEUE_PROPERTIES = 2              ## Invalid queue properties
+    ERROR_INVALID_QUEUE = 3                         ## Invalid queue
+    ERROR_INVALID_VALUE = 4                         ## Invalid Value
+    ERROR_INVALID_CONTEXT = 5                       ## Invalid context
+    ERROR_INVALID_PLATFORM = 6                      ## Invalid platform
+    ERROR_INVALID_BINARY = 7                        ## Invalid binary
+    ERROR_INVALID_PROGRAM = 8                       ## Invalid program
+    ERROR_INVALID_SAMPLER = 9                       ## Invalid sampler
+    ERROR_INVALID_BUFFER_SIZE = 10                  ## Invalid buffer size
+    ERROR_INVALID_MEM_OBJECT = 11                   ## Invalid memory object
+    ERROR_INVALID_EVENT = 12                        ## Invalid event
+    ERROR_INVALID_EVENT_WAIT_LIST = 13              ## Invalid event wait list
+    ERROR_MISALIGNED_SUB_BUFFER_OFFSET = 14         ## Misaligned sub buffer offset
+    ERROR_BUILD_PROGRAM_FAILURE = 15                ## Build program failure
+    ERROR_INVALID_WORK_GROUP_SIZE = 16              ## Invalid work group size
+    ERROR_COMPILER_NOT_AVAILABLE = 17               ## Compiler not available
+    ERROR_PROFILING_INFO_NOT_AVAILABLE = 18         ## Profiling info not available
+    ERROR_DEVICE_NOT_FOUND = 19                     ## Device not found
+    ERROR_INVALID_DEVICE = 20                       ## Invalid device
+    ERROR_DEVICE_LOST = 21                          ## Device hung, reset, was removed, or driver update occurred
+    ERROR_DEVICE_REQUIRES_RESET = 22                ## Device requires a reset
+    ERROR_DEVICE_IN_LOW_POWER_STATE = 23            ## Device currently in low power state
+    ERROR_INVALID_WORK_ITEM_SIZE = 24               ## Invalid work item size
+    ERROR_INVALID_WORK_DIMENSION = 25               ## Invalid work dimension
+    ERROR_INVALID_KERNEL_ARGS = 26                  ## Invalid kernel args
+    ERROR_INVALID_KERNEL = 27                       ## Invalid kernel
+    ERROR_INVALID_KERNEL_NAME = 28                  ## [Validation] kernel name is not found in the module
+    ERROR_INVALID_KERNEL_ARGUMENT_INDEX = 29        ## [Validation] kernel argument index is not valid for kernel
+    ERROR_INVALID_KERNEL_ARGUMENT_SIZE = 30         ## [Validation] kernel argument size does not match kernel
+    ERROR_INVALID_KERNEL_ATTRIBUTE_VALUE = 31       ## [Validation] value of kernel attribute is not valid for the kernel or
+                                                    ## device
+    ERROR_INVALID_IMAGE_SIZE = 32                   ## Invalid image size
+    ERROR_INVALID_IMAGE_FORMAT_DESCRIPTOR = 33      ## Invalid image format descriptor
+    ERROR_IMAGE_FORMAT_NOT_SUPPORTED = 34           ## Image format not supported
+    ERROR_MEM_OBJECT_ALLOCATION_FAILURE = 35        ## Memory object allocation failure
+    ERROR_INVALID_PROGRAM_EXECUTABLE = 36           ## Program object parameter is invalid.
+    ERROR_UNINITIALIZED = 37                        ## [Validation] driver is not initialized
+    ERROR_OUT_OF_HOST_MEMORY = 38                   ## Insufficient host memory to satisfy call
+    ERROR_OUT_OF_DEVICE_MEMORY = 39                 ## Insufficient device memory to satisfy call
+    ERROR_OUT_OF_RESOURCES = 40                     ## Out of resources
+    ERROR_MODULE_BUILD_FAILURE = 41                 ## Error occurred when building module, see build log for details
+    ERROR_MODULE_LINK_FAILURE = 42                  ## Error occurred when linking modules, see build log for details
+    ERROR_UNSUPPORTED_VERSION = 43                  ## [Validation] generic error code for unsupported versions
+    ERROR_UNSUPPORTED_FEATURE = 44                  ## [Validation] generic error code for unsupported features
+    ERROR_INVALID_ARGUMENT = 45                     ## [Validation] generic error code for invalid arguments
+    ERROR_INVALID_NULL_HANDLE = 46                  ## [Validation] handle argument is not valid
+    ERROR_HANDLE_OBJECT_IN_USE = 47                 ## [Validation] object pointed to by handle still in-use by device
+    ERROR_INVALID_NULL_POINTER = 48                 ## [Validation] pointer argument may not be nullptr
+    ERROR_INVALID_SIZE = 49                         ## [Validation] size argument is invalid (e.g., must not be zero)
+    ERROR_UNSUPPORTED_SIZE = 50                     ## [Validation] size argument is not supported by the device (e.g., too
                                                     ## large)
-    ERROR_UNSUPPORTED_ALIGNMENT = 0x78000011        ## [Validation] alignment argument is not supported by the device (e.g.,
+    ERROR_UNSUPPORTED_ALIGNMENT = 51                ## [Validation] alignment argument is not supported by the device (e.g.,
                                                     ## too small)
-    ERROR_INVALID_SYNCHRONIZATION_OBJECT = 0x78000012   ## [Validation] synchronization object in invalid state
-    ERROR_INVALID_ENUMERATION = 0x78000013          ## [Validation] enumerator argument is not valid
-    ERROR_UNSUPPORTED_ENUMERATION = 0x78000014      ## [Validation] enumerator argument is not supported by the device
-    ERROR_UNSUPPORTED_IMAGE_FORMAT = 0x78000015     ## [Validation] image format is not supported by the device
-    ERROR_INVALID_NATIVE_BINARY = 0x78000016        ## [Validation] native binary is not supported by the device
-    ERROR_INVALID_GLOBAL_NAME = 0x78000017          ## [Validation] global variable is not found in the module
-    ERROR_INVALID_KERNEL_NAME = 0x78000018          ## [Validation] kernel name is not found in the module
-    ERROR_INVALID_FUNCTION_NAME = 0x78000019        ## [Validation] function name is not found in the module
-    ERROR_INVALID_GROUP_SIZE_DIMENSION = 0x7800001a ## [Validation] group size dimension is not valid for the kernel or
+    ERROR_INVALID_SYNCHRONIZATION_OBJECT = 52       ## [Validation] synchronization object in invalid state
+    ERROR_INVALID_ENUMERATION = 53                  ## [Validation] enumerator argument is not valid
+    ERROR_UNSUPPORTED_ENUMERATION = 54              ## [Validation] enumerator argument is not supported by the device
+    ERROR_UNSUPPORTED_IMAGE_FORMAT = 55             ## [Validation] image format is not supported by the device
+    ERROR_INVALID_NATIVE_BINARY = 56                ## [Validation] native binary is not supported by the device
+    ERROR_INVALID_GLOBAL_NAME = 57                  ## [Validation] global variable is not found in the module
+    ERROR_INVALID_FUNCTION_NAME = 58                ## [Validation] function name is not found in the module
+    ERROR_INVALID_GROUP_SIZE_DIMENSION = 59         ## [Validation] group size dimension is not valid for the kernel or
                                                     ## device
-    ERROR_INVALID_GLOBAL_WIDTH_DIMENSION = 0x7800001b   ## [Validation] global width dimension is not valid for the kernel or
+    ERROR_INVALID_GLOBAL_WIDTH_DIMENSION = 60       ## [Validation] global width dimension is not valid for the kernel or
                                                     ## device
-    ERROR_INVALID_KERNEL_ARGUMENT_INDEX = 0x7800001c## [Validation] kernel argument index is not valid for kernel
-    ERROR_INVALID_KERNEL_ARGUMENT_SIZE = 0x7800001d ## [Validation] kernel argument size does not match kernel
-    ERROR_INVALID_KERNEL_ATTRIBUTE_VALUE = 0x7800001e   ## [Validation] value of kernel attribute is not valid for the kernel or
-                                                    ## device
-    ERROR_INVALID_MODULE_UNLINKED = 0x7800001f      ## [Validation] module with imports needs to be linked before kernels can
+    ERROR_MODULE_UNLINKED = 61                      ## [Validation] module with imports needs to be linked before kernels can
                                                     ## be created from it.
-    ERROR_INVALID_COMMAND_LIST_TYPE = 0x78000020    ## [Validation] command list type does not match command queue type
-    ERROR_OVERLAPPING_REGIONS = 0x78000021          ## [Validation] copy operations do not support overlapping regions of
+    ERROR_OVERLAPPING_REGIONS = 62                  ## [Validation] copy operations do not support overlapping regions of
                                                     ## memory
-    INVALID_HOST_PTR = 0x78000022                   ## Invalid host pointer
-    INVALID_USM_SIZE = 0x78000023                   ## Invalid USM size
-    OBJECT_ALLOCATION_FAILURE = 0x78000024          ## Objection allocation failure
-    ADAPTER_SPECIFIC = 0x78000025                   ## An adapter specific warning/error has been reported and can be
+    ERROR_INVALID_HOST_PTR = 63                     ## Invalid host pointer
+    ERROR_INVALID_USM_SIZE = 64                     ## Invalid USM size
+    ERROR_OBJECT_ALLOCATION_FAILURE = 65            ## Objection allocation failure
+    ERROR_ADAPTER_SPECIFIC = 66                     ## An adapter specific warning/error has been reported and can be
                                                     ## retrieved via the urGetLastResult entry point.
     ERROR_UNKNOWN = 0x7ffffffe                      ## Unknown or internal error
 
@@ -249,6 +245,12 @@ class ur_context_info_v(IntEnum):
     NUM_DEVICES = 1                                 ## [uint32_t] The number of the devices in the context
     DEVICES = 2                                     ## [::ur_context_handle_t...] The array of the device handles in the
                                                     ## context
+    USM_MEMCPY2D_SUPPORT = 3                        ## [bool] to indicate if the ::urEnqueueUSMMemcpy2D entrypoint is
+                                                    ## supported.
+    USM_FILL2D_SUPPORT = 4                          ## [bool] to indicate if the ::urEnqueueUSMFill2D entrypoint is
+                                                    ## supported.
+    USM_MEMSET2D_SUPPORT = 5                        ## [bool] to indicate if the ::urEnqueueUSMMemset2D entrypoint is
+                                                    ## supported.
 
 class ur_context_info_t(c_int):
     def __str__(self):
@@ -259,8 +261,8 @@ class ur_context_info_t(c_int):
 ## @brief Context's extended deleter callback function with user data.
 def ur_context_extended_deleter_t(user_defined_callback):
     @CFUNCTYPE(None, c_void_p)
-    def ur_context_extended_deleter_t_wrapper(var0): 
-        return user_defined_callback(var0) 
+    def ur_context_extended_deleter_t_wrapper(pUserData):
+        return user_defined_callback(pUserData)
     return ur_context_extended_deleter_t_wrapper
 
 ###############################################################################
@@ -287,7 +289,7 @@ class ur_usm_migration_flags_t(c_int):
 ###############################################################################
 ## @brief USM memory advice
 class ur_mem_advice_v(IntEnum):
-    MEM_ADVICE_DEFAULT = 0                          ## The USM memory advice is default
+    DEFAULT = 0                                     ## The USM memory advice is default
 
 class ur_mem_advice_t(c_int):
     def __str__(self):
@@ -297,11 +299,11 @@ class ur_mem_advice_t(c_int):
 ###############################################################################
 ## @brief Event query information type
 class ur_event_info_v(IntEnum):
-    EVENT_INFO_COMMAND_QUEUE = 0                    ## Command queue information of an event object
-    EVENT_INFO_CONTEXT = 1                          ## Context information of an event object
-    EVENT_INFO_COMMAND_TYPE = 2                     ## Command type information of an event object
-    EVENT_INFO_COMMAND_EXECUTION_STATUS = 3         ## Command execution status of an event object
-    EVENT_INFO_REFERENCE_COUNT = 4                  ## Reference count of an event object
+    COMMAND_QUEUE = 0                               ## Command queue information of an event object
+    CONTEXT = 1                                     ## Context information of an event object
+    COMMAND_TYPE = 2                                ## Command type information of an event object
+    COMMAND_EXECUTION_STATUS = 3                    ## Command execution status of an event object
+    REFERENCE_COUNT = 4                             ## Reference count of an event object
 
 class ur_event_info_t(c_int):
     def __str__(self):
@@ -311,13 +313,13 @@ class ur_event_info_t(c_int):
 ###############################################################################
 ## @brief Profiling query information type
 class ur_profiling_info_v(IntEnum):
-    PROFILING_INFO_COMMAND_QUEUED = 0               ## A 64-bit value of current device counter in nanoseconds when the event
+    COMMAND_QUEUED = 0                              ## A 64-bit value of current device counter in nanoseconds when the event
                                                     ## is enqueued
-    PROFILING_INFO_COMMAND_SUBMIT = 1               ## A 64-bit value of current device counter in nanoseconds when the event
+    COMMAND_SUBMIT = 1                              ## A 64-bit value of current device counter in nanoseconds when the event
                                                     ## is submitted
-    PROFILING_INFO_COMMAND_START = 2                ## A 64-bit value of current device counter in nanoseconds when the event
+    COMMAND_START = 2                               ## A 64-bit value of current device counter in nanoseconds when the event
                                                     ## starts execution
-    PROFILING_INFO_COMMAND_END = 3                  ## A 64-bit value of current device counter in nanoseconds when the event
+    COMMAND_END = 3                                 ## A 64-bit value of current device counter in nanoseconds when the event
                                                     ## has finished execution
 
 class ur_profiling_info_t(c_int):
@@ -326,16 +328,38 @@ class ur_profiling_info_t(c_int):
 
 
 ###############################################################################
+## @brief Event states for all events.
+class ur_execution_info_v(IntEnum):
+    EXECUTION_INFO_COMPLETE = 0                     ## Indicates that the event has completed.
+    EXECUTION_INFO_RUNNING = 1                      ## Indicates that the device has started processing this event.
+    EXECUTION_INFO_SUBMITTED = 2                    ## Indicates that the event has been submitted by the host to the device.
+    EXECUTION_INFO_QUEUED = 3                       ## Indicates that the event has been queued, this is the initial state of
+                                                    ## events.
+
+class ur_execution_info_t(c_int):
+    def __str__(self):
+        return str(ur_execution_info_v(self.value))
+
+
+###############################################################################
+## @brief Event callback function that can be registered by the application.
+def ur_event_callback_t(user_defined_callback):
+    @CFUNCTYPE(None, ur_event_handle_t, ur_execution_info_t, c_void_p)
+    def ur_event_callback_t_wrapper(hEvent, execStatus, pUserData):
+        return user_defined_callback(hEvent, execStatus, pUserData)
+    return ur_event_callback_t_wrapper
+
+###############################################################################
 ## @brief Memory flags
 class ur_mem_flags_v(IntEnum):
-    MEM_READ_WRITE = UR_BIT(0)                      ## The memory object will be read and written by a kernel. This is the
+    READ_WRITE = UR_BIT(0)                          ## The memory object will be read and written by a kernel. This is the
                                                     ## default
-    MEM_WRITE_ONLY = UR_BIT(1)                      ## The memory object will be written but not read by a kernel
-    MEM_READ_ONLY = UR_BIT(2)                       ## The memory object is a read-only inside a kernel
-    MEM_USE_HOST_POINTER = UR_BIT(3)                ## Use memory pointed by a host pointer parameter as the storage bits for
+    WRITE_ONLY = UR_BIT(1)                          ## The memory object will be written but not read by a kernel
+    READ_ONLY = UR_BIT(2)                           ## The memory object is a read-only inside a kernel
+    USE_HOST_POINTER = UR_BIT(3)                    ## Use memory pointed by a host pointer parameter as the storage bits for
                                                     ## the memory object
-    MEM_ALLOC_HOST_POINTER = UR_BIT(4)              ## Allocate memory object from host accessible memory
-    MEM_ALLOC_COPY_HOST_POINTER = UR_BIT(5)         ## Allocate memory and copy the data from host pointer pointed memory
+    ALLOC_HOST_POINTER = UR_BIT(4)                  ## Allocate memory object from host accessible memory
+    ALLOC_COPY_HOST_POINTER = UR_BIT(5)             ## Allocate memory and copy the data from host pointer pointed memory
 
 class ur_mem_flags_t(c_int):
     def __str__(self):
@@ -345,13 +369,13 @@ class ur_mem_flags_t(c_int):
 ###############################################################################
 ## @brief Memory types
 class ur_mem_type_v(IntEnum):
-    MEM_TYPE_BUFFER = 0                             ## Buffer object
-    MEM_TYPE_IMAGE2D = 1                            ## 2D image object
-    MEM_TYPE_IMAGE3D = 2                            ## 3D image object
-    MEM_TYPE_IMAGE2D_ARRAY = 3                      ## 2D image array object
-    MEM_TYPE_IMAGE1D = 4                            ## 1D image object
-    MEM_TYPE_IMAGE1D_ARRAY = 5                      ## 1D image array object
-    MEM_TYPE_IMAGE1D_BUFFER = 6                     ## 1D image buffer object
+    BUFFER = 0                                      ## Buffer object
+    IMAGE2D = 1                                     ## 2D image object
+    IMAGE3D = 2                                     ## 3D image object
+    IMAGE2D_ARRAY = 3                               ## 2D image array object
+    IMAGE1D = 4                                     ## 1D image object
+    IMAGE1D_ARRAY = 5                               ## 1D image array object
+    IMAGE1D_BUFFER = 6                              ## 1D image buffer object
 
 class ur_mem_type_t(c_int):
     def __str__(self):
@@ -372,20 +396,20 @@ class ur_mem_info_t(c_int):
 ###############################################################################
 ## @brief Image channel order info: number of channels and the channel layout
 class ur_image_channel_order_v(IntEnum):
-    CHANNEL_ORDER_A = 0                             ## channel order A
-    CHANNEL_ORDER_R = 1                             ## channel order R
-    CHANNEL_ORDER_RG = 2                            ## channel order RG
-    CHANNEL_ORDER_RA = 3                            ## channel order RA
-    CHANNEL_ORDER_RGB = 4                           ## channel order RGB
-    CHANNEL_ORDER_RGBA = 5                          ## channel order RGBA
-    CHANNEL_ORDER_BGRA = 6                          ## channel order BGRA
-    CHANNEL_ORDER_ARGB = 7                          ## channel order ARGB
-    CHANNEL_ORDER_INTENSITY = 8                     ## channel order intensity
-    CHANNEL_ORDER_LUMINANCE = 9                     ## channel order luminance
-    CHANNEL_ORDER_RX = 10                           ## channel order Rx
-    CHANNEL_ORDER_RGX = 11                          ## channel order RGx
-    CHANNEL_ORDER_RGBX = 12                         ## channel order RGBx
-    CHANNEL_ORDER_SRGBA = 13                        ## channel order sRGBA
+    A = 0                                           ## channel order A
+    R = 1                                           ## channel order R
+    RG = 2                                          ## channel order RG
+    RA = 3                                          ## channel order RA
+    RGB = 4                                         ## channel order RGB
+    RGBA = 5                                        ## channel order RGBA
+    BGRA = 6                                        ## channel order BGRA
+    ARGB = 7                                        ## channel order ARGB
+    INTENSITY = 8                                   ## channel order intensity
+    LUMINANCE = 9                                   ## channel order luminance
+    RX = 10                                         ## channel order Rx
+    RGX = 11                                        ## channel order RGx
+    RGBX = 12                                       ## channel order RGBx
+    SRGBA = 13                                      ## channel order sRGBA
 
 class ur_image_channel_order_t(c_int):
     def __str__(self):
@@ -395,21 +419,21 @@ class ur_image_channel_order_t(c_int):
 ###############################################################################
 ## @brief Image channel type info: describe the size of the channel data type
 class ur_image_channel_type_v(IntEnum):
-    CHANNEL_TYPE_SNORM_INT8 = 0                     ## channel type snorm int8
-    CHANNEL_TYPE_SNORM_INT16 = 1                    ## channel type snorm int16
-    CHANNEL_TYPE_UNORM_INT8 = 2                     ## channel type unorm int8
-    CHANNEL_TYPE_UNORM_INT16 = 3                    ## channel type unorm int16
-    CHANNEL_TYPE_UNORM_SHORT_565 = 4                ## channel type unorm short 565
-    CHANNEL_TYPE_UNORM_SHORT_555 = 5                ## channel type unorm short 555
-    CHANNEL_TYPE_INT_101010 = 6                     ## channel type int 101010
-    CHANNEL_TYPE_SIGNED_INT8 = 7                    ## channel type signed int8
-    CHANNEL_TYPE_SIGNED_INT16 = 8                   ## channel type signed int16
-    CHANNEL_TYPE_SIGNED_INT32 = 9                   ## channel type signed int32
-    CHANNEL_TYPE_UNSIGNED_INT8 = 10                 ## channel type unsigned int8
-    CHANNEL_TYPE_UNSIGNED_INT16 = 11                ## channel type unsigned int16
-    CHANNEL_TYPE_UNSIGNED_INT32 = 12                ## channel type unsigned int32
-    CHANNEL_TYPE_HALF_FLOAT = 13                    ## channel type half float
-    CHANNEL_TYPE_FLOAT = 14                         ## channel type float
+    SNORM_INT8 = 0                                  ## channel type snorm int8
+    SNORM_INT16 = 1                                 ## channel type snorm int16
+    UNORM_INT8 = 2                                  ## channel type unorm int8
+    UNORM_INT16 = 3                                 ## channel type unorm int16
+    UNORM_SHORT_565 = 4                             ## channel type unorm short 565
+    UNORM_SHORT_555 = 5                             ## channel type unorm short 555
+    INT_101010 = 6                                  ## channel type int 101010
+    SIGNED_INT8 = 7                                 ## channel type signed int8
+    SIGNED_INT16 = 8                                ## channel type signed int16
+    SIGNED_INT32 = 9                                ## channel type signed int32
+    UNSIGNED_INT8 = 10                              ## channel type unsigned int8
+    UNSIGNED_INT16 = 11                             ## channel type unsigned int16
+    UNSIGNED_INT32 = 12                             ## channel type unsigned int32
+    HALF_FLOAT = 13                                 ## channel type half float
+    FLOAT = 14                                      ## channel type float
 
 class ur_image_channel_type_t(c_int):
     def __str__(self):
@@ -468,7 +492,7 @@ class ur_buffer_region_t(Structure):
 ###############################################################################
 ## @brief Buffer creation type
 class ur_buffer_create_type_v(IntEnum):
-    BUFFER_CREATE_TYPE_REGION = 0                   ## buffer create type is region
+    REGION = 0                                      ## buffer create type is region
 
 class ur_buffer_create_type_t(c_int):
     def __str__(self):
@@ -491,12 +515,15 @@ class ur_queue_info_t(c_int):
 
 
 ###############################################################################
-## @brief Queue properties
+## @brief Queue property flags
 class ur_queue_flags_v(IntEnum):
     OUT_OF_ORDER_EXEC_MODE_ENABLE = UR_BIT(0)       ## Enable/disable out of order execution
     PROFILING_ENABLE = UR_BIT(1)                    ## Enable/disable profiling
     ON_DEVICE = UR_BIT(2)                           ## Is a device queue
     ON_DEVICE_DEFAULT = UR_BIT(3)                   ## Is the default queue for a device
+    DISCARD_EVENTS = UR_BIT(4)                      ## Events will be discarded
+    PRIORITY_LOW = UR_BIT(5)                        ## Low priority queue
+    PRIORITY_HIGH = UR_BIT(6)                       ## High priority queue
 
 class ur_queue_flags_t(c_int):
     def __str__(self):
@@ -504,16 +531,35 @@ class ur_queue_flags_t(c_int):
 
 
 ###############################################################################
+## @brief Queue Properties
+class ur_queue_properties_v(IntEnum):
+    FLAGS = -1                                      ## [::ur_queue_flags_t]: the bitfield of queue flags
+    COMPUTE_INDEX = -2                              ## [uint32_t]: the queue index
+
+class ur_queue_properties_t(c_int):
+    def __str__(self):
+        return str(ur_queue_properties_v(self.value))
+
+
+###############################################################################
+## @brief Queue property value
+class ur_queue_property_value_t(Structure):
+    _fields_ = [
+        ("propertyType", ur_queue_properties_t),                        ## [in] queue property
+        ("propertyValue", c_ulong)                                      ## [in] queue property value
+    ]
+
+###############################################################################
 ## @brief Get sample object information
 class ur_sampler_info_v(IntEnum):
-    SAMPLER_INFO_REFERENCE_COUNT = 0                ## Sampler reference count info
-    SAMPLER_INFO_CONTEXT = 1                        ## Sampler context info
-    SAMPLER_INFO_NORMALIZED_COORDS = 2              ## Sampler normalized coordindate setting
-    SAMPLER_INFO_ADDRESSING_MODE = 3                ## Sampler addressing mode setting
-    SAMPLER_INFO_FILTER_MODE = 4                    ## Sampler filter mode setting
-    SAMPLER_INFO_MIP_FILTER_MODE = 5                ## Sampler MIP filter mode setting
-    SAMPLER_INFO_LOD_MIN = 6                        ## Sampler LOD Min value
-    SAMPLER_INFO_LOD_MAX = 7                        ## Sampler LOD Max value
+    REFERENCE_COUNT = 0                             ## Sampler reference count info
+    CONTEXT = 1                                     ## Sampler context info
+    NORMALIZED_COORDS = 2                           ## Sampler normalized coordindate setting
+    ADDRESSING_MODE = 3                             ## Sampler addressing mode setting
+    FILTER_MODE = 4                                 ## Sampler filter mode setting
+    MIP_FILTER_MODE = 5                             ## Sampler MIP filter mode setting
+    LOD_MIN = 6                                     ## Sampler LOD Min value
+    LOD_MAX = 7                                     ## Sampler LOD Max value
 
 class ur_sampler_info_t(c_int):
     def __str__(self):
@@ -523,9 +569,9 @@ class ur_sampler_info_t(c_int):
 ###############################################################################
 ## @brief Sampler properties
 class ur_sampler_properties_v(IntEnum):
-    SAMPLER_PROPERTIES_NORMALIZED_COORDS = 0        ## Sampler normalized coordinates
-    SAMPLER_PROPERTIES_ADDRESSING_MODE = 1          ## Sampler addressing mode
-    SAMPLER_PROPERTIES_FILTER_MODE = 2              ## Sampler filter mode
+    NORMALIZED_COORDS = 0                           ## Sampler normalized coordinates
+    ADDRESSING_MODE = 1                             ## Sampler addressing mode
+    FILTER_MODE = 2                                 ## Sampler filter mode
 
 class ur_sampler_properties_t(c_int):
     def __str__(self):
@@ -543,7 +589,7 @@ class ur_sampler_property_value_t(Structure):
 ###############################################################################
 ## @brief USM memory property flags
 class ur_usm_mem_flags_v(IntEnum):
-    MEM_ALLOC_FLAGS_INTEL = UR_BIT(0)               ## The USM memory allocation is from Intel USM
+    ALLOC_FLAGS_INTEL = UR_BIT(0)                   ## The USM memory allocation is from Intel USM
 
 class ur_usm_mem_flags_t(c_int):
     def __str__(self):
@@ -553,10 +599,10 @@ class ur_usm_mem_flags_t(c_int):
 ###############################################################################
 ## @brief USM memory allocation information type
 class ur_mem_alloc_info_v(IntEnum):
-    MEM_ALLOC_TYPE = 0                              ## Memory allocation type info
-    MEM_ALLOC_BASE_PTR = 1                          ## Memory allocation base pointer info
-    MEM_ALLOC_SIZE = 2                              ## Memory allocation size info
-    MEM_ALLOC_DEVICE = 3                            ## Memory allocation device info
+    ALLOC_TYPE = 0                                  ## Memory allocation type info
+    ALLOC_BASE_PTR = 1                              ## Memory allocation base pointer info
+    ALLOC_SIZE = 2                                  ## Memory allocation size info
+    ALLOC_DEVICE = 3                                ## Memory allocation device info
 
 class ur_mem_alloc_info_t(c_int):
     def __str__(self):
@@ -584,110 +630,118 @@ class ur_device_type_t(c_int):
 class ur_device_info_v(IntEnum):
     TYPE = 0                                        ## ::ur_device_type_t: type of the device
     VENDOR_ID = 1                                   ## uint32_t: vendor Id of the device
-    MAX_COMPUTE_UNITS = 2                           ## uint32_t: the number of compute units
-    MAX_WORK_ITEM_DIMENSIONS = 3                    ## uint32_t: max work item dimensions
-    MAX_WORK_ITEM_SIZES = 4                         ## size_t[]: return an array of max work item sizes
-    MAX_WORK_GROUP_SIZE = 5                         ## size_t: max work group size
-    SINGLE_FP_CONFIG = 6                            ## Return a bit field of ::ur_fp_capability_flags_t: single precision
+    DEVICE_ID = 2                                   ## uint32_t: Id of the device
+    MAX_COMPUTE_UNITS = 3                           ## uint32_t: the number of compute units
+    MAX_WORK_ITEM_DIMENSIONS = 4                    ## uint32_t: max work item dimensions
+    MAX_WORK_ITEM_SIZES = 5                         ## size_t[]: return an array of max work item sizes
+    MAX_WORK_GROUP_SIZE = 6                         ## size_t: max work group size
+    SINGLE_FP_CONFIG = 7                            ## Return a bit field of ::ur_fp_capability_flags_t: single precision
                                                     ## floating point capability
-    HALF_FP_CONFIG = 7                              ## Return a bit field of ::ur_fp_capability_flags_t: half precsion
+    HALF_FP_CONFIG = 8                              ## Return a bit field of ::ur_fp_capability_flags_t: half precision
                                                     ## floating point capability
-    DOUBLE_FP_CONFIG = 8                            ## Return a bit field of ::ur_fp_capability_flags_t: double precision
+    DOUBLE_FP_CONFIG = 9                            ## Return a bit field of ::ur_fp_capability_flags_t: double precision
                                                     ## floating point capability
-    QUEUE_PROPERTIES = 9                            ## Return a bit field of ::ur_queue_flags_t: command queue properties
+    QUEUE_PROPERTIES = 10                           ## Return a bit field of ::ur_queue_flags_t: command queue properties
                                                     ## supported by the device
-    PREFERRED_VECTOR_WIDTH_CHAR = 10                ## uint32_t: preferred vector width for char
-    PREFERRED_VECTOR_WIDTH_SHORT = 11               ## uint32_t: preferred vector width for short
-    PREFERRED_VECTOR_WIDTH_INT = 12                 ## uint32_t: preferred vector width for int
-    PREFERRED_VECTOR_WIDTH_LONG = 13                ## uint32_t: preferred vector width for long
-    PREFERRED_VECTOR_WIDTH_FLOAT = 14               ## uint32_t: preferred vector width for float
-    PREFERRED_VECTOR_WIDTH_DOUBLE = 15              ## uint32_t: preferred vector width for double
-    PREFERRED_VECTOR_WIDTH_HALF = 16                ## uint32_t: preferred vector width for half float
-    NATIVE_VECTOR_WIDTH_CHAR = 17                   ## uint32_t: native vector width for char
-    NATIVE_VECTOR_WIDTH_SHORT = 18                  ## uint32_t: native vector width for short
-    NATIVE_VECTOR_WIDTH_INT = 19                    ## uint32_t: native vector width for int
-    NATIVE_VECTOR_WIDTH_LONG = 20                   ## uint32_t: native vector width for long
-    NATIVE_VECTOR_WIDTH_FLOAT = 21                  ## uint32_t: native vector width for float
-    NATIVE_VECTOR_WIDTH_DOUBLE = 22                 ## uint32_t: native vector width for double
-    NATIVE_VECTOR_WIDTH_HALF = 23                   ## uint32_t: native vector width for half float
-    MAX_CLOCK_FREQUENCY = 24                        ## uint32_t: max clock frequency in MHz
-    ADDRESS_BITS = 25                               ## uint32_t: address bits
-    MAX_MEM_ALLOC_SIZE = 26                         ## uint64_t: max memory allocation size
-    IMAGE_SUPPORTED = 27                            ## bool: images are supported
-    MAX_READ_IMAGE_ARGS = 28                        ## uint32_t: max number of image objects arguments of a kernel declared
+    PREFERRED_VECTOR_WIDTH_CHAR = 11                ## uint32_t: preferred vector width for char
+    PREFERRED_VECTOR_WIDTH_SHORT = 12               ## uint32_t: preferred vector width for short
+    PREFERRED_VECTOR_WIDTH_INT = 13                 ## uint32_t: preferred vector width for int
+    PREFERRED_VECTOR_WIDTH_LONG = 14                ## uint32_t: preferred vector width for long
+    PREFERRED_VECTOR_WIDTH_FLOAT = 15               ## uint32_t: preferred vector width for float
+    PREFERRED_VECTOR_WIDTH_DOUBLE = 16              ## uint32_t: preferred vector width for double
+    PREFERRED_VECTOR_WIDTH_HALF = 17                ## uint32_t: preferred vector width for half float
+    NATIVE_VECTOR_WIDTH_CHAR = 18                   ## uint32_t: native vector width for char
+    NATIVE_VECTOR_WIDTH_SHORT = 19                  ## uint32_t: native vector width for short
+    NATIVE_VECTOR_WIDTH_INT = 20                    ## uint32_t: native vector width for int
+    NATIVE_VECTOR_WIDTH_LONG = 21                   ## uint32_t: native vector width for long
+    NATIVE_VECTOR_WIDTH_FLOAT = 22                  ## uint32_t: native vector width for float
+    NATIVE_VECTOR_WIDTH_DOUBLE = 23                 ## uint32_t: native vector width for double
+    NATIVE_VECTOR_WIDTH_HALF = 24                   ## uint32_t: native vector width for half float
+    MAX_CLOCK_FREQUENCY = 25                        ## uint32_t: max clock frequency in MHz
+    MEMORY_CLOCK_RATE = 26                          ## uint32_t: memory clock frequency in MHz
+    ADDRESS_BITS = 27                               ## uint32_t: address bits
+    MAX_MEM_ALLOC_SIZE = 28                         ## uint64_t: max memory allocation size
+    IMAGE_SUPPORTED = 29                            ## bool: images are supported
+    MAX_READ_IMAGE_ARGS = 30                        ## uint32_t: max number of image objects arguments of a kernel declared
                                                     ## with the read_only qualifier
-    MAX_WRITE_IMAGE_ARGS = 29                       ## uint32_t: max number of image objects arguments of a kernel declared
+    MAX_WRITE_IMAGE_ARGS = 31                       ## uint32_t: max number of image objects arguments of a kernel declared
                                                     ## with the write_only qualifier
-    MAX_READ_WRITE_IMAGE_ARGS = 30                  ## uint32_t: max number of image objects arguments of a kernel declared
+    MAX_READ_WRITE_IMAGE_ARGS = 32                  ## uint32_t: max number of image objects arguments of a kernel declared
                                                     ## with the read_write qualifier
-    IMAGE2D_MAX_WIDTH = 31                          ## size_t: max width of Image2D object
-    IMAGE2D_MAX_HEIGHT = 32                         ## size_t: max heigh of Image2D object
-    IMAGE3D_MAX_WIDTH = 33                          ## size_t: max width of Image3D object
-    IMAGE3D_MAX_HEIGHT = 34                         ## size_t: max height of Image3D object
-    IMAGE3D_MAX_DEPTH = 35                          ## size_t: max depth of Image3D object
-    IMAGE_MAX_BUFFER_SIZE = 36                      ## size_t: max image buffer size
-    IMAGE_MAX_ARRAR_SIZE = 37                       ## size_t: max image array size
-    MAX_SAMPLERS = 38                               ## uint32_t: max number of samplers that can be used in a kernel
-    MAX_PARAMETER_SIZE = 39                         ## size_t: max size in bytes of all arguments passed to a kernel
-    MEM_BASE_ADDR_ALIGN = 40                        ## uint32_t: memory base address alignment
-    GLOBAL_MEM_CACHE_TYPE = 41                      ## ::ur_device_mem_cache_type_t: global memory cache type
-    GLOBAL_MEM_CACHELINE_SIZE = 42                  ## uint32_t: global memory cache line size in bytes
-    GLOBAL_MEM_CACHE_SIZE = 43                      ## uint64_t: size of global memory cache in bytes
-    GLOBAL_MEM_SIZE = 44                            ## uint64_t: size of global memory in bytes
-    MAX_CONSTANT_BUFFER_SIZE = 45                   ## uint64_t: max constant buffer size in bytes
-    MAX_CONSTANT_ARGS = 46                          ## uint32_t: max number of __const declared arguments in a kernel
-    LOCAL_MEM_TYPE = 47                             ## ::ur_device_local_mem_type_t: local memory type
-    LOCAL_MEM_SIZE = 48                             ## uint64_t: local memory size in bytes
-    ERROR_CORRECTION_SUPPORT = 49                   ## bool: support error correction to gloal and local memory
-    HOST_UNIFIED_MEMORY = 50                        ## bool: unifed host device memory
-    PROFILING_TIMER_RESOLUTION = 51                 ## size_t: profiling timer resolution in nanoseconds
-    ENDIAN_LITTLE = 52                              ## bool: little endian byte order
-    AVAILABLE = 53                                  ## bool: device is available
-    COMPILER_AVAILABLE = 54                         ## bool: device compiler is available
-    LINKER_AVAILABLE = 55                           ## bool: device linker is available
-    EXECUTION_CAPABILITIES = 56                     ## ::ur_device_exec_capability_flags_t: device kernel execution
+    IMAGE2D_MAX_WIDTH = 33                          ## size_t: max width of Image2D object
+    IMAGE2D_MAX_HEIGHT = 34                         ## size_t: max heigh of Image2D object
+    IMAGE3D_MAX_WIDTH = 35                          ## size_t: max width of Image3D object
+    IMAGE3D_MAX_HEIGHT = 36                         ## size_t: max height of Image3D object
+    IMAGE3D_MAX_DEPTH = 37                          ## size_t: max depth of Image3D object
+    IMAGE_MAX_BUFFER_SIZE = 38                      ## size_t: max image buffer size
+    IMAGE_MAX_ARRAY_SIZE = 39                       ## size_t: max image array size
+    MAX_SAMPLERS = 40                               ## uint32_t: max number of samplers that can be used in a kernel
+    MAX_PARAMETER_SIZE = 41                         ## size_t: max size in bytes of all arguments passed to a kernel
+    MEM_BASE_ADDR_ALIGN = 42                        ## uint32_t: memory base address alignment
+    GLOBAL_MEM_CACHE_TYPE = 43                      ## ::ur_device_mem_cache_type_t: global memory cache type
+    GLOBAL_MEM_CACHELINE_SIZE = 44                  ## uint32_t: global memory cache line size in bytes
+    GLOBAL_MEM_CACHE_SIZE = 45                      ## uint64_t: size of global memory cache in bytes
+    GLOBAL_MEM_SIZE = 46                            ## uint64_t: size of global memory in bytes
+    GLOBAL_MEM_FREE = 47                            ## uint64_t: size of global memory which is free in bytes
+    MAX_CONSTANT_BUFFER_SIZE = 48                   ## uint64_t: max constant buffer size in bytes
+    MAX_CONSTANT_ARGS = 49                          ## uint32_t: max number of __const declared arguments in a kernel
+    LOCAL_MEM_TYPE = 50                             ## ::ur_device_local_mem_type_t: local memory type
+    LOCAL_MEM_SIZE = 51                             ## uint64_t: local memory size in bytes
+    ERROR_CORRECTION_SUPPORT = 52                   ## bool: support error correction to global and local memory
+    HOST_UNIFIED_MEMORY = 53                        ## bool: unified host device memory
+    PROFILING_TIMER_RESOLUTION = 54                 ## size_t: profiling timer resolution in nanoseconds
+    ENDIAN_LITTLE = 55                              ## bool: little endian byte order
+    AVAILABLE = 56                                  ## bool: device is available
+    COMPILER_AVAILABLE = 57                         ## bool: device compiler is available
+    LINKER_AVAILABLE = 58                           ## bool: device linker is available
+    EXECUTION_CAPABILITIES = 59                     ## ::ur_device_exec_capability_flags_t: device kernel execution
                                                     ## capability bit-field
-    QUEUE_ON_DEVICE_PROPERTIES = 57                 ## ::ur_queue_flags_t: device command queue property bit-field
-    QUEUE_ON_HOST_PROPERTIES = 58                   ## ::ur_queue_flags_t: host queue property bit-field
-    BUILT_IN_KERNELS = 59                           ## char[]: a semi-colon separated list of built-in kernels
-    PLATFORM = 60                                   ## ::ur_platform_handle_t: the platform associated with the device
-    REFERENCE_COUNT = 61                            ## uint32_t: reference count
-    IL_VERSION = 62                                 ## char[]: IL version
-    NAME = 63                                       ## char[]: Device name
-    VENDOR = 64                                     ## char[]: Device vendor
-    DRIVER_VERSION = 65                             ## char[]: Driver version
-    PROFILE = 66                                    ## char[]: Device profile
-    VERSION = 67                                    ## char[]: Device version
-    EXTENSIONS = 68                                 ## char[]: Return a space separated list of extension names
-    PRINTF_BUFFER_SIZE = 69                         ## size_t: Maximum size in bytes of internal printf buffer
-    PREFERRED_INTEROP_USER_SYNC = 70                ## bool: prefer user synchronization when sharing object with other API
-    PARENT_DEVICE = 71                              ## ::ur_device_handle_t: return parent device handle
-    PARTITION_PROPERTIES = 72                       ## uint32_t: return a bit-field of partition properties
+    QUEUE_ON_DEVICE_PROPERTIES = 60                 ## ::ur_queue_flags_t: device command queue property bit-field
+    QUEUE_ON_HOST_PROPERTIES = 61                   ## ::ur_queue_flags_t: host queue property bit-field
+    BUILT_IN_KERNELS = 62                           ## char[]: a semi-colon separated list of built-in kernels
+    PLATFORM = 63                                   ## ::ur_platform_handle_t: the platform associated with the device
+    REFERENCE_COUNT = 64                            ## uint32_t: reference count
+    IL_VERSION = 65                                 ## char[]: IL version
+    NAME = 66                                       ## char[]: Device name
+    VENDOR = 67                                     ## char[]: Device vendor
+    DRIVER_VERSION = 68                             ## char[]: Driver version
+    PROFILE = 69                                    ## char[]: Device profile
+    VERSION = 70                                    ## char[]: Device version
+    BACKEND_RUNTIME_VERSION = 71                    ## char[]: Version of backend runtime
+    EXTENSIONS = 72                                 ## char[]: Return a space separated list of extension names
+    PRINTF_BUFFER_SIZE = 73                         ## size_t: Maximum size in bytes of internal printf buffer
+    PREFERRED_INTEROP_USER_SYNC = 74                ## bool: prefer user synchronization when sharing object with other API
+    PARENT_DEVICE = 75                              ## ::ur_device_handle_t: return parent device handle
+    PARTITION_PROPERTIES = 76                       ## uint32_t: return a bit-field of partition properties
                                                     ## ::ur_device_partition_property_flags_t
-    PARTITION_MAX_SUB_DEVICES = 73                  ## uint32_t: maximum number of sub-devices when the device is partitioned
-    PARTITION_AFFINITY_DOMAIN = 74                  ## uint32_t: return a bit-field of affinity domain
+    PARTITION_MAX_SUB_DEVICES = 77                  ## uint32_t: maximum number of sub-devices when the device is partitioned
+    PARTITION_AFFINITY_DOMAIN = 78                  ## uint32_t: return a bit-field of affinity domain
                                                     ## ::ur_device_affinity_domain_flags_t
-    PARTITION_TYPE = 75                             ## uint32_t: return a bit-field of ::ur_device_partition_property_flags_t
+    PARTITION_TYPE = 79                             ## uint32_t: return a bit-field of ::ur_device_partition_property_flags_t
                                                     ## for properties specified in ::urDevicePartition
-    MAX_NUM_SUB_GROUPS = 76                         ## uint32_t: max number of sub groups
-    SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS = 77     ## bool: support sub group independent forward progress
-    SUB_GROUP_SIZES_INTEL = 78                      ## uint32_t[]: return an array of sub group sizes supported on Intel
+    MAX_NUM_SUB_GROUPS = 80                         ## uint32_t: max number of sub groups
+    SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS = 81     ## bool: support sub group independent forward progress
+    SUB_GROUP_SIZES_INTEL = 82                      ## uint32_t[]: return an array of sub group sizes supported on Intel
                                                     ## device
-    USM_HOST_SUPPORT = 79                           ## bool: support USM host memory access
-    USM_DEVICE_SUPPORT = 80                         ## bool: support USM device memory access
-    USM_SINGLE_SHARED_SUPPORT = 81                  ## bool: support USM single device shared memory access
-    USM_CROSS_SHARED_SUPPORT = 82                   ## bool: support USM cross device shared memory access
-    USM_SYSTEM_SHARED_SUPPORT = 83                  ## bool: support USM system wide shared memory access
-    UUID = 84                                       ## char[]: return device UUID
-    PCI_ADDRESS = 85                                ## char[]: return device PCI address
-    GPU_EU_COUNT = 86                               ## uint32_t: return Intel GPU EU count
-    GPU_EU_SIMD_WIDTH = 87                          ## uint32_t: return Intel GPU EU SIMD width
-    GPU_EU_SLICES = 88                              ## uint32_t: return Intel GPU number of slices
-    GPU_SUBSLICES_PER_SLICE = 89                    ## uint32_t: return Intel GPU number of subslices per slice
-    MAX_MEMORY_BANDWIDTH = 90                       ## uint32_t: return max memory bandwidth in Mb/s
-    IMAGE_SRGB = 91                                 ## bool: image is SRGB
-    ATOMIC_64 = 92                                  ## bool: support 64 bit atomics
-    ATOMIC_MEMORY_ORDER_CAPABILITIES = 93           ## uint32_t: atomics memory order capabilities
+    USM_HOST_SUPPORT = 83                           ## bool: support USM host memory access
+    USM_DEVICE_SUPPORT = 84                         ## bool: support USM device memory access
+    USM_SINGLE_SHARED_SUPPORT = 85                  ## bool: support USM single device shared memory access
+    USM_CROSS_SHARED_SUPPORT = 86                   ## bool: support USM cross device shared memory access
+    USM_SYSTEM_SHARED_SUPPORT = 87                  ## bool: support USM system wide shared memory access
+    UUID = 88                                       ## char[]: return device UUID
+    PCI_ADDRESS = 89                                ## char[]: return device PCI address
+    GPU_EU_COUNT = 90                               ## uint32_t: return Intel GPU EU count
+    GPU_EU_SIMD_WIDTH = 91                          ## uint32_t: return Intel GPU EU SIMD width
+    GPU_EU_SLICES = 92                              ## uint32_t: return Intel GPU number of slices
+    GPU_SUBSLICES_PER_SLICE = 93                    ## uint32_t: return Intel GPU number of subslices per slice
+    MAX_MEMORY_BANDWIDTH = 94                       ## uint32_t: return max memory bandwidth in Mb/s
+    IMAGE_SRGB = 95                                 ## bool: image is SRGB
+    ATOMIC_64 = 96                                  ## bool: support 64 bit atomics
+    ATOMIC_MEMORY_ORDER_CAPABILITIES = 97           ## uint32_t: atomics memory order capabilities
+    BFLOAT16 = 98                                   ## bool: support for bfloat16
+    MAX_COMPUTE_QUEUE_INDICES = 99                  ## uint32_t: Returns 1 if the device doesn't have a notion of a 
+                                                    ## queue index. Otherwise, returns the number of queue indices that are
+                                                    ## available for this device.
 
 class ur_device_info_t(c_int):
     def __str__(self):
@@ -838,8 +892,8 @@ class ur_kernel_exec_info_t(c_int):
 ## @brief callback function for urModuleCreate
 def ur_modulecreate_callback_t(user_defined_callback):
     @CFUNCTYPE(None, ur_module_handle_t, c_void_p)
-    def ur_modulecreate_callback_t_wrapper(var0, var1): 
-        return user_defined_callback(var0, var1) 
+    def ur_modulecreate_callback_t_wrapper(hModule, pParams):
+        return user_defined_callback(hModule, pParams)
     return ur_modulecreate_callback_t_wrapper
 
 ###############################################################################
@@ -983,9 +1037,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urPlatformCreateWithNativeHandle
 if __use_win_types:
-    _urPlatformCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_platform_handle_t) )
+    _urPlatformCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, POINTER(ur_platform_handle_t) )
 else:
-    _urPlatformCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_platform_handle_t) )
+    _urPlatformCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, POINTER(ur_platform_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urPlatformGetApiVersion
@@ -1044,16 +1098,16 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urContextCreateWithNativeHandle
 if __use_win_types:
-    _urContextCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_context_handle_t) )
+    _urContextCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, POINTER(ur_context_handle_t) )
 else:
-    _urContextCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_context_handle_t) )
+    _urContextCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, POINTER(ur_context_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urContextSetExtendedDeleter
 if __use_win_types:
-    _urContextSetExtendedDeleter_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, ur_context_extended_deleter_t, c_void_p )
+    _urContextSetExtendedDeleter_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_void_p )
 else:
-    _urContextSetExtendedDeleter_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, ur_context_extended_deleter_t, c_void_p )
+    _urContextSetExtendedDeleter_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_void_p )
 
 
 ###############################################################################
@@ -1068,13 +1122,6 @@ class ur_context_dditable_t(Structure):
         ("pfnCreateWithNativeHandle", c_void_p),                        ## _urContextCreateWithNativeHandle_t
         ("pfnSetExtendedDeleter", c_void_p)                             ## _urContextSetExtendedDeleter_t
     ]
-
-###############################################################################
-## @brief Function-pointer for urEventCreate
-if __use_win_types:
-    _urEventCreate_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, POINTER(ur_event_handle_t) )
-else:
-    _urEventCreate_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEventGetInfo
@@ -1121,23 +1168,30 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urEventCreateWithNativeHandle
 if __use_win_types:
-    _urEventCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_event_handle_t) )
+    _urEventCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_event_handle_t) )
 else:
-    _urEventCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_event_handle_t) )
+    _urEventCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEventSetCallback
+if __use_win_types:
+    _urEventSetCallback_t = WINFUNCTYPE( ur_result_t, ur_event_handle_t, ur_execution_info_t, c_void_p, c_void_p )
+else:
+    _urEventSetCallback_t = CFUNCTYPE( ur_result_t, ur_event_handle_t, ur_execution_info_t, c_void_p, c_void_p )
 
 
 ###############################################################################
 ## @brief Table of Event functions pointers
 class ur_event_dditable_t(Structure):
     _fields_ = [
-        ("pfnCreate", c_void_p),                                        ## _urEventCreate_t
         ("pfnGetInfo", c_void_p),                                       ## _urEventGetInfo_t
         ("pfnGetProfilingInfo", c_void_p),                              ## _urEventGetProfilingInfo_t
         ("pfnWait", c_void_p),                                          ## _urEventWait_t
         ("pfnRetain", c_void_p),                                        ## _urEventRetain_t
         ("pfnRelease", c_void_p),                                       ## _urEventRelease_t
         ("pfnGetNativeHandle", c_void_p),                               ## _urEventGetNativeHandle_t
-        ("pfnCreateWithNativeHandle", c_void_p)                         ## _urEventCreateWithNativeHandle_t
+        ("pfnCreateWithNativeHandle", c_void_p),                        ## _urEventCreateWithNativeHandle_t
+        ("pfnSetCallback", c_void_p)                                    ## _urEventSetCallback_t
     ]
 
 ###############################################################################
@@ -1185,9 +1239,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urProgramGetBuildInfo
 if __use_win_types:
-    _urProgramGetBuildInfo_t = WINFUNCTYPE( ur_result_t, ur_program_handle_t, ur_device_handle_t, ur_program_build_info_t, POINTER(c_size_t), c_void_p )
+    _urProgramGetBuildInfo_t = WINFUNCTYPE( ur_result_t, ur_program_handle_t, ur_device_handle_t, ur_program_build_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
 else:
-    _urProgramGetBuildInfo_t = CFUNCTYPE( ur_result_t, ur_program_handle_t, ur_device_handle_t, ur_program_build_info_t, POINTER(c_size_t), c_void_p )
+    _urProgramGetBuildInfo_t = CFUNCTYPE( ur_result_t, ur_program_handle_t, ur_device_handle_t, ur_program_build_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urProgramSetSpecializationConstant
@@ -1206,9 +1260,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urProgramCreateWithNativeHandle
 if __use_win_types:
-    _urProgramCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_program_handle_t, ur_native_handle_t, POINTER(ur_program_handle_t) )
+    _urProgramCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_program_handle_t) )
 else:
-    _urProgramCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_program_handle_t, ur_native_handle_t, POINTER(ur_program_handle_t) )
+    _urProgramCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_program_handle_t) )
 
 
 ###############################################################################
@@ -1230,9 +1284,9 @@ class ur_program_dditable_t(Structure):
 ###############################################################################
 ## @brief Function-pointer for urModuleCreate
 if __use_win_types:
-    _urModuleCreate_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_size_t, c_char_p, ur_modulecreate_callback_t, c_void_p, POINTER(ur_module_handle_t) )
+    _urModuleCreate_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_size_t, c_char_p, c_void_p, c_void_p, POINTER(ur_module_handle_t) )
 else:
-    _urModuleCreate_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_size_t, c_char_p, ur_modulecreate_callback_t, c_void_p, POINTER(ur_module_handle_t) )
+    _urModuleCreate_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, c_void_p, c_size_t, c_char_p, c_void_p, c_void_p, POINTER(ur_module_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urModuleRetain
@@ -1258,9 +1312,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urModuleCreateWithNativeHandle
 if __use_win_types:
-    _urModuleCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_module_handle_t) )
+    _urModuleCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_module_handle_t) )
 else:
-    _urModuleCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_module_handle_t) )
+    _urModuleCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_module_handle_t) )
 
 
 ###############################################################################
@@ -1326,16 +1380,23 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urKernelCreateWithNativeHandle
 if __use_win_types:
-    _urKernelCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_kernel_handle_t) )
+    _urKernelCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_kernel_handle_t) )
 else:
-    _urKernelCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_kernel_handle_t) )
+    _urKernelCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_kernel_handle_t) )
 
 ###############################################################################
-## @brief Function-pointer for urKernelSetArg
+## @brief Function-pointer for urKernelSetArgValue
 if __use_win_types:
-    _urKernelSetArg_t = WINFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t, c_void_p )
+    _urKernelSetArgValue_t = WINFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t, c_void_p )
 else:
-    _urKernelSetArg_t = CFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t, c_void_p )
+    _urKernelSetArgValue_t = CFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t, c_void_p )
+
+###############################################################################
+## @brief Function-pointer for urKernelSetArgLocal
+if __use_win_types:
+    _urKernelSetArgLocal_t = WINFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t )
+else:
+    _urKernelSetArgLocal_t = CFUNCTYPE( ur_result_t, ur_kernel_handle_t, c_ulong, c_size_t )
 
 ###############################################################################
 ## @brief Function-pointer for urKernelSetArgPointer
@@ -1378,7 +1439,8 @@ class ur_kernel_dditable_t(Structure):
         ("pfnRelease", c_void_p),                                       ## _urKernelRelease_t
         ("pfnGetNativeHandle", c_void_p),                               ## _urKernelGetNativeHandle_t
         ("pfnCreateWithNativeHandle", c_void_p),                        ## _urKernelCreateWithNativeHandle_t
-        ("pfnSetArg", c_void_p),                                        ## _urKernelSetArg_t
+        ("pfnSetArgValue", c_void_p),                                   ## _urKernelSetArgValue_t
+        ("pfnSetArgLocal", c_void_p),                                   ## _urKernelSetArgLocal_t
         ("pfnSetArgPointer", c_void_p),                                 ## _urKernelSetArgPointer_t
         ("pfnSetExecInfo", c_void_p),                                   ## _urKernelSetExecInfo_t
         ("pfnSetArgSampler", c_void_p),                                 ## _urKernelSetArgSampler_t
@@ -1423,9 +1485,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urSamplerCreateWithNativeHandle
 if __use_win_types:
-    _urSamplerCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_sampler_handle_t, ur_native_handle_t, POINTER(ur_sampler_handle_t) )
+    _urSamplerCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_sampler_handle_t) )
 else:
-    _urSamplerCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_sampler_handle_t, ur_native_handle_t, POINTER(ur_sampler_handle_t) )
+    _urSamplerCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_sampler_handle_t) )
 
 
 ###############################################################################
@@ -1485,9 +1547,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urMemCreateWithNativeHandle
 if __use_win_types:
-    _urMemCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_mem_handle_t) )
+    _urMemCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_mem_handle_t) )
 else:
-    _urMemCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_mem_handle_t) )
+    _urMemCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_mem_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urMemGetInfo
@@ -1495,6 +1557,13 @@ if __use_win_types:
     _urMemGetInfo_t = WINFUNCTYPE( ur_result_t, ur_mem_handle_t, ur_mem_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
 else:
     _urMemGetInfo_t = CFUNCTYPE( ur_result_t, ur_mem_handle_t, ur_mem_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
+
+###############################################################################
+## @brief Function-pointer for urMemImageGetInfo
+if __use_win_types:
+    _urMemImageGetInfo_t = WINFUNCTYPE( ur_result_t, ur_mem_handle_t, ur_image_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
+else:
+    _urMemImageGetInfo_t = CFUNCTYPE( ur_result_t, ur_mem_handle_t, ur_image_info_t, c_size_t, c_void_p, POINTER(c_size_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urMemFree
@@ -1523,6 +1592,7 @@ class ur_mem_dditable_t(Structure):
         ("pfnGetNativeHandle", c_void_p),                               ## _urMemGetNativeHandle_t
         ("pfnCreateWithNativeHandle", c_void_p),                        ## _urMemCreateWithNativeHandle_t
         ("pfnGetInfo", c_void_p),                                       ## _urMemGetInfo_t
+        ("pfnImageGetInfo", c_void_p),                                  ## _urMemImageGetInfo_t
         ("pfnFree", c_void_p),                                          ## _urMemFree_t
         ("pfnGetMemAllocInfo", c_void_p)                                ## _urMemGetMemAllocInfo_t
     ]
@@ -1551,37 +1621,37 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferRead
 if __use_win_types:
-    _urEnqueueMemBufferRead_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferRead_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemBufferRead_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferRead_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferWrite
 if __use_win_types:
-    _urEnqueueMemBufferWrite_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferWrite_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemBufferWrite_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferWrite_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferReadRect
 if __use_win_types:
-    _urEnqueueMemBufferReadRect_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferReadRect_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemBufferReadRect_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferReadRect_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferWriteRect
 if __use_win_types:
-    _urEnqueueMemBufferWriteRect_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferWriteRect_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemBufferWriteRect_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferWriteRect_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferCopy
 if __use_win_types:
-    _urEnqueueMemBufferCopy_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, ur_mem_handle_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferCopy_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, ur_mem_handle_t, c_size_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemBufferCopy_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, ur_mem_handle_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemBufferCopy_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, ur_mem_handle_t, c_size_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferCopyRect
@@ -1600,16 +1670,16 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemImageRead
 if __use_win_types:
-    _urEnqueueMemImageRead_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemImageRead_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemImageRead_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemImageRead_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemImageWrite
 if __use_win_types:
-    _urEnqueueMemImageWrite_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemImageWrite_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueMemImageWrite_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueMemImageWrite_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_rect_offset_t, ur_rect_region_t, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemImageCopy
@@ -1621,9 +1691,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemBufferMap
 if __use_win_types:
-    _urEnqueueMemBufferMap_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_map_flags_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t), POINTER(c_void_p) )
+    _urEnqueueMemBufferMap_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_map_flags_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t), POINTER(c_void_p) )
 else:
-    _urEnqueueMemBufferMap_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, bool, ur_map_flags_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t), POINTER(c_void_p) )
+    _urEnqueueMemBufferMap_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_mem_handle_t, c_bool, ur_map_flags_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t), POINTER(c_void_p) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueMemUnmap
@@ -1635,16 +1705,16 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urEnqueueUSMMemset
 if __use_win_types:
-    _urEnqueueUSMMemset_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_int8_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueUSMMemset_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_byte, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueUSMMemset_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_int8_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueUSMMemset_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_byte, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueUSMMemcpy
 if __use_win_types:
-    _urEnqueueUSMMemcpy_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, bool, c_void_p, c_void_p, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueUSMMemcpy_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_bool, c_void_p, c_void_p, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 else:
-    _urEnqueueUSMMemcpy_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, bool, c_void_p, c_void_p, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+    _urEnqueueUSMMemcpy_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_bool, c_void_p, c_void_p, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urEnqueueUSMPrefetch
@@ -1659,6 +1729,41 @@ if __use_win_types:
     _urEnqueueUSMMemAdvice_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, ur_mem_advice_t, POINTER(ur_event_handle_t) )
 else:
     _urEnqueueUSMMemAdvice_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, ur_mem_advice_t, POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEnqueueUSMFill2D
+if __use_win_types:
+    _urEnqueueUSMFill2D_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, c_size_t, c_void_p, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+else:
+    _urEnqueueUSMFill2D_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, c_size_t, c_void_p, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEnqueueUSMMemset2D
+if __use_win_types:
+    _urEnqueueUSMMemset2D_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, c_int, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+else:
+    _urEnqueueUSMMemset2D_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_void_p, c_size_t, c_int, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEnqueueUSMMemcpy2D
+if __use_win_types:
+    _urEnqueueUSMMemcpy2D_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, c_bool, c_void_p, c_size_t, c_void_p, c_size_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+else:
+    _urEnqueueUSMMemcpy2D_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, c_bool, c_void_p, c_size_t, c_void_p, c_size_t, c_size_t, c_size_t, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEnqueueDeviceGlobalVariableWrite
+if __use_win_types:
+    _urEnqueueDeviceGlobalVariableWrite_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_program_handle_t, c_char_p, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+else:
+    _urEnqueueDeviceGlobalVariableWrite_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_program_handle_t, c_char_p, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urEnqueueDeviceGlobalVariableRead
+if __use_win_types:
+    _urEnqueueDeviceGlobalVariableRead_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_program_handle_t, c_char_p, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
+else:
+    _urEnqueueDeviceGlobalVariableRead_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_program_handle_t, c_char_p, c_bool, c_size_t, c_size_t, c_void_p, c_ulong, POINTER(ur_event_handle_t), POINTER(ur_event_handle_t) )
 
 
 ###############################################################################
@@ -1683,7 +1788,12 @@ class ur_enqueue_dditable_t(Structure):
         ("pfnUSMMemset", c_void_p),                                     ## _urEnqueueUSMMemset_t
         ("pfnUSMMemcpy", c_void_p),                                     ## _urEnqueueUSMMemcpy_t
         ("pfnUSMPrefetch", c_void_p),                                   ## _urEnqueueUSMPrefetch_t
-        ("pfnUSMMemAdvice", c_void_p)                                   ## _urEnqueueUSMMemAdvice_t
+        ("pfnUSMMemAdvice", c_void_p),                                  ## _urEnqueueUSMMemAdvice_t
+        ("pfnUSMFill2D", c_void_p),                                     ## _urEnqueueUSMFill2D_t
+        ("pfnUSMMemset2D", c_void_p),                                   ## _urEnqueueUSMMemset2D_t
+        ("pfnUSMMemcpy2D", c_void_p),                                   ## _urEnqueueUSMMemcpy2D_t
+        ("pfnDeviceGlobalVariableWrite", c_void_p),                     ## _urEnqueueDeviceGlobalVariableWrite_t
+        ("pfnDeviceGlobalVariableRead", c_void_p)                       ## _urEnqueueDeviceGlobalVariableRead_t
     ]
 
 ###############################################################################
@@ -1727,9 +1837,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urGetLastResult
 if __use_win_types:
-    _urGetLastResult_t = WINFUNCTYPE( ur_result_t, POINTER(c_char_p) )
+    _urGetLastResult_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, POINTER(c_char_p) )
 else:
-    _urGetLastResult_t = CFUNCTYPE( ur_result_t, POINTER(c_char_p) )
+    _urGetLastResult_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, POINTER(c_char_p) )
 
 ###############################################################################
 ## @brief Function-pointer for urInit
@@ -1758,9 +1868,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urQueueCreate
 if __use_win_types:
-    _urQueueCreate_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, ur_device_handle_t, ur_queue_flags_t, POINTER(ur_queue_handle_t) )
+    _urQueueCreate_t = WINFUNCTYPE( ur_result_t, ur_context_handle_t, ur_device_handle_t, POINTER(ur_queue_property_value_t), POINTER(ur_queue_handle_t) )
 else:
-    _urQueueCreate_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, ur_device_handle_t, ur_queue_flags_t, POINTER(ur_queue_handle_t) )
+    _urQueueCreate_t = CFUNCTYPE( ur_result_t, ur_context_handle_t, ur_device_handle_t, POINTER(ur_queue_property_value_t), POINTER(ur_queue_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urQueueRetain
@@ -1786,9 +1896,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urQueueCreateWithNativeHandle
 if __use_win_types:
-    _urQueueCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_native_handle_t, POINTER(ur_queue_handle_t) )
+    _urQueueCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_queue_handle_t) )
 else:
-    _urQueueCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_queue_handle_t, ur_native_handle_t, POINTER(ur_queue_handle_t) )
+    _urQueueCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_context_handle_t, POINTER(ur_queue_handle_t) )
 
 ###############################################################################
 ## @brief Function-pointer for urQueueFinish
@@ -1857,9 +1967,9 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urDeviceSelectBinary
 if __use_win_types:
-    _urDeviceSelectBinary_t = WINFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(c_ubyte*), c_ulong, POINTER(c_ulong) )
+    _urDeviceSelectBinary_t = WINFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(POINTER(c_ubyte)), c_ulong, POINTER(c_ulong) )
 else:
-    _urDeviceSelectBinary_t = CFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(c_ubyte*), c_ulong, POINTER(c_ulong) )
+    _urDeviceSelectBinary_t = CFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(POINTER(c_ubyte)), c_ulong, POINTER(c_ulong) )
 
 ###############################################################################
 ## @brief Function-pointer for urDeviceGetNativeHandle
@@ -1871,9 +1981,16 @@ else:
 ###############################################################################
 ## @brief Function-pointer for urDeviceCreateWithNativeHandle
 if __use_win_types:
-    _urDeviceCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_device_handle_t) )
+    _urDeviceCreateWithNativeHandle_t = WINFUNCTYPE( ur_result_t, ur_native_handle_t, ur_platform_handle_t, POINTER(ur_device_handle_t) )
 else:
-    _urDeviceCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_platform_handle_t, ur_native_handle_t, POINTER(ur_device_handle_t) )
+    _urDeviceCreateWithNativeHandle_t = CFUNCTYPE( ur_result_t, ur_native_handle_t, ur_platform_handle_t, POINTER(ur_device_handle_t) )
+
+###############################################################################
+## @brief Function-pointer for urDeviceGetGlobalTimestamps
+if __use_win_types:
+    _urDeviceGetGlobalTimestamps_t = WINFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(c_ulonglong), POINTER(c_ulonglong) )
+else:
+    _urDeviceGetGlobalTimestamps_t = CFUNCTYPE( ur_result_t, ur_device_handle_t, POINTER(c_ulonglong), POINTER(c_ulonglong) )
 
 
 ###############################################################################
@@ -1887,7 +2004,8 @@ class ur_device_dditable_t(Structure):
         ("pfnPartition", c_void_p),                                     ## _urDevicePartition_t
         ("pfnSelectBinary", c_void_p),                                  ## _urDeviceSelectBinary_t
         ("pfnGetNativeHandle", c_void_p),                               ## _urDeviceGetNativeHandle_t
-        ("pfnCreateWithNativeHandle", c_void_p)                         ## _urDeviceCreateWithNativeHandle_t
+        ("pfnCreateWithNativeHandle", c_void_p),                        ## _urDeviceCreateWithNativeHandle_t
+        ("pfnGetGlobalTimestamps", c_void_p)                            ## _urDeviceGetGlobalTimestamps_t
     ]
 
 ###############################################################################
@@ -1914,16 +2032,19 @@ class UR_DDI:
     def __init__(self, version : ur_api_version_t):
         # load the ur_loader library
         if "Windows" == platform.uname()[0]:
-            self.__dll = WinDLL("ur_loader.dll")
+            self.__dll = WinDLL("ur_loader.dll", winmode=0)
         else:
-            self.__dll = CDLL("ur_loader.so")
+            self.__dll = CDLL("libur_loader.so")
 
         # fill the ddi tables
         self.__dditable = ur_dditable_t()
 
+        # initialize the UR
+        self.__dll.urInit(0, 0)
+
         # call driver to get function pointers
         Platform = ur_platform_dditable_t()
-        r = ur_result_v(self.__dll.urGetPlatformProcAddrTable(version, byref(_Platform)))
+        r = ur_result_v(self.__dll.urGetPlatformProcAddrTable(version, byref(Platform)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Platform = Platform
@@ -1937,7 +2058,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Context = ur_context_dditable_t()
-        r = ur_result_v(self.__dll.urGetContextProcAddrTable(version, byref(_Context)))
+        r = ur_result_v(self.__dll.urGetContextProcAddrTable(version, byref(Context)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Context = Context
@@ -1953,13 +2074,12 @@ class UR_DDI:
 
         # call driver to get function pointers
         Event = ur_event_dditable_t()
-        r = ur_result_v(self.__dll.urGetEventProcAddrTable(version, byref(_Event)))
+        r = ur_result_v(self.__dll.urGetEventProcAddrTable(version, byref(Event)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Event = Event
 
         # attach function interface to function address
-        self.urEventCreate = _urEventCreate_t(self.__dditable.Event.pfnCreate)
         self.urEventGetInfo = _urEventGetInfo_t(self.__dditable.Event.pfnGetInfo)
         self.urEventGetProfilingInfo = _urEventGetProfilingInfo_t(self.__dditable.Event.pfnGetProfilingInfo)
         self.urEventWait = _urEventWait_t(self.__dditable.Event.pfnWait)
@@ -1967,10 +2087,11 @@ class UR_DDI:
         self.urEventRelease = _urEventRelease_t(self.__dditable.Event.pfnRelease)
         self.urEventGetNativeHandle = _urEventGetNativeHandle_t(self.__dditable.Event.pfnGetNativeHandle)
         self.urEventCreateWithNativeHandle = _urEventCreateWithNativeHandle_t(self.__dditable.Event.pfnCreateWithNativeHandle)
+        self.urEventSetCallback = _urEventSetCallback_t(self.__dditable.Event.pfnSetCallback)
 
         # call driver to get function pointers
         Program = ur_program_dditable_t()
-        r = ur_result_v(self.__dll.urGetProgramProcAddrTable(version, byref(_Program)))
+        r = ur_result_v(self.__dll.urGetProgramProcAddrTable(version, byref(Program)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Program = Program
@@ -1989,7 +2110,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Module = ur_module_dditable_t()
-        r = ur_result_v(self.__dll.urGetModuleProcAddrTable(version, byref(_Module)))
+        r = ur_result_v(self.__dll.urGetModuleProcAddrTable(version, byref(Module)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Module = Module
@@ -2003,7 +2124,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Kernel = ur_kernel_dditable_t()
-        r = ur_result_v(self.__dll.urGetKernelProcAddrTable(version, byref(_Kernel)))
+        r = ur_result_v(self.__dll.urGetKernelProcAddrTable(version, byref(Kernel)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Kernel = Kernel
@@ -2017,7 +2138,8 @@ class UR_DDI:
         self.urKernelRelease = _urKernelRelease_t(self.__dditable.Kernel.pfnRelease)
         self.urKernelGetNativeHandle = _urKernelGetNativeHandle_t(self.__dditable.Kernel.pfnGetNativeHandle)
         self.urKernelCreateWithNativeHandle = _urKernelCreateWithNativeHandle_t(self.__dditable.Kernel.pfnCreateWithNativeHandle)
-        self.urKernelSetArg = _urKernelSetArg_t(self.__dditable.Kernel.pfnSetArg)
+        self.urKernelSetArgValue = _urKernelSetArgValue_t(self.__dditable.Kernel.pfnSetArgValue)
+        self.urKernelSetArgLocal = _urKernelSetArgLocal_t(self.__dditable.Kernel.pfnSetArgLocal)
         self.urKernelSetArgPointer = _urKernelSetArgPointer_t(self.__dditable.Kernel.pfnSetArgPointer)
         self.urKernelSetExecInfo = _urKernelSetExecInfo_t(self.__dditable.Kernel.pfnSetExecInfo)
         self.urKernelSetArgSampler = _urKernelSetArgSampler_t(self.__dditable.Kernel.pfnSetArgSampler)
@@ -2025,7 +2147,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Sampler = ur_sampler_dditable_t()
-        r = ur_result_v(self.__dll.urGetSamplerProcAddrTable(version, byref(_Sampler)))
+        r = ur_result_v(self.__dll.urGetSamplerProcAddrTable(version, byref(Sampler)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Sampler = Sampler
@@ -2040,7 +2162,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Mem = ur_mem_dditable_t()
-        r = ur_result_v(self.__dll.urGetMemProcAddrTable(version, byref(_Mem)))
+        r = ur_result_v(self.__dll.urGetMemProcAddrTable(version, byref(Mem)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Mem = Mem
@@ -2054,12 +2176,13 @@ class UR_DDI:
         self.urMemGetNativeHandle = _urMemGetNativeHandle_t(self.__dditable.Mem.pfnGetNativeHandle)
         self.urMemCreateWithNativeHandle = _urMemCreateWithNativeHandle_t(self.__dditable.Mem.pfnCreateWithNativeHandle)
         self.urMemGetInfo = _urMemGetInfo_t(self.__dditable.Mem.pfnGetInfo)
+        self.urMemImageGetInfo = _urMemImageGetInfo_t(self.__dditable.Mem.pfnImageGetInfo)
         self.urMemFree = _urMemFree_t(self.__dditable.Mem.pfnFree)
         self.urMemGetMemAllocInfo = _urMemGetMemAllocInfo_t(self.__dditable.Mem.pfnGetMemAllocInfo)
 
         # call driver to get function pointers
         Enqueue = ur_enqueue_dditable_t()
-        r = ur_result_v(self.__dll.urGetEnqueueProcAddrTable(version, byref(_Enqueue)))
+        r = ur_result_v(self.__dll.urGetEnqueueProcAddrTable(version, byref(Enqueue)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Enqueue = Enqueue
@@ -2084,10 +2207,15 @@ class UR_DDI:
         self.urEnqueueUSMMemcpy = _urEnqueueUSMMemcpy_t(self.__dditable.Enqueue.pfnUSMMemcpy)
         self.urEnqueueUSMPrefetch = _urEnqueueUSMPrefetch_t(self.__dditable.Enqueue.pfnUSMPrefetch)
         self.urEnqueueUSMMemAdvice = _urEnqueueUSMMemAdvice_t(self.__dditable.Enqueue.pfnUSMMemAdvice)
+        self.urEnqueueUSMFill2D = _urEnqueueUSMFill2D_t(self.__dditable.Enqueue.pfnUSMFill2D)
+        self.urEnqueueUSMMemset2D = _urEnqueueUSMMemset2D_t(self.__dditable.Enqueue.pfnUSMMemset2D)
+        self.urEnqueueUSMMemcpy2D = _urEnqueueUSMMemcpy2D_t(self.__dditable.Enqueue.pfnUSMMemcpy2D)
+        self.urEnqueueDeviceGlobalVariableWrite = _urEnqueueDeviceGlobalVariableWrite_t(self.__dditable.Enqueue.pfnDeviceGlobalVariableWrite)
+        self.urEnqueueDeviceGlobalVariableRead = _urEnqueueDeviceGlobalVariableRead_t(self.__dditable.Enqueue.pfnDeviceGlobalVariableRead)
 
         # call driver to get function pointers
         USM = ur_usm_dditable_t()
-        r = ur_result_v(self.__dll.urGetUSMProcAddrTable(version, byref(_USM)))
+        r = ur_result_v(self.__dll.urGetUSMProcAddrTable(version, byref(USM)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.USM = USM
@@ -2099,7 +2227,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Global = ur_global_dditable_t()
-        r = ur_result_v(self.__dll.urGetGlobalProcAddrTable(version, byref(_Global)))
+        r = ur_result_v(self.__dll.urGetGlobalProcAddrTable(version, byref(Global)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Global = Global
@@ -2111,7 +2239,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Queue = ur_queue_dditable_t()
-        r = ur_result_v(self.__dll.urGetQueueProcAddrTable(version, byref(_Queue)))
+        r = ur_result_v(self.__dll.urGetQueueProcAddrTable(version, byref(Queue)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Queue = Queue
@@ -2128,7 +2256,7 @@ class UR_DDI:
 
         # call driver to get function pointers
         Device = ur_device_dditable_t()
-        r = ur_result_v(self.__dll.urGetDeviceProcAddrTable(version, byref(_Device)))
+        r = ur_result_v(self.__dll.urGetDeviceProcAddrTable(version, byref(Device)))
         if r != ur_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.Device = Device
@@ -2142,5 +2270,6 @@ class UR_DDI:
         self.urDeviceSelectBinary = _urDeviceSelectBinary_t(self.__dditable.Device.pfnSelectBinary)
         self.urDeviceGetNativeHandle = _urDeviceGetNativeHandle_t(self.__dditable.Device.pfnGetNativeHandle)
         self.urDeviceCreateWithNativeHandle = _urDeviceCreateWithNativeHandle_t(self.__dditable.Device.pfnCreateWithNativeHandle)
+        self.urDeviceGetGlobalTimestamps = _urDeviceGetGlobalTimestamps_t(self.__dditable.Device.pfnGetGlobalTimestamps)
 
         # success!

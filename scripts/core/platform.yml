@@ -26,16 +26,19 @@ params:
       name: NumEntries
       desc: |
             [in] the number of platforms to be added to phPlatforms. 
-            If phPlatforms is not NULL, then NumEntries but be greater than zero.
+            If phPlatforms is not NULL, then NumEntries should be greater than zero, otherwise $X_RESULT_ERROR_INVALID_SIZE,
+            will be returned.
     - type: "$x_platform_handle_t*"
       name: phPlatforms
       desc: |
             [out][optional][range(0, NumEntries)] array of handle of platforms.
-            If NumEntries is less than the number of platforms available, then $xPlatform shall only retrieve that number of platforms.
+            If NumEntries is less than the number of platforms available, then $xPlatformGet shall only retrieve that number of platforms.
     - type: "uint32_t*"
       name: "pNumPlatforms"
       desc: |
             [out][optional] returns the total number of platforms available. 
+returns:
+    - $X_RESULT_ERROR_INVALID_SIZE
 --- #--------------------------------------------------------------------------
 type: enum
 desc: "Supported platform info"
@@ -151,9 +154,6 @@ details:
     - "The application may call this function from simultaneous threads for the same context."
     - "The implementation of this function should be thread-safe."
 params:
-    - type: $x_platform_handle_t
-      name: hPlatform
-      desc: "[in] handle of the platform instance"
     - type: $x_native_handle_t
       name: hNativePlatform
       desc: |
@@ -162,3 +162,32 @@ params:
       name: phPlatform
       desc: |
             [out] pointer to the handle of the platform object created.
+--- #--------------------------------------------------------------------------
+type: function
+desc: "Retrieve string representation of the underlying adapter specific result
+       reported by the the last API that returned UR_RESULT_ADAPTER_SPECIFIC.
+       Allows for an adapter independent way to return an adapter
+       specific result."
+class: $x
+name: GetLastResult
+decl: static
+ordinal: "0"
+details:
+    - "The string returned via the ppMessage is a NULL terminated C style string."
+    - "The string returned via the ppMessage is thread local."
+    - "The entry point will return UR_RESULT_SUCCESS if the result being
+       reported is to be considered a warning. Any other result code returned
+       indicates that the adapter specific result is an error."
+    -  "The memory in the string returned via the ppMessage is owned by the
+       adapter."
+    - "The application may call this function from simultaneous
+       threads."
+    - "The implementation of this function should be lock-free."
+params:
+    - type: $x_platform_handle_t
+      name: hPlatform
+      desc: "[in] handle of the platform instance"
+    - type: const char**
+      name: ppMessage
+      desc: "[out] pointer to a string containing adapter specific result
+             in string representation."

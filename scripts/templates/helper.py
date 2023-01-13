@@ -287,12 +287,20 @@ class value_traits:
     Extracts traits from a parameter object
 """
 class param_traits:
+    RE_MBZ      = r".*\[mbz\].*"
     RE_IN       = r"^\[in\].*"
     RE_OUT      = r"^\[out\].*"
     RE_INOUT    = r"^\[in,out\].*"
     RE_OPTIONAL = r".*\[optional\].*"
     RE_RANGE    = r".*\[range\((.+),\s*(.+)\)\][\S\s]*"
     RE_RELEASE  = r".*\[release\].*"
+
+    @classmethod
+    def is_mbz(cls, item):
+        try:
+            return True if re.match(cls.RE_MBZ, item['desc']) else False
+        except:
+            return False
 
     @classmethod
     def is_input(cls, item):
@@ -381,7 +389,7 @@ def subt(namespace, tags, string, comment=False, remove_namespace=False):
             string = re.sub(r"%s_?"%re.escape(key.upper()), repl.upper(), string)
         else:
             string = re.sub(r"-%s"%re.escape(key), "-"+value, string)           # hack for compile options
-            repl = "::"+value if comment and "$OneApi" != key else value        # replace tag; e.g., "$x" -> "xe"
+            repl = "::"+value if comment and "$OneApi" != key else value        # replace tag; e.g., "$x" -> "ur"
             string = re.sub(re.escape(key), repl, string)
             string = re.sub(re.escape(key.upper()), repl.upper(), string)
     return string
@@ -491,7 +499,7 @@ Private:
 """
 def _remove_ptr(name, last=True):
     if last:
-        name = re.sub(r"(.*)\*$", r"\1", name) # removes only last '*'
+        name = re.sub(r"(.*)\*", r"\1", name) # removes only last '*'
     else:
         name = re.sub(r"\*", "", name) # removes all '*'
     return name
@@ -605,10 +613,15 @@ def get_ctype_name(namespace, tags, item):
     name = _remove_const(name)
     name = re.sub(r"void\*", "c_void_p", name)
     name = re.sub(r"char\*", "c_char_p", name)
+    name = re.sub(r"bool", "c_bool", name)
     name = re.sub(r"uint8_t", "c_ubyte", name)
     name = re.sub(r"uint16_t", "c_ushort", name)
     name = re.sub(r"uint32_t", "c_ulong", name)
     name = re.sub(r"uint64_t", "c_ulonglong", name)
+    name = re.sub(r"int8_t", "c_byte", name)
+    name = re.sub(r"int16_t", "c_short", name)
+    name = re.sub(r"int32_t", "c_long", name)
+    name = re.sub(r"int64_t", "c_longlong", name)
     name = re.sub(r"size_t", "c_size_t", name)
     name = re.sub(r"float", "c_float", name)
     name = re.sub(r"double", "c_double", name)
@@ -619,11 +632,10 @@ def get_ctype_name(namespace, tags, item):
         if not re.match(r"_void_", name): # its not c_void_p
             name = re.sub(r"void", "None", name)
 
-    if type_traits.is_pointer(name):
-        name = _remove_ptr(name)
-        name = "POINTER(%s)"%name
+    while type_traits.is_pointer(name):
+        name = "POINTER(%s)"%_remove_ptr(name)
 
-    elif 'name' in item and value_traits.is_array(item['name']):
+    if 'name' in item and value_traits.is_array(item['name']):
         length = subt(namespace, tags, value_traits.get_array_length(item['name']))
         name = "%s * %s"%(name, length)
 
@@ -690,11 +702,23 @@ def make_param_lines(namespace, tags, obj, py=False, decl=False, meta=None, form
     lines = []
 
     params = obj['params']
+    fptr_types = [] # This is done so that we dont have to try/catch for defined
+    if meta is not None and "fptr_typedef" in meta:
+        fptr_types = list(meta['fptr_typedef'].keys())
 
     for i, item in enumerate(params):
         name = _get_param_name(namespace, tags, item)
         if py:
             tname = get_ctype_name(namespace, tags, item)
+            # Handle fptr_typedef
+            # On Python side, passing a function pointer to a CFUNCTYPE is a bit awkward
+            # So solve this, if we encounter a function pointer type, we relpace it with
+            # c_void_p - a generic void pointer
+            if len(fptr_types) > 0:
+                for fptr_type in fptr_types:
+                    if tname == subt(namespace, tags, fptr_type):
+                        tname = 'c_void_p'  # Substitute function pointers to c_void_p
+                        break
         else:
             tname = _get_type_name(namespace, tags, obj, item)
 
@@ -926,7 +950,8 @@ def get_pfntables(specs, meta, namespace, tags):
                 'type': table,
                 'export': export,
                 'pfn': pfn,
-                'functions': objs
+                'functions': objs,
+                'experimental': False
             })
         if len(exp_objs) > 0:
             name = get_table_name(namespace, tags, exp_objs[0])
@@ -955,11 +980,28 @@ def get_pfntables(specs, meta, namespace, tags):
                 'type': table,
                 'export': export,
                 'pfn': pfn,
-                'functions': exp_objs
+                'functions': exp_objs,
+                'experimental': True
             })
         
         
     return tables
+
+"""
+Private:
+    returns the list of parameters, filtering based on desc tags
+"""
+def _filter_param_list(params, filters1=["[in]", "[in,out]", "[out]"], filters2=[""]):
+    lst = []
+    for p in params:
+        for f1 in filters1:
+            if f1 in p['desc']:
+                for f2 in filters2:
+                    if f2 in p['desc']:
+                        lst.append(p)
+                        break
+                break
+    return lst
 
 """
 Public:
@@ -980,4 +1022,84 @@ def get_pfncbtables(specs, meta, namespace, tags):
             })
     return tables
 
+"""
+Public:
+    returns a list of dict for converting loader input parameters
+"""
+def get_loader_prologue(namespace, tags, obj, meta):
+    prologue = []
+
+    params = _filter_param_list(obj['params'], ["[in]"])
+    for item in params:
+        if param_traits.is_mbz(item):
+            continue
+        if type_traits.is_class_handle(item['type'], meta):
+            name = subt(namespace, tags, item['name'])
+            tname = _remove_const_ptr(subt(namespace, tags, item['type']))
+
+            # e.g., "xe_device_handle_t" -> "xe_device_object_t"
+            obj_name = re.sub(r"(\w+)_handle_t", r"\1_object_t", tname)
+            fty_name = re.sub(r"(\w+)_handle_t", r"\1_factory", tname)
+
+            if type_traits.is_pointer(item['type']):
+                range_start = param_traits.range_start(item)
+                range_end   = param_traits.range_end(item)
+                prologue.append({
+                    'name': name,
+                    'obj': obj_name,
+                    'range': (range_start, range_end),
+                    'type': tname,
+                    'factory': fty_name,
+                    'pointer' : "*"
+                })
+            else:
+                prologue.append({
+                    'name': name,
+                    'obj': obj_name,
+                    'optional': param_traits.is_optional(item),
+                    'pointer' : ""
+                })
+
+    return prologue
+
+"""
+Public:
+    returns a list of dict for converting loader output parameters
+"""
+def get_loader_epilogue(namespace, tags, obj, meta):
+    epilogue = []
+
+    for i, item in enumerate(obj['params']):
+        if param_traits.is_mbz(item):
+            continue
+        if param_traits.is_release(item) or param_traits.is_output(item) or param_traits.is_inoutput(item):
+            if type_traits.is_class_handle(item['type'], meta):
+                name = subt(namespace, tags, item['name'])
+                tname = _remove_const_ptr(subt(namespace, tags, item['type']))
+
+                obj_name = re.sub(r"(\w+)_handle_t", r"\1_object_t", tname)
+                fty_name = re.sub(r"(\w+)_handle_t", r"\1_factory", tname)
+
+                if param_traits.is_range(item):
+                    range_start = param_traits.range_start(item)
+                    range_end   = param_traits.range_end(item)
+                    epilogue.append({
+                        'name': name,
+                        'type': tname,
+                        'obj': obj_name,
+                        'factory': fty_name,
+                        'release': param_traits.is_release(item),
+                        'range': (range_start, range_end)
+                    })
+                else:
+                    epilogue.append({
+                        'name': name,
+                        'type': tname,
+                        'obj': obj_name,
+                        'factory': fty_name,
+                        'release': param_traits.is_release(item),
+                        'optional': param_traits.is_optional(item)
+                    })
+
+    return epilogue
 

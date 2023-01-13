@@ -47,7 +47,6 @@ typedef ur_result_t (UR_APICALL *ur_pfnPlatformGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urPlatformCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnPlatformCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
     ur_platform_handle_t*
     );
@@ -132,7 +131,6 @@ typedef ur_result_t (UR_APICALL *ur_pfnContextGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urContextCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnContextCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
     ur_context_handle_t*
     );
@@ -178,13 +176,6 @@ urGetContextProcAddrTable(
 typedef ur_result_t (UR_APICALL *ur_pfnGetContextProcAddrTable_t)(
     ur_api_version_t,
     ur_context_dditable_t*
-    );
-
-///////////////////////////////////////////////////////////////////////////////
-/// @brief Function-pointer for urEventCreate 
-typedef ur_result_t (UR_APICALL *ur_pfnEventCreate_t)(
-    ur_context_handle_t,
-    ur_event_handle_t*
     );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -236,16 +227,24 @@ typedef ur_result_t (UR_APICALL *ur_pfnEventGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urEventCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnEventCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEventSetCallback 
+typedef ur_result_t (UR_APICALL *ur_pfnEventSetCallback_t)(
+    ur_event_handle_t,
+    ur_execution_info_t,
+    ur_event_callback_t,
+    void*
     );
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Table of Event functions pointers
 typedef struct ur_event_dditable_t
 {
-    ur_pfnEventCreate_t                                         pfnCreate;
     ur_pfnEventGetInfo_t                                        pfnGetInfo;
     ur_pfnEventGetProfilingInfo_t                               pfnGetProfilingInfo;
     ur_pfnEventWait_t                                           pfnWait;
@@ -253,6 +252,7 @@ typedef struct ur_event_dditable_t
     ur_pfnEventRelease_t                                        pfnRelease;
     ur_pfnEventGetNativeHandle_t                                pfnGetNativeHandle;
     ur_pfnEventCreateWithNativeHandle_t                         pfnCreateWithNativeHandle;
+    ur_pfnEventSetCallback_t                                    pfnSetCallback;
 } ur_event_dditable_t;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -334,8 +334,9 @@ typedef ur_result_t (UR_APICALL *ur_pfnProgramGetBuildInfo_t)(
     ur_program_handle_t,
     ur_device_handle_t,
     ur_program_build_info_t,
-    size_t*,
-    void*
+    size_t,
+    void*,
+    size_t*
     );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -357,8 +358,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnProgramGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urProgramCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnProgramCreateWithNativeHandle_t)(
-    ur_program_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_program_handle_t*
     );
 
@@ -434,8 +435,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnModuleGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urModuleCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnModuleCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_module_handle_t*
     );
 
@@ -534,18 +535,26 @@ typedef ur_result_t (UR_APICALL *ur_pfnKernelGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urKernelCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnKernelCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_kernel_handle_t*
     );
 
 ///////////////////////////////////////////////////////////////////////////////
-/// @brief Function-pointer for urKernelSetArg 
-typedef ur_result_t (UR_APICALL *ur_pfnKernelSetArg_t)(
+/// @brief Function-pointer for urKernelSetArgValue 
+typedef ur_result_t (UR_APICALL *ur_pfnKernelSetArgValue_t)(
     ur_kernel_handle_t,
     uint32_t,
     size_t,
     const void*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urKernelSetArgLocal 
+typedef ur_result_t (UR_APICALL *ur_pfnKernelSetArgLocal_t)(
+    ur_kernel_handle_t,
+    uint32_t,
+    size_t
     );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -594,7 +603,8 @@ typedef struct ur_kernel_dditable_t
     ur_pfnKernelRelease_t                                       pfnRelease;
     ur_pfnKernelGetNativeHandle_t                               pfnGetNativeHandle;
     ur_pfnKernelCreateWithNativeHandle_t                        pfnCreateWithNativeHandle;
-    ur_pfnKernelSetArg_t                                        pfnSetArg;
+    ur_pfnKernelSetArgValue_t                                   pfnSetArgValue;
+    ur_pfnKernelSetArgLocal_t                                   pfnSetArgLocal;
     ur_pfnKernelSetArgPointer_t                                 pfnSetArgPointer;
     ur_pfnKernelSetExecInfo_t                                   pfnSetExecInfo;
     ur_pfnKernelSetArgSampler_t                                 pfnSetArgSampler;
@@ -663,8 +673,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnSamplerGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urSamplerCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnSamplerCreateWithNativeHandle_t)(
-    ur_sampler_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_sampler_handle_t*
     );
 
@@ -755,8 +765,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnMemGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urMemCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnMemCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_mem_handle_t*
     );
 
@@ -765,6 +775,16 @@ typedef ur_result_t (UR_APICALL *ur_pfnMemCreateWithNativeHandle_t)(
 typedef ur_result_t (UR_APICALL *ur_pfnMemGetInfo_t)(
     ur_mem_handle_t,
     ur_mem_info_t,
+    size_t,
+    void*,
+    size_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urMemImageGetInfo 
+typedef ur_result_t (UR_APICALL *ur_pfnMemImageGetInfo_t)(
+    ur_mem_handle_t,
+    ur_image_info_t,
     size_t,
     void*,
     size_t*
@@ -800,6 +820,7 @@ typedef struct ur_mem_dditable_t
     ur_pfnMemGetNativeHandle_t                                  pfnGetNativeHandle;
     ur_pfnMemCreateWithNativeHandle_t                           pfnCreateWithNativeHandle;
     ur_pfnMemGetInfo_t                                          pfnGetInfo;
+    ur_pfnMemImageGetInfo_t                                     pfnImageGetInfo;
     ur_pfnMemFree_t                                             pfnFree;
     ur_pfnMemGetMemAllocInfo_t                                  pfnGetMemAllocInfo;
 } ur_mem_dditable_t;
@@ -930,6 +951,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnEnqueueMemBufferCopy_t)(
     ur_queue_handle_t,
     ur_mem_handle_t,
     ur_mem_handle_t,
+    size_t,
+    size_t,
     size_t,
     uint32_t,
     const ur_event_handle_t*,
@@ -1088,6 +1111,81 @@ typedef ur_result_t (UR_APICALL *ur_pfnEnqueueUSMMemAdvice_t)(
     );
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEnqueueUSMFill2D 
+typedef ur_result_t (UR_APICALL *ur_pfnEnqueueUSMFill2D_t)(
+    ur_queue_handle_t,
+    void*,
+    size_t,
+    size_t,
+    const void*,
+    size_t,
+    size_t,
+    uint32_t,
+    const ur_event_handle_t*,
+    ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEnqueueUSMMemset2D 
+typedef ur_result_t (UR_APICALL *ur_pfnEnqueueUSMMemset2D_t)(
+    ur_queue_handle_t,
+    void*,
+    size_t,
+    int,
+    size_t,
+    size_t,
+    uint32_t,
+    const ur_event_handle_t*,
+    ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEnqueueUSMMemcpy2D 
+typedef ur_result_t (UR_APICALL *ur_pfnEnqueueUSMMemcpy2D_t)(
+    ur_queue_handle_t,
+    bool,
+    void*,
+    size_t,
+    const void*,
+    size_t,
+    size_t,
+    size_t,
+    uint32_t,
+    const ur_event_handle_t*,
+    ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEnqueueDeviceGlobalVariableWrite 
+typedef ur_result_t (UR_APICALL *ur_pfnEnqueueDeviceGlobalVariableWrite_t)(
+    ur_queue_handle_t,
+    ur_program_handle_t,
+    const char*,
+    bool,
+    size_t,
+    size_t,
+    const void*,
+    uint32_t,
+    const ur_event_handle_t*,
+    ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urEnqueueDeviceGlobalVariableRead 
+typedef ur_result_t (UR_APICALL *ur_pfnEnqueueDeviceGlobalVariableRead_t)(
+    ur_queue_handle_t,
+    ur_program_handle_t,
+    const char*,
+    bool,
+    size_t,
+    size_t,
+    void*,
+    uint32_t,
+    const ur_event_handle_t*,
+    ur_event_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Table of Enqueue functions pointers
 typedef struct ur_enqueue_dditable_t
 {
@@ -1110,6 +1208,11 @@ typedef struct ur_enqueue_dditable_t
     ur_pfnEnqueueUSMMemcpy_t                                    pfnUSMMemcpy;
     ur_pfnEnqueueUSMPrefetch_t                                  pfnUSMPrefetch;
     ur_pfnEnqueueUSMMemAdvice_t                                 pfnUSMMemAdvice;
+    ur_pfnEnqueueUSMFill2D_t                                    pfnUSMFill2D;
+    ur_pfnEnqueueUSMMemset2D_t                                  pfnUSMMemset2D;
+    ur_pfnEnqueueUSMMemcpy2D_t                                  pfnUSMMemcpy2D;
+    ur_pfnEnqueueDeviceGlobalVariableWrite_t                    pfnDeviceGlobalVariableWrite;
+    ur_pfnEnqueueDeviceGlobalVariableRead_t                     pfnDeviceGlobalVariableRead;
 } ur_enqueue_dditable_t;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1206,6 +1309,7 @@ typedef ur_result_t (UR_APICALL *ur_pfnTearDown_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urGetLastResult 
 typedef ur_result_t (UR_APICALL *ur_pfnGetLastResult_t)(
+    ur_platform_handle_t,
     const char**
     );
 
@@ -1262,7 +1366,7 @@ typedef ur_result_t (UR_APICALL *ur_pfnQueueGetInfo_t)(
 typedef ur_result_t (UR_APICALL *ur_pfnQueueCreate_t)(
     ur_context_handle_t,
     ur_device_handle_t,
-    ur_queue_flags_t,
+    ur_queue_property_value_t*,
     ur_queue_handle_t*
     );
 
@@ -1288,8 +1392,8 @@ typedef ur_result_t (UR_APICALL *ur_pfnQueueGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urQueueCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnQueueCreateWithNativeHandle_t)(
-    ur_queue_handle_t,
     ur_native_handle_t,
+    ur_context_handle_t,
     ur_queue_handle_t*
     );
 
@@ -1402,9 +1506,17 @@ typedef ur_result_t (UR_APICALL *ur_pfnDeviceGetNativeHandle_t)(
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for urDeviceCreateWithNativeHandle 
 typedef ur_result_t (UR_APICALL *ur_pfnDeviceCreateWithNativeHandle_t)(
-    ur_platform_handle_t,
     ur_native_handle_t,
+    ur_platform_handle_t,
     ur_device_handle_t*
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for urDeviceGetGlobalTimestamps 
+typedef ur_result_t (UR_APICALL *ur_pfnDeviceGetGlobalTimestamps_t)(
+    ur_device_handle_t,
+    uint64_t*,
+    uint64_t*
     );
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1419,6 +1531,7 @@ typedef struct ur_device_dditable_t
     ur_pfnDeviceSelectBinary_t                                  pfnSelectBinary;
     ur_pfnDeviceGetNativeHandle_t                               pfnGetNativeHandle;
     ur_pfnDeviceCreateWithNativeHandle_t                        pfnCreateWithNativeHandle;
+    ur_pfnDeviceGetGlobalTimestamps_t                           pfnGetGlobalTimestamps;
 } ur_device_dditable_t;
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -1,12 +1,24 @@
-cmake_minimum_required(VERSION 3.2.0 FATAL_ERROR)
+# Copyright (C) 2022 Intel Corporation
+# SPDX-License-Identifier: MIT
+
+cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
 project(unified-runtime VERSION 0.5.0)
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(CTest)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+find_package(Python3 COMPONENTS Interpreter)
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+if(MSVC)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/$<CONFIG>)
+endif()
+
+# define rpath for libraries so that adapters can be found automatically
+set(CMAKE_BUILD_RPATH "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 #Define a path for custom commands to work around MSVC
 set(CUSTOM_COMMAND_BINARY_DIR ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
@@ -70,6 +82,10 @@ install(
     EXPORT ${PROJECT_NAME}-targets)
 
 add_subdirectory(source)
+add_subdirectory(examples)
+if(UR_ENABLE_TESTS)
+    add_subdirectory(test)
+endif()
 
 # Add the list of installed targets to the install. This includes the namespace
 # which all installed targets will be prefixed with, e.g. for the headers
@@ -90,9 +106,26 @@ configure_package_config_file(
     ${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}-config.cmake.in
     ${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}-config.cmake
     INSTALL_DESTINATION lib/cmake/${PROJECT_NAME})
+
 # Add the package files to the install.
 install(
     FILES
         ${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}-config.cmake
         ${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}-config-version.cmake
     DESTINATION lib/cmake/${PROJECT_NAME})
+
+set(API_JSON_FILE ${PROJECT_BINARY_DIR}/unified_runtime.json)
+
+# generate source from the specification
+add_custom_target(generate
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/scripts
+    COMMAND ${Python3_EXECUTABLE} run.py --api-json ${API_JSON_FILE}
+    COMMAND ${Python3_EXECUTABLE} json2src.py --api-json ${API_JSON_FILE} ${PROJECT_SOURCE_DIR}
+)
+
+# generate source and check for uncommitted diffs
+add_custom_target(check-generated
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    COMMAND git diff --exit-code
+    DEPENDS generate
+)

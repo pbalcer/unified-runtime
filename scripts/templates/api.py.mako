@@ -60,23 +60,23 @@ def ${th.make_type_name(n, tags, obj)}(user_defined_callback):
     def ${th.make_type_name(n, tags, obj)}_wrapper(\
 %if 'params' in obj:
 %for index, item in enumerate(obj['params']):
-${'var' + str(index)}\
+${item['name']}\
 %if index < (len(obj['params']) - 1):
 , \
 %endif
 %endfor
 %endif
-): 
+):
         return user_defined_callback(\
 %if 'params' in obj:
 %for index, item in enumerate(obj['params']):
-${'var' + str(index)}\
+${item['name']}\
 %if index < (len(obj['params']) - 1):
 , \
 %endif
 %endfor
 %endif
-) 
+)
     return ${th.make_type_name(n, tags, obj)}_wrapper
 ## ENUM #######################################################################
 %elif re.match(r"enum", obj['type']):
@@ -162,17 +162,20 @@ class ${N}_DDI:
     def __init__(self, version : ${x}_api_version_t):
         # load the ${x}_loader library
         if "Windows" == platform.uname()[0]:
-            self.__dll = WinDLL("${x}_loader.dll")
+            self.__dll = WinDLL("${x}_loader.dll", winmode=0)
         else:
-            self.__dll = CDLL("${x}_loader.so")
+            self.__dll = CDLL("lib${x}_loader.so")
 
         # fill the ddi tables
         self.__dditable = ${n}_dditable_t()
 
+        # initialize the UR
+        self.__dll.${x}Init(0, 0)
+
         %for tbl in tables:
         # call driver to get function pointers
         ${tbl['name']} = ${tbl['type']}()
-        r = ${x}_result_v(self.__dll.${tbl['export']['name']}(version, byref(_${tbl['name']})))
+        r = ${x}_result_v(self.__dll.${tbl['export']['name']}(version, byref(${tbl['name']})))
         if r != ${x}_result_v.SUCCESS:
             raise Exception(r)
         self.__dditable.${tbl['name']} = ${tbl['name']}
