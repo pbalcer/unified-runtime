@@ -10,7 +10,7 @@
 
 Objective
 =========
-
+ 
 The objective of the oneAPI Unified Runtime is to provide a unified interface to
 device agnostic runtimes such as DPC++ across a wide variety of software platforms. The unified
 runtime provides extensibility where new backends can be developed to support
