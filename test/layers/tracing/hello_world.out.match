@@ -1,0 +1,21 @@
+function_with_args_begin(1) - urInit(.device_flags = 0);
+function_with_args_end(1) - urInit(..) -> ur_result_t(0);
+Platform initialized.
+function_with_args_begin(2) - urPlatformGet(unknown);
+function_with_args_end(2) - urPlatformGet(..) -> ur_result_t(0);
+function_with_args_begin(3) - urPlatformGet(unknown);
+function_with_args_end(3) - urPlatformGet(..) -> ur_result_t(0);
+function_with_args_begin(4) - urPlatformGetApiVersion(unknown);
+function_with_args_end(4) - urPlatformGetApiVersion(..) -> ur_result_t(0);
+API version: 0.9
+function_with_args_begin(5) - urDeviceGet(unknown);
+function_with_args_end(5) - urDeviceGet(..) -> ur_result_t(0);
+function_with_args_begin(6) - urDeviceGet(unknown);
+function_with_args_end(6) - urDeviceGet(..) -> ur_result_t(0);
+function_with_args_begin(7) - urDeviceGetInfo(unknown);
+function_with_args_end(7) - urDeviceGetInfo(..) -> ur_result_t(0);
+function_with_args_begin(8) - urDeviceGetInfo(unknown);
+function_with_args_end(8) - urDeviceGetInfo(..) -> ur_result_t(0);
+Found a Null Device gpu.
+function_with_args_begin(9) - urTearDown(unknown);
+function_with_args_end(9) - urTearDown(..) -> ur_result_t(0);
