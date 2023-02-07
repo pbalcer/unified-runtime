@@ -1,0 +1,8 @@
+repos:
+- repo: https://github.com/pre-commit/mirrors-clang-format
+  rev: v15.0.7
+  hooks:
+  - id: clang-format
+    exclude: ^include/ur_api.h
+    types_or: [c++]
+    verbose: true

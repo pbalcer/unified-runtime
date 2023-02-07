@@ -85,9 +85,9 @@ if(NOT DEFINED THIRD_PARTY_DIR)
     set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
 endif()
 
-find_program(CLANG_FORMAT NAMES clang-format-10 clang-format-10.0 clang-format)
+find_program(CLANG_FORMAT NAMES clang-format-15 clang-format-15.0 clang-format)
 
-set(CLANG_FORMAT_REQUIRED "10.0")
+set(CLANG_FORMAT_REQUIRED "15.0")
 
 if(CLANG_FORMAT)
     get_program_version_major_minor(${CLANG_FORMAT} CLANG_FORMAT_VERSION)
@@ -101,7 +101,7 @@ if(UR_FORMAT_CPP_STYLE)
             message(FATAL_ERROR "required clang-format version is ${CLANG_FORMAT_REQUIRED}")
         endif()
     else()
-        message(FATAL_ERROR "FORMAT_CPP_STYLE=ON, but clang-format not found (required version: ${CLANG_FORMAT_REQUIRED})")
+        message(FATAL_ERROR "UR_FORMAT_CPP_STYLE=ON, but clang-format not found (required version: ${CLANG_FORMAT_REQUIRED})")
     endif()
 endif()
 
@@ -114,6 +114,9 @@ file(GLOB_RECURSE format_src
 
 # Exclude files from build directory to ensure they're not passed to the formatter
 list(FILTER format_src EXCLUDE REGEX "${CMAKE_CURRENT_BINARY_DIR}.")
+
+# Exclude files we do not want to format
+list(FILTER format_src EXCLUDE REGEX "${CMAKE_PROJECT_DIR}/include/ur_api.h")
 
 # Add code formatter target
 add_custom_target(cppformat)
@@ -180,6 +183,11 @@ add_custom_target(generate
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/scripts
     COMMAND ${Python3_EXECUTABLE} run.py --api-json ${API_JSON_FILE}
     COMMAND ${Python3_EXECUTABLE} json2src.py --api-json ${API_JSON_FILE} ${PROJECT_SOURCE_DIR}
+    # XXX I don't know how to change this and it fails on Windows anyway
+    COMMAND ${CLANG_FORMAT}
+                --style=file
+                --i
+                ${format_src}
 )
 
 # Generate source and check for uncommitted diffs
@@ -187,6 +195,5 @@ add_custom_target(check-generated
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMAND git diff --exit-code
     DEPENDS generate
-    # Uncomment line below after docker image is integrated
-    #DEPENDS cppformat
+    DEPENDS cppformat
 )
