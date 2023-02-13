@@ -117,6 +117,7 @@ list(FILTER format_src EXCLUDE REGEX "${CMAKE_CURRENT_BINARY_DIR}.")
 
 # Exclude files we do not want to format
 list(FILTER format_src EXCLUDE REGEX "${CMAKE_PROJECT_DIR}/include/ur_api.h")
+list(FILTER format_src EXCLUDE REGEX "${CMAKE_PROJECT_DIR}/include/ur_ddi.h")
 
 # Add code formatter target
 add_custom_target(cppformat)
@@ -179,15 +180,16 @@ install(
 set(API_JSON_FILE ${PROJECT_BINARY_DIR}/unified_runtime.json)
 
 # Generate source from the specification
-add_custom_target(generate
+add_custom_target(generate-code
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/scripts
     COMMAND ${Python3_EXECUTABLE} run.py --api-json ${API_JSON_FILE}
     COMMAND ${Python3_EXECUTABLE} json2src.py --api-json ${API_JSON_FILE} ${PROJECT_SOURCE_DIR}
-    # XXX I don't know how to change this and it fails on Windows anyway
-    COMMAND ${CLANG_FORMAT}
-                --style=file
-                --i
-                ${format_src}
+)
+
+# Generate and format source from the specification
+add_custom_target(generate
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target generate-code
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target cppformat
 )
 
 # Generate source and check for uncommitted diffs
@@ -195,5 +197,4 @@ add_custom_target(check-generated
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     COMMAND git diff --exit-code
     DEPENDS generate
-    DEPENDS cppformat
 )

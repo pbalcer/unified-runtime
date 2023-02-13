@@ -4,4 +4,3 @@ BasedOnStyle:  LLVM
 IndentWidth:   4
 InsertBraces: true
 ...
-
