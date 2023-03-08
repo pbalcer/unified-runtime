@@ -3,7 +3,11 @@
 
 #include "helpers.h"
 #include "pool.h"
+#include "common/uma_helpers.hpp"
+#include "uma/memory_pool.h"
 
+#include <cstddef>
+#include <gtest/gtest.h>
 #include <string>
 #include <unordered_map>
 
@@ -44,4 +48,10 @@ TEST_F(umaTest, memoryPoolTrace) {
     ASSERT_EQ(ret, UMA_RESULT_SUCCESS);
     ASSERT_EQ(calls["get_last_result"], 1);
     ASSERT_EQ(calls.size(), ++call_count);
+}
+
+TEST_F(umaTest, memoryPoolExperiment) {
+    uma::malloc_pool pool;
+    uma_memory_pool_handle_t handle = pool;
+    ASSERT_NE(umaPoolMalloc(handle, 1), nullptr);
 }
