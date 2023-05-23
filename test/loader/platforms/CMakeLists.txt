@@ -27,7 +27,7 @@ function(add_loader_platform_test name ENV)
     )
     set_tests_properties(${TEST_NAME} PROPERTIES
         LABELS "loader"
-        ENVIRONMENT "UR_LOG_TEST=level:info\;output:stdout\;flush:debug;${ENV}"
+        ENVIRONMENT "${ENV};UR_LOG_TEST=level:info\;output:stdout\;flush:debug"
     )
 endfunction()
 
