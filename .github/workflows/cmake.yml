@@ -60,8 +60,9 @@ jobs:
     - name: Download DPC++
       run: |
         sudo apt install libncurses5
-        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/sycl-nightly%2F20230626/dpcpp-compiler.tar.gz
-        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz
+        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/nightly-2023-08-31/sycl_linux.tar.gz
+        mkdir dpcpp_compiler
+        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz -C dpcpp_compiler
 
     - name: Configure CMake
       run: >
@@ -114,8 +115,9 @@ jobs:
     - name: Download DPC++
       run: |
         sudo apt install libncurses5
-        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/sycl-nightly%2F20230626/dpcpp-compiler.tar.gz
-        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz
+        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/nightly-2023-08-31/sycl_linux.tar.gz
+        mkdir dpcpp_compiler
+        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz -C dpcpp_compiler
 
     - name: Setup DPC++
       run: |
@@ -145,62 +147,12 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ctest -C ${{matrix.build_type}} --output-on-failure -L "fuzz-short"
 
-  adapter-build:
-    name: Build - Adapters on Ubuntu
-    strategy:
-      matrix:
-        os: ['ubuntu-22.04']
-        adapter: [CUDA, HIP, L0]
-        build_type: [Debug, Release]
-        compiler: [{c: gcc, cxx: g++}, {c: clang, cxx: clang++}]
-
-    runs-on: ${{matrix.os}}
-
-    steps:
-    - uses: actions/checkout@v3
-
-    - name: Install apt packages
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y doxygen ${{matrix.compiler.c}}
-
-    - name: Install pip packages
-      run: pip install -r third_party/requirements.txt
-
-    - name: Install CUDA specific dependencies
-      if: matrix.adapter == 'CUDA'
-      run: |
-        sudo apt-get install nvidia-cuda-toolkit nvidia-cuda-toolkit-gcc
-
-    - name: Install HIP specific dependencies
-      if: matrix.adapter == 'HIP'
-      run: |
-        wget https://repo.radeon.com/amdgpu-install/5.6/ubuntu/jammy/amdgpu-install_5.6.50600-1_all.deb
-        sudo apt install ./amdgpu-install_5.6.50600-1_all.deb
-        sudo amdgpu-install --usecase=rocm
-
-    - name: Configure CMake
-      run: >
-        cmake
-        -B${{github.workspace}}/build
-        -DCMAKE_C_COMPILER=${{matrix.compiler.c}}
-        -DCMAKE_CXX_COMPILER=${{matrix.compiler.cxx}}
-        -DUR_ENABLE_TRACING=ON
-        -DUR_DEVELOPER_MODE=ON
-        -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
-        -DUR_BUILD_TESTS=ON
-        -DUR_FORMAT_CPP_STYLE=ON
-        -DUR_BUILD_ADAPTER_${{matrix.adapter}}=ON
-
-    - name: Build
-      run: cmake --build ${{github.workspace}}/build -j $(nproc)
-
   adapter-build-hw:
     name: Build - Adapters on HW
     if: github.repository == 'oneapi-src/unified-runtime'  # run only on upstream; forks won't have the HW
     strategy:
       matrix:
-        adapter: [CUDA, HIP, L0]
+        adapter: [{name: CUDA, triplet: nvptx64-nvidia-cuda}, {name: HIP, triplet: amdgcn-amdhsa}, {name: L0, triplet: spir64}]
         build_type: [Debug, Release]
         compiler: [{c: gcc, cxx: g++}, {c: clang, cxx: clang++}]
 
@@ -214,8 +166,9 @@ jobs:
 
     - name: Download DPC++
       run: |
-        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/sycl-nightly%2F20230626/dpcpp-compiler.tar.gz
-        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz
+        wget -O ${{github.workspace}}/dpcpp_compiler.tar.gz https://github.com/intel/llvm/releases/download/nightly-2023-08-31/sycl_linux.tar.gz
+        mkdir dpcpp_compiler
+        tar -xvf ${{github.workspace}}/dpcpp_compiler.tar.gz -C dpcpp_compiler
 
     - name: Configure CMake
       run: >
@@ -227,11 +180,14 @@ jobs:
         -DUR_ENABLE_TRACING=ON
         -DUR_DEVELOPER_MODE=ON
         -DUR_BUILD_TESTS=ON
-        -DUR_BUILD_ADAPTER_${{matrix.adapter}}=ON
+        -DUR_BUILD_ADAPTER_${{matrix.adapter.name}}=ON
         -DUR_DPCXX=${{github.workspace}}/dpcpp_compiler/bin/clang++
+        -DUR_CONFORMANCE_TARGET_TRIPLES=${{matrix.adapter.triplet}}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build -j $(nproc)
+      # This is so that device binaries can find the sycl runtime library
+      run: LD_LIBRARY_PATH=${{github.workspace}}/dpcpp_compiler/lib
+        cmake --build ${{github.workspace}}/build -j $(nproc)
 
     # Temporarily disabling platform test for L0, because of hang
     # See issue: #824
