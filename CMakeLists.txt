@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
 cmake_minimum_required(VERSION 3.14.0 FATAL_ERROR)
-project(unified-runtime VERSION 0.7.0)
+project(unified-runtime VERSION 0.8.0)
 
 include(GNUInstallDirs)
 include(CheckCXXSourceCompiles)
@@ -15,27 +15,28 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(helpers)
 
 if(CMAKE_SYSTEM_NAME STREQUAL Darwin)
-  set(CMAKE_FIND_FRAMEWORK NEVER)
+    set(Python3_FIND_FRAMEWORK NEVER)
+    set(Python3_FIND_STRATEGY LOCATION)
 endif()
 
-find_package(Python3 COMPONENTS Interpreter)
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
 # Build Options
-option(UR_DEVELOPER_MODE "enable developer checks, treats warnings as errors" OFF)
 option(UR_BUILD_TESTS "Build unit tests." ON)
+option(UR_BUILD_TOOLS "build ur tools" ON)
 option(UR_FORMAT_CPP_STYLE "format code style of C++ sources" OFF)
+option(UR_DEVELOPER_MODE "enable developer checks, treats warnings as errors" OFF)
 option(UR_USE_ASAN "enable AddressSanitizer" OFF)
 option(UR_USE_UBSAN "enable UndefinedBehaviorSanitizer" OFF)
 option(UR_USE_MSAN "enable MemorySanitizer" OFF)
 option(UR_USE_TSAN "enable ThreadSanitizer" OFF)
-option(UMF_BUILD_SHARED_LIBRARY "Build UMF as shared library" OFF)
 option(UR_ENABLE_TRACING "enable api tracing through xpti" OFF)
-option(VAL_USE_LIBBACKTRACE_BACKTRACE "enable libbacktrace validation backtrace for linux" OFF)
-option(UR_BUILD_TOOLS "build ur tools" ON)
+option(UMF_BUILD_SHARED_LIBRARY "Build UMF as shared library" OFF)
 option(UMF_ENABLE_POOL_TRACKING "Build UMF with pool tracking" OFF)
+option(VAL_USE_LIBBACKTRACE_BACKTRACE "enable libbacktrace validation backtrace for linux" OFF)
 option(UR_BUILD_ADAPTER_L0 "build level 0 adapter from SYCL" OFF)
 option(UR_BUILD_ADAPTER_OPENCL "build opencl adapter from SYCL" OFF)
 option(UR_BUILD_ADAPTER_CUDA "build cuda adapter from SYCL" OFF)
@@ -135,23 +136,15 @@ if(UR_USE_MSAN)
     add_sanitizer_flag(memory)
 endif()
 
-# Allow custom third_party folder
-if(NOT DEFINED THIRD_PARTY_DIR)
-    set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
-endif()
-
-find_program(CLANG_FORMAT NAMES clang-format-15 clang-format-15.0 clang-format)
-
-set(CLANG_FORMAT_REQUIRED "15.0")
-
-if(CLANG_FORMAT)
-    get_program_version_major_minor(${CLANG_FORMAT} CLANG_FORMAT_VERSION)
-    message(STATUS "Found clang-format: ${CLANG_FORMAT} (version: ${CLANG_FORMAT_VERSION})")
-endif()
-
-# Check if the correct version of clang-format is available
+# Check if clang-format (in correct version) is available for Cpp code formatting.
 if(UR_FORMAT_CPP_STYLE)
-    if(CLANG_FORMAT)
+    find_program(CLANG_FORMAT NAMES clang-format-15 clang-format-15.0 clang-format)
+
+    if(CLANG_FORMAT)        
+        get_program_version_major_minor(${CLANG_FORMAT} CLANG_FORMAT_VERSION)
+        message(STATUS "Found clang-format: ${CLANG_FORMAT} (version: ${CLANG_FORMAT_VERSION})")
+
+        set(CLANG_FORMAT_REQUIRED "15.0")
         if(NOT (CLANG_FORMAT_VERSION VERSION_EQUAL CLANG_FORMAT_REQUIRED))
             message(FATAL_ERROR "required clang-format version is ${CLANG_FORMAT_REQUIRED}")
         endif()
@@ -160,7 +153,7 @@ if(UR_FORMAT_CPP_STYLE)
     endif()
 endif()
 
-# Obtain files for clang-format
+# Obtain files for clang-format and license check
 set(format_glob)
 set(license_glob)
 foreach(dir examples include source test tools)
@@ -185,7 +178,7 @@ endforeach()
 file(GLOB_RECURSE format_src ${format_glob})
 file(GLOB_RECURSE license_src ${license_glob})
 
-# check for licence
+# Add license check target
 list(FILTER license_src EXCLUDE REGEX "registry.yml")
 add_custom_target(verify-licenses
     COMMAND ${Python3_EXECUTABLE}
@@ -196,9 +189,13 @@ add_custom_target(verify-licenses
 
 # Add code formatter target
 add_custom_target(cppformat)
+# ... and all source files to the formatter
+add_cppformat(all-sources ${format_src})
 
-# Add files to the formatter
-add_cppformat(src-formatter ${format_src})
+# Allow custom third_party folder
+if(NOT DEFINED THIRD_PARTY_DIR)
+    set(THIRD_PARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party)
+endif()
 
 add_subdirectory(${THIRD_PARTY_DIR})
 
@@ -278,5 +275,5 @@ if(UR_FORMAT_CPP_STYLE)
         DEPENDS generate
     )
 else()
-    message(WARNING "UR_FORMAT_CPP_STYLE not set. Targets: 'generate' and 'check-generated' and not available")
+    message(STATUS "  UR_FORMAT_CPP_STYLE not set. Targets: 'generate' and 'check-generated' are not available")
 endif()

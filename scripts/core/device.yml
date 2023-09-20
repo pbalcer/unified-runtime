@@ -61,6 +61,11 @@ desc: "AMD GCN"
 name: "$X_DEVICE_BINARY_TARGET_AMDGCN"
 value: "\"amdgcn\""
 --- #--------------------------------------------------------------------------
+type: macro
+desc: "Native CPU"
+name: "$X_DEVICE_BINARY_TARGET_NATIVE_CPU"
+value: "\"native_cpu\""
+--- #--------------------------------------------------------------------------
 type: struct
 desc: "Device Binary Type"
 name: $x_device_binary_t
@@ -126,7 +131,7 @@ params:
       name: NumEntries
       desc: |
             [in] the number of devices to be added to phDevices.
-            If phDevices in not NULL then NumEntries should be greater than zero, otherwise $X_RESULT_ERROR_INVALID_VALUE,
+            If phDevices is not NULL, then NumEntries should be greater than zero. Otherwise $X_RESULT_ERROR_INVALID_SIZE
             will be returned.
     - type: "$x_device_handle_t*"
       name: phDevices
@@ -139,6 +144,10 @@ params:
             [out][optional] pointer to the number of devices.
             pNumDevices will be updated with the total number of devices available.
 returns:
+    - $X_RESULT_ERROR_INVALID_SIZE:
+        - "`NumEntries == 0 && phDevices != NULL`"
+    - $X_RESULT_ERROR_INVALID_NULL_POINTER:
+        - "`NumEntries > 0 && phDevices == NULL`"
     - $X_RESULT_ERROR_INVALID_VALUE
 --- #--------------------------------------------------------------------------
 type: enum
@@ -385,6 +394,8 @@ etors:
       desc: "[uint32_t] The device IP version. The meaning of the device IP version is implementation-defined, but newer devices should have a higher version than older devices."
     - name: VIRTUAL_MEMORY_SUPPORT
       desc: "[$x_bool_t] return true if the device supports virtual memory."
+    - name: ESIMD_SUPPORT
+      desc: "[$x_bool_t] return true if the device supports ESIMD."
 --- #--------------------------------------------------------------------------
 type: function
 desc: "Retrieves various information about device"

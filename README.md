@@ -20,8 +20,9 @@ see cmake options for details.
   - [Contents of the repo](#contents-of-the-repo)
   - [Integration](#integration)
     - [Weekly tags](#weekly-tags)
-  - [Third-Party tools](#third-party-tools)
-  - [Building](#building)
+3. [Third-Party tools](#third-party-tools)
+4. [Building](#building)
+    - [Requirements](#requirements)
     - [Windows](#windows)
     - [Linux](#linux)
     - [CMake standard options](#cmake-standard-options)
@@ -79,10 +80,18 @@ Tools can be acquired via instructions in [third_party](/third_party/README.md).
 
 ## Building
 
-Requirements:
+The requirements and instructions below are for building the project from source
+without any modifications. To make modifications to the specification, please
+see the
+[Contribution Guide](https://oneapi-src.github.io/unified-runtime/core/CONTRIB.html)
+for more detailed instructions on the correct setup.
+
+### Requirements
+
+Required packages:
 - C++ compiler with C++17 support
 - [CMake](https://cmake.org/) >= 3.14.0
-- clang-format-15.0 (can be installed with `python -m pip install clang-format==15.0.7`)
+- Python v3.6.6 or later
 
 ### Windows
 
@@ -143,6 +152,10 @@ It will generate the source code **and** run automated code formatting:
 ```bash
 $ make generate
 ```
+
+This target has additional dependencies which are described in the *Build
+Environment* section of the
+[Contribution Guide](https://oneapi-src.github.io/unified-runtime/core/CONTRIB.html).
 
 ## Contributions
 

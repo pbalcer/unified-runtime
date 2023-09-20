@@ -18,18 +18,18 @@
 using namespace logger;
 
 //////////////////////////////////////////////////////////////////////////
-int main(int argc, char *argv[]) {
-    auto out = create_logger("TEST");
+int main(int, char *[]) {
+    logger::init("TEST");
 
     ur_result_t status;
 
     // Initialize the platform
-    status = urInit(0, nullptr);
+    status = urLoaderInit(0, nullptr);
     if (status != UR_RESULT_SUCCESS) {
-        out.error("urInit failed with return code: {}", status);
+        error("urLoaderInit failed with return code: {}", status);
         return 1;
     }
-    out.info("urInit succeeded.");
+    info("urLoaderInit succeeded.");
 
     uint32_t adapterCount = 0;
     std::vector<ur_adapter_handle_t> adapters;
@@ -52,16 +52,16 @@ int main(int argc, char *argv[]) {
     status = urPlatformGet(adapters.data(), adapterCount, 1, nullptr,
                            &platformCount);
     if (status != UR_RESULT_SUCCESS) {
-        out.error("urPlatformGet failed with return code: {}", status);
+        error("urPlatformGet failed with return code: {}", status);
         goto out;
     }
-    out.info("urPlatformGet found {} platforms", platformCount);
+    info("urPlatformGet found {} platforms", platformCount);
 
     platforms.resize(platformCount);
     status = urPlatformGet(adapters.data(), adapterCount, platformCount,
                            platforms.data(), nullptr);
     if (status != UR_RESULT_SUCCESS) {
-        out.error("urPlatformGet failed with return code: {}", status);
+        error("urPlatformGet failed with return code: {}", status);
         goto out;
     }
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
         status =
             urPlatformGetInfo(p, UR_PLATFORM_INFO_NAME, 0, nullptr, &name_len);
         if (status != UR_RESULT_SUCCESS) {
-            out.error("urPlatformGetInfo failed with return code: {}", status);
+            error("urPlatformGetInfo failed with return code: {}", status);
             goto out;
         }
 
@@ -80,15 +80,15 @@ int main(int argc, char *argv[]) {
         status = urPlatformGetInfo(p, UR_PLATFORM_INFO_NAME, name_len, name,
                                    nullptr);
         if (status != UR_RESULT_SUCCESS) {
-            out.error("urPlatformGetInfo failed with return code: {}", status);
+            error("urPlatformGetInfo failed with return code: {}", status);
             free(name);
             goto out;
         }
-        out.info("Found {} ", name);
+        info("Found {} ", name);
 
         free(name);
     }
 out:
-    urTearDown(nullptr);
+    urLoaderTearDown();
     return status == UR_RESULT_SUCCESS ? 0 : 1;
 }
