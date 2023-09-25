@@ -6,7 +6,7 @@ breathe==4.33.1
 bs4==0.0.1
 certifi==2019.11.28
 chardet==3.0.4
-colorama==0.4.1
+colorama==0.4.6
 docutils==0.15.2
 exhale==0.3.0
 idna==2.8
@@ -15,7 +15,7 @@ Jinja2==2.11.3
 lxml==4.9.1
 Mako==1.1.0
 MarkupSafe==1.1.1
-packaging==19.2
+packaging==23.1
 Pygments==2.5.2
 pyparsing==2.4.5
 pytz==2019.3
