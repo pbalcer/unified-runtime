@@ -77,11 +77,13 @@ function(add_ur_target_compile_options name)
             )
         endif()
     elseif(MSVC)
+        target_compile_definitions(${name} D_CRT_SECURE_NO_WARNINGS)
         target_compile_options(${name} PRIVATE
             /MP
             /W3
             /MD$<$<CONFIG:Debug>:d>
             /GS
+            _CRT_SECURE_NO_WARNINGS
         )
 
         if(UR_DEVELOPER_MODE)

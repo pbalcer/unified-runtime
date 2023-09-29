@@ -930,8 +930,8 @@ ur_queue_handle_t_::ur_queue_handle_t_(
     // Set-up to round-robin across allowed range of engines.
     uint32_t FilterLowerIndex = getRangeOfAllowedComputeEngines().first;
     uint32_t FilterUpperIndex = getRangeOfAllowedComputeEngines().second;
-    FilterUpperIndex = std::min((size_t)FilterUpperIndex,
-                                FilterLowerIndex + ComputeQueues.size() - 1);
+    FilterUpperIndex = std::min(FilterUpperIndex,
+                                FilterLowerIndex + (uint32_t)ComputeQueues.size() - 1);
     if (FilterLowerIndex <= FilterUpperIndex) {
       ComputeQueueGroup.LowerIndex = FilterLowerIndex;
       ComputeQueueGroup.UpperIndex = FilterUpperIndex;
@@ -1028,7 +1028,7 @@ void ur_queue_handle_t_::adjustBatchSizeForPartialBatch(bool IsCopy) {
   // in a while.
   if (CommandBatch.NumTimesClosedEarly >
       (CommandBatch.NumTimesClosedFull + 1) * 3) {
-    QueueBatchSize = CommandBatch.OpenCommandList->second.size() - 1;
+    QueueBatchSize = (uint32_t)CommandBatch.OpenCommandList->second.size() - 1;
     if (QueueBatchSize < 1)
       QueueBatchSize = 1;
     urPrint("Lowering QueueBatchSize to %d\n", QueueBatchSize);
@@ -1894,7 +1894,7 @@ ur_queue_handle_t_::insertActiveBarriers(ur_command_list_ptr_t &CmdList,
   // Create a wait-list and retain events.
   _ur_ze_event_list_t ActiveBarriersWaitList;
   UR_CALL(ActiveBarriersWaitList.createAndRetainUrZeEventList(
-      ActiveBarriers.vector().size(), ActiveBarriers.vector().data(),
+      (uint32_t)ActiveBarriers.vector().size(), ActiveBarriers.vector().data(),
       reinterpret_cast<ur_queue_handle_t>(this), UseCopyEngine));
 
   // We can now replace active barriers with the ones in the wait list.
