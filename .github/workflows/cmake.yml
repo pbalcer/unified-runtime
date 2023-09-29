@@ -11,8 +11,9 @@ jobs:
     name: Build - Windows
     strategy:
       matrix:
-        os: ['windows-2019', 'windows-2022']
-        build_type: [Debug, Release]
+        os: ['windows-2022']
+        build_type: [Debug]
+        compiler: [{c: clang-cl.exe, cxx: clang-cl.exe}]
     runs-on: ${{matrix.os}}
 
     steps:
