@@ -83,7 +83,6 @@ function(add_ur_target_compile_options name)
             /W3
             /MD$<$<CONFIG:Debug>:d>
             /GS
-            _CRT_SECURE_NO_WARNINGS
         )
 
         if(UR_DEVELOPER_MODE)
