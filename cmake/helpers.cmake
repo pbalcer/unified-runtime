@@ -84,6 +84,8 @@ function(add_ur_target_compile_options name)
             /MD$<$<CONFIG:Debug>:d>
             /GS
             /wd4267
+            /wd4805
+            /wd4244
         )
 
         if(UR_DEVELOPER_MODE)
