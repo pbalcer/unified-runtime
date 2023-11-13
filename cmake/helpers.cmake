@@ -88,6 +88,11 @@ function(add_ur_target_compile_options name)
             target_compile_options(${name} PRIVATE /WX /GS)
         endif()
     endif()
+    if(WIN32)
+        target_compile_options(${name} PRIVATE
+            /MD$<$<CONFIG:Debug>:d>
+        )
+    endif()
 endfunction()
 
 function(add_ur_target_link_options name)
