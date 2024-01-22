@@ -10,13 +10,19 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstddef>
 #include <optional>
 #include <string.h>
+#include <chrono>
 
 #include "adapter.hpp"
+#include "adapters/level_zero/event.hpp"
 #include "common.hpp"
 #include "queue.hpp"
+#include "ur_api.h"
 #include "ur_level_zero.hpp"
+#include "ur_util.hpp"
+#include "ze_api.h"
 
 /// @brief Cleanup events in the immediate lists of the queue.
 /// @param Queue Queue where events need to be cleaned up.
@@ -1630,6 +1636,7 @@ ur_result_t ur_queue_handle_t_::resetCommandList(
   }
 
   auto &EventList = CommandList->second.EventList;
+
   // Check if standard commandlist or fully synced in-order queue.
   // If one of those conditions is met then we are sure that all events are
   // completed so we don't need to check event status.
@@ -1666,13 +1673,32 @@ ur_result_t ur_queue_handle_t_::resetCommandList(
           }
           break;
         }
-        // Bulk move of event up to "it" to the list ready for cleanup
-        std::move(it, EventList.rend(), std::back_inserter(EventListToCleanup));
-        EventList.erase(EventList.begin(), it.base());
+
+        if (it == EventList.rbegin()) {
+          EventListToCleanup.swap(EventList);
+        } else {
+          // Bulk move of event up to "it" to the list ready for cleanup
+          std::move(it, EventList.rend(), std::back_inserter(EventListToCleanup));
+          EventList.erase(EventList.begin(), it.base());
+        }
         break;
       }
       return UR_RESULT_SUCCESS;
     }
+
+    static bool hack = ur_getenv("UR_HACK") != std::nullopt;
+
+    if (hack) {
+      if (EventList.size() > 999 && EventListToCleanup.size() == 0) {
+        static ur_event_handle_t eventToWait = {};
+        EventCreate(this->Context, this, true, &eventToWait);
+        zeCommandListAppendBarrier(CommandList->first, eventToWait->ZeEvent, 0u, NULL);
+        zeEventHostSynchronize(eventToWait->ZeEvent, -1);
+        EventListToCleanup.swap(EventList);
+        return UR_RESULT_SUCCESS;
+      }
+    }
+
     // For immediate commandlist reset only those events that have signalled.
     for (auto it = EventList.begin(); it != EventList.end();) {
       // Break early as soon as we found first incomplete event because next

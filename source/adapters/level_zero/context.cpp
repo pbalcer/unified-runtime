@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstdio>
 #include <mutex>
 #include <string.h>
 
@@ -630,6 +631,7 @@ ur_result_t ur_context_handle_t_::getAvailableCommandList(
   // Immediate commandlists have been pre-allocated and are always available.
   if (Queue->UsingImmCmdLists) {
     CommandList = Queue->getQueueGroup(UseCopyEngine).getImmCmdList();
+
     if (CommandList->second.EventList.size() >
         ImmCmdListsEventCleanupThreshold) {
       std::vector<ur_event_handle_t> EventListToCleanup;

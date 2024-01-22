@@ -49,6 +49,7 @@ set(UR_DPCXX "" CACHE FILEPATH "Path of the DPC++ compiler executable")
 set(UR_SYCL_LIBRARY_DIR "" CACHE PATH
     "Path of the SYCL runtime library directory")
 option(UR_ENABLE_ASSERTIONS "Enable assertions for all build types" OFF)
+option(UR_BUILD_BENCHMARKS "Build UR-specific microbenchmarks" OFF)
 
 include(Assertions)
 
@@ -233,6 +234,9 @@ if(UR_BUILD_TESTS)
 endif()
 if(UR_BUILD_TOOLS)
     add_subdirectory(tools)
+endif()
+if(UR_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
 endif()
 
 # Add the list of installed targets to the install. This includes the namespace
