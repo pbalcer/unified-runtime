@@ -55,8 +55,7 @@ ur_result_t CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue,
     // commands so we can't do full cleanup.
     if (QueueLocked &&
         (QueueSynced || (UrQueue->isInOrderQueue() &&
-                         (reinterpret_cast<ur_event_handle_t>(
-                              UrCompletedEvent) == UrQueue->LastCommandEvent ||
+                         (CompletedEvent == UrQueue->LastCommandEvent ||
                           !UrQueue->LastCommandEvent)))) {
       UrQueue->LastCommandEvent = nullptr;
       for (auto &&It = UrQueue->CommandListMap.begin();
@@ -1728,6 +1727,13 @@ ur_result_t ur_queue_handle_t_::resetCommandList(
   }
 
   return UR_RESULT_SUCCESS;
+}
+
+void ur_command_list_info_t::append(ur_event_handle_t Event) {
+  if (auto batch = completionBatch()) {
+    batch->events_to_barrier[batch->nevents++] = Event->ZeEvent;
+  }
+  EventList.push_back(Event);
 }
 
 bool ur_command_list_info_t::isCopy(ur_queue_handle_t Queue) const {

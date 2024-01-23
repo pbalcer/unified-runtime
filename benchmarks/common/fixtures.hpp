@@ -21,14 +21,14 @@ struct UR {
 
         uint32_t nadapters;
         UR_TRY(urAdapterGet(1, &adapter, &nadapters));
-        if (nadapters != 1) {
+        if (nadapters < 1) {
             teardown();
             return UR_RESULT_ERROR_UNINITIALIZED;
         }
 
         uint32_t nplatforms;
         UR_TRY(urPlatformGet(&adapter, 1, 1, &platform, &nplatforms));
-        if (nplatforms != 1) {
+        if (nplatforms < 1) {
             teardown();
             return UR_RESULT_ERROR_UNINITIALIZED;
         }

@@ -48,14 +48,15 @@ ur_result_t enqueueMemCopyHelper(ur_command_t CommandType,
                                  const ur_event_handle_t *EventWaitList,
                                  ur_event_handle_t *OutEvent,
                                  bool PreferCopyEngine) {
-  bool UseCopyEngine = Queue->useCopyEngine(PreferCopyEngine);
+  bool UseCopyEngine = false;//Queue->useCopyEngine(PreferCopyEngine);
+  (void)PreferCopyEngine;
 
   _ur_ze_event_list_t TmpWaitList;
   UR_CALL(TmpWaitList.createAndRetainUrZeEventList(
       NumEventsInWaitList, EventWaitList, Queue, UseCopyEngine));
 
   // We want to batch these commands to avoid extra submissions (costly)
-  bool OkToBatch = true;
+  bool OkToBatch = false;
 
   // Get a new command list to be used on this call
   ur_command_list_ptr_t CommandList{};

@@ -9,13 +9,19 @@
 //===----------------------------------------------------------------------===//
 
 #include <algorithm>
+#include <cassert>
+#include <chrono>
 #include <climits>
 #include <cstdio>
 #include <mutex>
 #include <string.h>
 
+#include "adapters/level_zero/common.hpp"
+#include "adapters/level_zero/queue.hpp"
 #include "context.hpp"
+#include "ur_api.h"
 #include "ur_level_zero.hpp"
+#include "ze_api.h"
 
 UR_APIEXPORT ur_result_t UR_APICALL urContextCreate(
     uint32_t DeviceCount, ///< [in] the number of devices given in phDevices
@@ -623,6 +629,50 @@ static const size_t CmdListsCleanupThreshold = [] {
   return Threshold;
 }();
 
+ur_result_t batchCleanup(ur_command_list_info_t::completion_batch *batch,
+                          ur_command_list_info_t &list_info, bool check_status = true) {
+  if (batch->nevents == 0) {
+    return UR_RESULT_SUCCESS;
+  }
+  if (check_status && zeEventQueryStatus(batch->barrier_event->ZeEvent) != ZE_RESULT_SUCCESS) {
+    zeEventHostSynchronize(batch->barrier_event->ZeEvent, 0);
+  }
+
+  auto start = std::find(list_info.EventList.begin(), list_info.EventList.end(),
+                         batch->first);
+  assert(start != list_info.EventList.end());
+
+  auto end = start + batch->nevents;
+
+  for (auto iter = start; iter != end; ++iter) {
+    UR_CALL(CleanupCompletedEvent(*iter, true, true));
+    UR_CALL(urEventReleaseInternal(*iter));
+  }
+
+  list_info.EventList.erase(start, end);
+
+  batch->barrier_event->reset();
+  batch->nevents = 0;
+  batch->first = nullptr;
+
+  return UR_RESULT_SUCCESS;
+}
+
+int batchFindAvailable(ur_command_list_info_t &list_info, int nbatch) {
+  for (int i = 0; i < NBATCHES; ++i) {
+    if (i == nbatch) continue;
+    auto &batch = list_info.batches[i];
+    if (batch.nevents == 0) {
+      return i;
+    }
+    if (batch.nevents == NEVENTS_PER_BATCH && zeEventQueryStatus(batch.barrier_event->ZeEvent) == ZE_RESULT_SUCCESS) {
+      batchCleanup(&batch, list_info, false);
+      return i;
+    }
+  }
+  return -1;
+}
+
 // Retrieve an available command list to be used in a PI call.
 ur_result_t ur_context_handle_t_::getAvailableCommandList(
     ur_queue_handle_t Queue, ur_command_list_ptr_t &CommandList,
@@ -631,13 +681,40 @@ ur_result_t ur_context_handle_t_::getAvailableCommandList(
   // Immediate commandlists have been pre-allocated and are always available.
   if (Queue->UsingImmCmdLists) {
     CommandList = Queue->getQueueGroup(UseCopyEngine).getImmCmdList();
+    auto &list_info = CommandList->second;
+    auto batch = list_info.completionBatch();
 
-    if (CommandList->second.EventList.size() >
-        ImmCmdListsEventCleanupThreshold) {
-      std::vector<ur_event_handle_t> EventListToCleanup;
-      Queue->resetCommandList(CommandList, false, EventListToCleanup);
-      CleanupEventListFromResetCmdList(EventListToCleanup, true);
+    if (!Queue->isInOrderQueue() && batch) {
+      if (batch->nevents >= NEVENTS_PER_BATCH) {
+        if (!batch->barrier_event) {
+          EventCreate(Queue->Context, Queue, true, &batch->barrier_event);
+        }
+        assert(NEVENTS_PER_BATCH == batch->nevents);
+
+        size_t start = list_info.EventList.size() - NEVENTS_PER_BATCH;
+        batch->first = list_info.EventList[start];
+        zeCommandListAppendBarrier(CommandList->first,
+                                   batch->barrier_event->ZeEvent,
+                                   batch->nevents, batch->events_to_barrier);
+
+        int batch = batchFindAvailable(list_info, list_info.active_batch);
+        if (batch != -1) {
+          list_info.active_batch = batch;
+        } else {
+          list_info.active_batch = (++list_info.active_batch) % NBATCHES;
+
+          batchCleanup(list_info.completionBatch(), list_info);
+        }
+      }
+    } else {
+      if (CommandList->second.EventList.size() >
+          ImmCmdListsEventCleanupThreshold) {
+        std::vector<ur_event_handle_t> EventListToCleanup;
+        Queue->resetCommandList(CommandList, false, EventListToCleanup);
+        CleanupEventListFromResetCmdList(EventListToCleanup, true);
+      }
     }
+
     UR_CALL(Queue->insertStartBarrierIfDiscardEventsMode(CommandList));
     if (auto Res = Queue->insertActiveBarriers(CommandList, UseCopyEngine))
       return Res;

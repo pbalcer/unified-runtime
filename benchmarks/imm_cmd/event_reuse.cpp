@@ -1,6 +1,8 @@
 #include <atomic>
-#include <fstream>
 #include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
 #include <nanobench.h>
 
 #include "fixtures.hpp"
@@ -21,16 +23,36 @@ void gen(std::string const &typeName, char const *mustacheTemplate,
     render(mustacheTemplate, bench, renderOut);
 }
 
+std::string readFileIntoString(const std::string& path) {
+    std::ifstream input_file(path);
+    if (!input_file.is_open()) {
+        std::cerr << "Could not open the file - '" << path << "'" << std::endl;
+        return "";
+    }
+    std::stringstream buffer;
+    buffer << input_file.rdbuf();
+    return buffer.str();
+}
+
 int main() {
     UR ur;
     UR_ASSERT(ur.init());
 
     std::cout << ur.backend() << std::endl;
 
-    constexpr size_t buf_size = 4096;
-    ur_mem_handle_t buffer;
-    UR_ASSERT(urMemBufferCreate(ur.context, UR_MEM_FLAG_READ_WRITE, buf_size,
-                                nullptr, &buffer));
+    auto kernel_content = readFileIntoString("../test/conformance/device_binaries/bar/sycl_spir64.spv");
+    auto kernel_name = "_ZTSZZ4mainENKUlRN4sycl3_V17handlerEE_clES2_E3Bar";
+
+    ur_program_handle_t program;
+    UR_ASSERT(urProgramCreateWithIL(ur.context, kernel_content.data(), kernel_content.size(), nullptr,
+                          &program));
+    UR_ASSERT(urProgramBuild(ur.context, program, nullptr));
+    ur_kernel_handle_t kernel;
+    UR_ASSERT(urKernelCreate(program, kernel_name, &kernel));
+
+    const uint32_t nDim = 3;
+    const size_t gWorkOffset[] = {0, 0, 0};
+    const size_t gWorkSize[] = {128, 128, 128};
 
     ur_queue_handle_t q;
     ur_queue_properties_t props;
@@ -40,17 +62,18 @@ int main() {
     props.stype = UR_STRUCTURE_TYPE_QUEUE_PROPERTIES;
     ur.queue_create(ur.devices[0], props, q);
 
-    char src[buf_size];
-    memset(src, 0xc, buf_size);
+    for (int i = 0; i < 1000; ++i) {
+        urEnqueueKernelLaunch(q, kernel, nDim, gWorkOffset, gWorkSize, nullptr,
+                            0, nullptr, nullptr);
+    }
 
     Bench bench;
 
-    bench.epochs(10000).epochIterations(1).run("enqueue", [&] {
-        urEnqueueMemBufferWrite(q, buffer, false, 0, buf_size, src, 0, nullptr,
-                                nullptr);
+    bench.epochs(10000).minEpochIterations(1).run("enqueue", [&] {
+        urEnqueueKernelLaunch(q, kernel, nDim, gWorkOffset, gWorkSize, nullptr,
+                            0, nullptr, nullptr);
     });
 
-    urMemRelease(buffer);
     ur.teardown();
 
     gen("html", ankerl::nanobench::templates::htmlBoxplot(), bench);

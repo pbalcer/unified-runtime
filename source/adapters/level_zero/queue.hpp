@@ -15,6 +15,7 @@
 #include <optional>
 #include <stdarg.h>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
 
@@ -35,6 +36,9 @@ ur_result_t
 CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue, bool QueueLocked = false,
                            bool QueueSynced = false,
                            ur_event_handle_t CompletedEvent = nullptr);
+
+#define NEVENTS_PER_BATCH 512
+#define NBATCHES 8
 
 // Structure describing the specific use of a command-list in a queue.
 // This is because command-lists are re-used across multiple queues
@@ -70,6 +74,24 @@ struct ur_command_list_info_t {
   // Helper functions to tell if this is a copy command-list.
   bool isCopy(ur_queue_handle_t Queue) const;
 
+  void append(ur_event_handle_t Event);
+
+  struct completion_batch {
+    completion_batch() : nevents(0), barrier_event(nullptr) {}
+    size_t nevents;
+    ur_event_handle_t first;
+    ur_event_handle_t barrier_event;
+    ze_event_handle_t events_to_barrier[NEVENTS_PER_BATCH];
+  };
+
+  completion_batch batches[NBATCHES];
+  size_t active_batch = 0;
+
+  struct completion_batch *completionBatch() {
+    static bool hack2 = ur_getenv("UR_HACK2") != std::nullopt;
+    return hack2 ? &batches[active_batch] : nullptr;
+  }
+
   // Keeps events created by commands submitted into this command-list.
   // TODO: use this for explicit wait/cleanup of events at command-list
   // completion.
@@ -77,7 +99,6 @@ struct ur_command_list_info_t {
   // only have last one visible to the host.
   std::vector<ur_event_handle_t> EventList{};
   size_t size() const { return EventList.size(); }
-  void append(ur_event_handle_t Event) { EventList.push_back(Event); }
 };
 
 // The map type that would track all command-lists in a queue.
