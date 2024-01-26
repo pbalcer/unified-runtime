@@ -10,13 +10,218 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstdint>
 #include <optional>
 #include <string.h>
+#include <vector>
 
 #include "adapter.hpp"
+#include "adapters/level_zero/event.hpp"
 #include "common.hpp"
 #include "queue.hpp"
+#include "ur_api.h"
 #include "ur_level_zero.hpp"
+#include "ur_util.hpp"
+#include "ze_api.h"
+
+// Hard limit for the event completion batches.
+static const uint64_t CompletionBatchesMax = [] {
+  if (auto val = getenv_to_unsigned("UR_L0_IMMEDIATE_COMMANDLISTS_BATCH_MAX")) {
+    return *val;
+  }
+  // Default value chosen empirically to maximize the number of asynchronous
+  // in-flight operations and avoid excessive synchronous waits.
+  return (uint64_t)10;
+}();
+
+// The number of events to accumulate in each batch prior to waiting for
+// completion.
+static const uint64_t CompletionEventsPerBatch = [] {
+  if (auto val =
+          getenv_to_unsigned("UR_L0_IMMEDIATE_COMMANDLISTS_EVENTS_PER_BATCH")) {
+    return *val;
+  }
+  return (uint64_t)512;
+}();
+
+ur_completion_batch::ur_completion_batch() : barrierEvent(nullptr), st(EMPTY) {}
+
+ur_completion_batch::~ur_completion_batch() {
+  if (barrierEvent)
+    urEventReleaseInternal(barrierEvent);
+}
+
+bool ur_completion_batch::isFull() {
+  assert(st == ACCUMULATING);
+
+  return numEvents >= CompletionEventsPerBatch;
+}
+
+void ur_completion_batch::append() {
+  assert(st == ACCUMULATING);
+  numEvents++;
+}
+
+ur_result_t ur_completion_batch::reset() {
+  st = EMPTY;
+  numEvents = 0;
+
+  // we reuse the UR event handle but reset the internal level-zero one
+  if (barrierEvent)
+    ZE2UR_CALL(zeEventHostReset, (barrierEvent->ZeEvent));
+
+  return UR_RESULT_SUCCESS;
+}
+
+void ur_completion_batch::use() {
+  assert(st == EMPTY);
+  st = ACCUMULATING;
+}
+
+ur_completion_batch::state ur_completion_batch::getState() {
+  if (st == SEALED) {
+    checkComplete();
+  }
+
+  return st;
+}
+
+bool ur_completion_batch::checkComplete() {
+  assert(st == COMPLETED || st == SEALED);
+
+  if (st == COMPLETED)
+    return true;
+
+  auto zeResult = ZE_CALL_NOCHECK(zeEventQueryStatus, (barrierEvent->ZeEvent));
+  if (zeResult == ZE_RESULT_SUCCESS) {
+    st = COMPLETED;
+  }
+
+  return st == COMPLETED;
+}
+
+ur_result_t ur_completion_batch::forceWait() {
+  assert(st == COMPLETED || st == SEALED);
+
+  // double check event status, maybe it completed already?
+  if (checkComplete()) {
+    return UR_RESULT_SUCCESS;
+  }
+  ZE2UR_CALL(zeEventHostSynchronize, (barrierEvent->ZeEvent, UINT64_MAX));
+
+  st = COMPLETED;
+
+  return UR_RESULT_SUCCESS;
+}
+
+ur_result_t ur_completion_batch::seal(ur_queue_handle_t queue,
+                                      ze_command_list_handle_t cmdlist) {
+  assert(st == ACCUMULATING);
+
+  if (!barrierEvent) {
+    UR_CALL(EventCreate(queue->Context, queue, true, &barrierEvent));
+  }
+
+  // Instead of collecting all the batched events, we simply issue a global
+  // barrier for all prior events on the command list. This is simpler and
+  // showed to be faster in practice.
+  ZE2UR_CALL(zeCommandListAppendBarrier,
+             (cmdlist, barrierEvent->ZeEvent, 0, nullptr));
+
+  st = SEALED;
+
+  return UR_RESULT_SUCCESS;
+}
+
+void ur_completion_batches::append(ur_event_handle_t event) {
+  active->append();
+  event->completionBatch = active;
+}
+
+ur_result_t ur_completion_batches::removeCompletedEvents(
+    ur_completion_batch_it it, std::vector<ur_event_handle_t> &events) {
+  // This works by tagging all events belonging to a batch, and then removing
+  // all events in a vector with the tag (iterator) of the active batch.
+  // This could be optimized to remove a specific range of entries if we had a
+  // guarantee that all the appended events in the vector remain there in the
+  // same order. Unfortunately that is not simple to enforce.
+  // TODO: An even better approach would be to split the EventList vector into
+  // smaller batch-sized ones, but that would require a significant refactor.
+
+  ur_result_t result = UR_RESULT_SUCCESS;
+  auto end = std::remove_if(events.begin(), events.end(), [&](auto &event) {
+    // This is a little awkward, but we want to notify the upper layer of
+    // the first encountered error.
+    if (result == UR_RESULT_SUCCESS && event->completionBatch == it) {
+      CleanupCompletedEvent(event, true, true);
+      result = urEventReleaseInternal(event);
+
+      return true;
+    } else {
+      return false;
+    }
+  });
+  events.erase(end, events.end());
+
+  return result;
+}
+
+ur_result_t ur_completion_batches::cleanupAndUseFirstEmpty(
+    std::vector<ur_event_handle_t> &events) {
+
+  auto oldest_sealed = sealed.front();
+  if (oldest_sealed->getState() != ur_completion_batch::COMPLETED) {
+    if (batches.size() < CompletionBatchesMax) {
+      // if the oldest batch that was sealed isn't yet complete, try creating
+      // a new batch if allowed by the limit.
+      active = batches.emplace(batches.end());
+      return UR_RESULT_SUCCESS;
+    } else {
+      // otherwise synchronously wait for the oldest batch of events to complete
+      UR_CALL(oldest_sealed->forceWait());
+    }
+  }
+
+  sealed.pop();
+  active = oldest_sealed;
+  UR_CALL(removeCompletedEvents(active, events));
+  UR_CALL(active->reset());
+
+  return UR_RESULT_SUCCESS;
+}
+
+ur_completion_batches::ur_completion_batches() {
+  // Batches are created lazily on-demand. Start with just one.
+  active = batches.emplace(batches.begin());
+  active->use();
+}
+
+ur_result_t
+ur_completion_batches::cleanupIfFull(ur_queue_handle_t queue,
+                                     ze_command_list_handle_t cmdlist,
+                                     std::vector<ur_event_handle_t> &events) {
+  if (!active->isFull())
+    return UR_RESULT_SUCCESS;
+
+  UR_CALL(active->seal(queue, cmdlist));
+  sealed.push(active);
+
+  UR_CALL(cleanupAndUseFirstEmpty(events));
+
+  return UR_RESULT_SUCCESS;
+}
+
+void ur_completion_batches::reset() {
+  for (auto &b : batches) {
+    b.reset();
+  }
+  while (!sealed.empty()) {
+    sealed.pop();
+  }
+
+  active = batches.begin();
+  active->use();
+}
 
 /// @brief Cleanup events in the immediate lists of the queue.
 /// @param Queue Queue where events need to be cleaned up.
@@ -517,16 +722,18 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueGetNativeHandle(
 }
 
 void ur_queue_handle_t_::ur_queue_group_t::setImmCmdList(
-    ze_command_list_handle_t ZeCommandList) {
+    ur_queue_handle_t queue, ze_command_list_handle_t ZeCommandList) {
   // An immediate command list was given to us but we don't have the queue
   // descriptor information. Create a dummy and note that it is not recycleable.
   ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
+
   ImmCmdLists = std::vector<ur_command_list_ptr_t>(
       1,
       Queue->CommandListMap
           .insert(std::pair<ze_command_list_handle_t, ur_command_list_info_t>{
               ZeCommandList,
-              {nullptr, true, false, nullptr, ZeQueueDesc, false}})
+              ur_command_list_info_t(nullptr, true, false, nullptr, ZeQueueDesc,
+                                     queue->useCompletionBatching(), false)})
           .first);
 }
 
@@ -594,7 +801,8 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
       return UR_RESULT_ERROR_UNKNOWN;
     }
     auto &InitialGroup = (*RetQueue)->ComputeQueueGroupsByTID.begin()->second;
-    InitialGroup.setImmCmdList(ur_cast<ze_command_list_handle_t>(NativeQueue));
+    InitialGroup.setImmCmdList(*RetQueue,
+                               ur_cast<ze_command_list_handle_t>(NativeQueue));
   } else {
     auto ZeQueue = ur_cast<ze_command_queue_handle_t>(NativeQueue);
     // Assume this is the "0" index queue in the compute command-group.
@@ -1391,6 +1599,9 @@ ur_result_t ur_queue_handle_t_::synchronize() {
     // Cleanup all events from the synced command list.
     CleanupEventListFromResetCmdList(ImmCmdList->second.EventList, true);
     ImmCmdList->second.EventList.clear();
+    if (auto &completions = ImmCmdList->second.completions; completions) {
+      completions.reset();
+    }
     return UR_RESULT_SUCCESS;
   };
 
@@ -1691,6 +1902,13 @@ bool ur_command_list_info_t::isCopy(ur_queue_handle_t Queue) const {
              .ZeOrdinal;
 }
 
+void ur_command_list_info_t::append(ur_event_handle_t Event) {
+  if (completions) {
+    completions->append(Event);
+  }
+  EventList.push_back(Event);
+}
+
 ur_command_list_ptr_t
 ur_queue_handle_t_::eventOpenCommandList(ur_event_handle_t Event) {
   using IsCopy = bool;
@@ -1816,6 +2034,13 @@ int32_t ur_queue_handle_t_::ur_queue_group_t::getCmdQueueOrdinal(
   return Queue->Device->QueueGroup[QueueType].ZeOrdinal;
 }
 
+bool ur_queue_handle_t_::useCompletionBatching() {
+  static bool enabled =
+      ur_getenv("UR_L0_IMMEDIATE_COMMANDLISTS_BATCH_EVENT_COMPLETIONS") !=
+      std::nullopt;
+  return enabled && !isInOrderQueue() && UsingImmCmdLists;
+}
+
 // Helper function to create a new command-list to this queue and associated
 // fence tracking its completion. This command list & fence are added to the
 // map of command lists in this queue with ZeFenceInUse = false.
@@ -1844,9 +2069,12 @@ ur_result_t ur_queue_handle_t_::createCommandList(
   ZE2UR_CALL(zeFenceCreate, (ZeCommandQueue, &ZeFenceDesc, &ZeFence));
   ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
   ZeQueueDesc.ordinal = QueueGroupOrdinal;
+
   std::tie(CommandList, std::ignore) = CommandListMap.insert(
       std::pair<ze_command_list_handle_t, ur_command_list_info_t>(
-          ZeCommandList, {ZeFence, false, false, ZeCommandQueue, ZeQueueDesc}));
+          ZeCommandList,
+          ur_command_list_info_t(ZeFence, false, false, ZeCommandQueue,
+                                 ZeQueueDesc, useCompletionBatching())));
 
   UR_CALL(insertStartBarrierIfDiscardEventsMode(CommandList));
   UR_CALL(insertActiveBarriers(CommandList, UseCopyEngine));
@@ -1994,11 +2222,14 @@ ur_command_list_ptr_t &ur_queue_handle_t_::ur_queue_group_t::getImmCmdList() {
                     (Queue->Context->ZeContext, Queue->Device->ZeDevice,
                      &ZeCommandQueueDesc, &ZeCommandList));
   }
+
   ImmCmdLists[Index] =
       Queue->CommandListMap
           .insert(std::pair<ze_command_list_handle_t, ur_command_list_info_t>{
               ZeCommandList,
-              {nullptr, true, false, nullptr, ZeCommandQueueDesc}})
+              ur_command_list_info_t(nullptr, true, false, nullptr,
+                                     ZeCommandQueueDesc,
+                                     Queue->useCompletionBatching())})
           .first;
 
   return ImmCmdLists[Index];

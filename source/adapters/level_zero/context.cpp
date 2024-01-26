@@ -13,6 +13,7 @@
 #include <mutex>
 #include <string.h>
 
+#include "adapters/level_zero/queue.hpp"
 #include "context.hpp"
 #include "ur_level_zero.hpp"
 
@@ -630,8 +631,11 @@ ur_result_t ur_context_handle_t_::getAvailableCommandList(
   // Immediate commandlists have been pre-allocated and are always available.
   if (Queue->UsingImmCmdLists) {
     CommandList = Queue->getQueueGroup(UseCopyEngine).getImmCmdList();
-    if (CommandList->second.EventList.size() >
-        ImmCmdListsEventCleanupThreshold) {
+    if (auto &completions = CommandList->second.completions; completions) {
+      UR_CALL(completions->cleanupIfFull(Queue, CommandList->first,
+                                         CommandList->second.EventList));
+    } else if (CommandList->second.EventList.size() >
+               ImmCmdListsEventCleanupThreshold) {
       std::vector<ur_event_handle_t> EventListToCleanup;
       Queue->resetCommandList(CommandList, false, EventListToCleanup);
       CleanupEventListFromResetCmdList(EventListToCleanup, true);
@@ -720,11 +724,13 @@ ur_result_t ur_context_handle_t_::getAvailableCommandList(
         ZE2UR_CALL(zeFenceCreate, (ZeCommandQueue, &ZeFenceDesc, &ZeFence));
         ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
         ZeQueueDesc.ordinal = QueueGroupOrdinal;
+
         CommandList =
             Queue->CommandListMap
                 .emplace(ZeCommandList,
-                         ur_command_list_info_t{ZeFence, true, false,
-                                                ZeCommandQueue, ZeQueueDesc})
+                         ur_command_list_info_t(ZeFence, true, false,
+                                                ZeCommandQueue, ZeQueueDesc,
+                                                Queue->useCompletionBatching()))
                 .first;
       }
       ZeCommandListCache.erase(ZeCommandListIt);

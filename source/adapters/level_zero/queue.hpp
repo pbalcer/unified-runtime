@@ -13,6 +13,7 @@
 #include <list>
 #include <map>
 #include <optional>
+#include <queue>
 #include <stdarg.h>
 #include <string>
 #include <unordered_map>
@@ -30,6 +31,108 @@ extern "C" {
 ur_result_t urQueueReleaseInternal(ur_queue_handle_t Queue);
 } // extern "C"
 
+struct ur_completion_batch;
+using ur_completion_batch_list = std::list<ur_completion_batch>;
+using ur_completion_batch_it = ur_completion_batch_list::iterator;
+
+// Event completion batch for aggregating status checks of many events into
+// a single one through a barrier. Batches can be continuously reused.
+// Batches start empty and accumulate events, get sealed (which issues
+// an asynchronous barrier on the command list), and then must be waited on
+// for all the events to complete.
+struct ur_completion_batch {
+  ur_completion_batch();
+  ~ur_completion_batch();
+
+  enum state {
+    EMPTY,        // use() -> ACCUMULATING
+    ACCUMULATING, // append() -> full -> seal() -> SEALED
+    SEALED,       // checkComplete() || forceWait() -> COMPLETED
+    COMPLETED,    // reset() -> EMPTY
+  };
+
+  state getState();
+
+  // Must be called on any completion batch prior to being used for events.
+  void use();
+
+  // Checks whether the batch is at capacity. This is a soft limit and can be
+  // exceeded if necessary.
+  bool isFull();
+
+  // Appends an event to the batch.
+  void append();
+
+  // Seals the event batch and appends a barrier to the command list.
+  // Adding any further events after this, but before reset, is undefined.
+  ur_result_t seal(ur_queue_handle_t queue, ze_command_list_handle_t cmdlist);
+
+  // Synchronously waits for all events in the batch to complete.
+  ur_result_t forceWait();
+
+  // Resets a complete batch back to an empty state. Cleanups internal state
+  // but keeps allocated memory for reuse.
+  ur_result_t reset();
+
+private:
+  // Checks whether all the events in the batch have completed. Might query
+  // the underlying event status. Can only be called on a sealed batch.
+  bool checkComplete();
+
+  // Internal barrier event that is signaled on completion of the batched
+  // events.
+  ur_event_handle_t barrierEvent;
+
+  // Current batch state. Don't use directly.
+  state st;
+
+  // Number of accumulated events.
+  size_t numEvents;
+};
+
+// A collection of event completion batches. Manages querying event status
+// in batches of events instead of individually, reducing the number of total
+// queries necessary to determine whether a set of events have signaled.
+struct ur_completion_batches {
+  // This structure should never be moved because it contains a stable iterator
+  // into a list. Copying it would likely result in unexpected behavior.
+  ur_completion_batches(const ur_completion_batches &) = delete;
+  ur_completion_batches &operator=(const ur_completion_batches &) = delete;
+  ur_completion_batches(ur_completion_batches &&) = default;
+  ur_completion_batches &operator=(ur_completion_batches &&) = default;
+
+  ur_completion_batches();
+
+  // Checks whether the current active batch is full, if it is, the active
+  // batch is sealed, and a next available batch is used.
+  // This function might also check for batch completions, and prune the
+  // provided vector from completed events.
+  ur_result_t cleanupIfFull(ur_queue_handle_t queue,
+                            ze_command_list_handle_t cmdlist,
+                            std::vector<ur_event_handle_t> &events);
+
+  // Adds an event to the the active batch. The underlying level-zero event
+  // must outlive the accumulating phase of the active batch.
+  // Ideally, all events that are appended here are then provided in the
+  // vector for cleanup. Otherwise the event batch will simply ignore
+  // missing events when it comes time for cleanup.
+  void append(ur_event_handle_t event);
+
+  // Resets all the batches without waiting for event completion.
+  void reset();
+
+private:
+  // Cleans up all completed batches, and activates the first empty one.
+  ur_result_t cleanupAndUseFirstEmpty(std::vector<ur_event_handle_t> &events);
+  // Removes completed events from the provided vector.
+  ur_result_t removeCompletedEvents(ur_completion_batch_it it,
+                                    std::vector<ur_event_handle_t> &events);
+
+  ur_completion_batch_list batches;
+  std::queue<ur_completion_batch_it> sealed;
+  ur_completion_batch_it active;
+};
+
 ur_result_t resetCommandLists(ur_queue_handle_t Queue);
 ur_result_t
 CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue, bool QueueLocked = false,
@@ -40,23 +143,33 @@ CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue, bool QueueLocked = false,
 // This is because command-lists are re-used across multiple queues
 // in the same context.
 struct ur_command_list_info_t {
+  ur_command_list_info_t(ze_fence_handle_t ZeFence, bool ZeFenceInUse,
+                         bool IsClosed, ze_command_queue_handle_t ZeQueue,
+                         ZeStruct<ze_command_queue_desc_t> ZeQueueDesc,
+                         bool UseCompletionBatching, bool CanReuse = true)
+      : ZeFence(ZeFence), ZeFenceInUse(ZeFenceInUse), IsClosed(IsClosed),
+        ZeQueue(ZeQueue), ZeQueueDesc(ZeQueueDesc), CanReuse(CanReuse) {
+    if (UseCompletionBatching) {
+      completions = ur_completion_batches();
+    }
+  }
   // The Level-Zero fence that will be signalled at completion.
   // Immediate commandlists do not have an associated fence.
   // A nullptr for the fence indicates that this is an immediate commandlist.
-  ze_fence_handle_t ZeFence{nullptr};
+  ze_fence_handle_t ZeFence;
   // Record if the fence is in use.
   // This is needed to avoid leak of the tracked command-list if the fence
   // was not yet signaled at the time all events in that list were already
   // completed (we are polling the fence at events completion). The fence
   // may be still "in-use" due to sporadic delay in HW.
-  bool ZeFenceInUse{false};
+  bool ZeFenceInUse;
 
   // Indicates if command list is in closed state. This is needed to avoid
   // appending commands to the closed command list.
-  bool IsClosed{false};
+  bool IsClosed;
 
   // Record the queue to which the command list will be submitted.
-  ze_command_queue_handle_t ZeQueue{nullptr};
+  ze_command_queue_handle_t ZeQueue;
 
   // Record the queue descriptor fields used when creating the command list
   // because we cannot recover these fields from the command list. Immediate
@@ -65,19 +178,23 @@ struct ur_command_list_info_t {
   // the make_queue API the descriptor is unavailable so a dummy descriptor is
   // used and then this entry is marked as not eligible for recycling.
   ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
-  bool CanReuse{true};
+  bool CanReuse;
 
   // Helper functions to tell if this is a copy command-list.
   bool isCopy(ur_queue_handle_t Queue) const;
+
+  // An optional event completion batching mechanism for out-of-order immediate
+  // command lists.
+  std::optional<ur_completion_batches> completions;
 
   // Keeps events created by commands submitted into this command-list.
   // TODO: use this for explicit wait/cleanup of events at command-list
   // completion.
   // TODO: use this for optimizing events in the same command-list, e.g.
   // only have last one visible to the host.
-  std::vector<ur_event_handle_t> EventList{};
+  std::vector<ur_event_handle_t> EventList;
   size_t size() const { return EventList.size(); }
-  void append(ur_event_handle_t Event) { EventList.push_back(Event); }
+  void append(ur_event_handle_t Event);
 };
 
 // The map type that would track all command-lists in a queue.
@@ -132,7 +249,7 @@ struct ur_queue_handle_t_ : _ur_object {
     ze_command_queue_handle_t &getZeQueue(uint32_t *QueueGroupOrdinal);
 
     // This function sets an immediate commandlist from the interop interface.
-    void setImmCmdList(ze_command_list_handle_t);
+    void setImmCmdList(ur_queue_handle_t queue, ze_command_list_handle_t);
 
     // This function returns the next immediate commandlist to use.
     ur_command_list_ptr_t &getImmCmdList();
@@ -521,6 +638,8 @@ struct ur_queue_handle_t_ : _ur_object {
   bool isProfilingEnabled() {
     return ((this->Properties & UR_QUEUE_FLAG_PROFILING_ENABLE) != 0);
   }
+
+  bool useCompletionBatching();
 };
 
 // This helper function creates a ur_event_handle_t and associate a

@@ -92,6 +92,13 @@ inline bool getenv_tobool(const char *name) {
     return env.has_value();
 }
 
+inline std::optional<uint64_t> getenv_to_unsigned(const char *name) try {
+    auto env = ur_getenv(name);
+    return env ? std::optional(std::stoi(*env)) : std::nullopt;
+} catch (...) {
+    return std::nullopt;
+}
+
 static void throw_wrong_format_vec(const char *env_var_name,
                                    std::string env_var_value) {
     std::stringstream ex_ss;

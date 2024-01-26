@@ -8,6 +8,7 @@
 //
 //===----------------------------------------------------------------------===//
 #include "command_buffer.hpp"
+#include "adapters/level_zero/queue.hpp"
 #include "ur_level_zero.hpp"
 
 /* Command-buffer Extension
