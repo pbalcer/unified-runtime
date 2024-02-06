@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "context.hpp"
+#include "ur_api.h"
 #include "ur_level_zero.hpp"
 
 UR_APIEXPORT ur_result_t UR_APICALL urContextCreate(
@@ -397,16 +398,16 @@ ur_result_t ur_context_handle_t_::finalize() {
   // deallocated. For example, event and event pool caches would be still alive.
 
   if (!DisableEventsCaching) {
-    std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
     for (auto &EventCache : EventCaches) {
-      for (auto &Event : EventCache) {
+      std::optional<ur_event_handle_t> element;
+      while ((element = EventCache.pop()).has_value()) {
+        auto Event = *element;
         auto ZeResult = ZE_CALL_NOCHECK(zeEventDestroy, (Event->ZeEvent));
         // Gracefully handle the case that L0 was already unloaded.
         if (ZeResult && ZeResult != ZE_RESULT_ERROR_UNINITIALIZED)
           return ze2urResult(ZeResult);
         delete Event;
       }
-      EventCache.clear();
     }
   }
   {
@@ -531,24 +532,19 @@ ur_result_t ur_context_handle_t_::getFreeSlotInExistingOrNewPool(
 ur_event_handle_t
 ur_context_handle_t_::getEventFromContextCache(bool HostVisible,
                                                bool WithProfiling) {
-  std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
   auto Cache = getEventCache(HostVisible, WithProfiling);
-  if (Cache->empty())
-    return nullptr;
 
-  auto It = Cache->begin();
-  ur_event_handle_t Event = *It;
-  Cache->erase(It);
-  // We have to reset event before using it.
-  Event->reset();
-  return Event;
+  if (auto event = Cache->pop(); event) {
+    return *event;
+  }
+
+  return nullptr;
 }
 
 void ur_context_handle_t_::addEventToContextCache(ur_event_handle_t Event) {
-  std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
   auto Cache =
       getEventCache(Event->isHostVisible(), Event->isProfilingEnabled());
-  Cache->emplace_back(Event);
+  Cache->push(Event);
 }
 
 ur_result_t

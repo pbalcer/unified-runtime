@@ -11,6 +11,10 @@
 
 #include <list>
 #include <map>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <stack>
 #include <stdarg.h>
 #include <string>
 #include <unordered_map>
@@ -27,15 +31,77 @@
 
 #include <umf_helpers.hpp>
 
+template <typename T> class ShardedCache {
+public:
+  ShardedCache(const ShardedCache &) = delete;
+  ShardedCache &operator=(const ShardedCache &) = delete;
+  ShardedCache(ShardedCache &&) = default;
+  ShardedCache &operator=(ShardedCache &&) = default;
+
+  ShardedCache(size_t numShards) {
+    for (size_t i = 0; i < numShards; ++i) {
+      shards.emplace_back(std::make_unique<Shard>());
+    }
+  }
+
+  void push(T value) {
+    auto &shard = shards[thread_shard_id()];
+    shard->push(value);
+  }
+
+  std::optional<T> pop() {
+    size_t start = thread_shard_id();
+    size_t numShards = shards.size();
+
+    for (size_t i = 0; i < numShards; ++i) {
+      auto &shard = shards[(start + i) % numShards];
+      if (auto value = shard->pop(); value) {
+        return value;
+      }
+    }
+    return std::nullopt;
+  }
+
+private:
+  size_t thread_shard_id() {
+    static std::atomic<size_t> nThreads = 0;
+    thread_local static size_t ThreadId = nThreads++;
+
+    return ThreadId % shards.size();
+  }
+
+  class Shard {
+  public:
+    void push(T value) {
+      std::scoped_lock Lock(lock);
+      stack.push(value);
+    }
+    std::optional<T> pop() {
+      std::scoped_lock Lock(lock);
+      if (!stack.empty()) {
+        T value = stack.top();
+        stack.pop();
+        return value;
+      }
+      return std::nullopt;
+    }
+
+  private:
+    std::stack<T> stack;
+    ur_mutex lock;
+  };
+
+  std::vector<std::unique_ptr<Shard>> shards;
+};
+
 struct ur_context_handle_t_ : _ur_object {
   ur_context_handle_t_(ze_context_handle_t ZeContext, uint32_t NumDevices,
                        const ur_device_handle_t *Devs, bool OwnZeContext)
       : ZeContext{ZeContext}, Devices{Devs, Devs + NumDevices},
-        NumDevices{NumDevices} {
+        NumDevices{NumDevices}, EventCaches(createEventCaches(NumDevices)) {
+
     OwnNativeHandle = OwnZeContext;
   }
-
-  ur_context_handle_t_(ze_context_handle_t ZeContext) : ZeContext{ZeContext} {}
 
   // A L0 context handle is primarily used during creation and management of
   // resources that may be used by multiple devices.
@@ -158,11 +224,15 @@ struct ur_context_handle_t_ : _ur_object {
   // holding the current pool usage counts.
   ur_mutex ZeEventPoolCacheMutex;
 
-  // Mutex to control operations on event caches.
-  ur_mutex EventCacheMutex;
-
+  using CachesArray = std::array<ShardedCache<ur_event_handle_t>, 4>;
   // Caches for events.
-  std::vector<std::list<ur_event_handle_t>> EventCaches{4};
+  CachesArray EventCaches;
+  CachesArray createEventCaches(size_t numDevices) {
+    return {ShardedCache<ur_event_handle_t>(numDevices),
+            ShardedCache<ur_event_handle_t>(numDevices),
+            ShardedCache<ur_event_handle_t>(numDevices),
+            ShardedCache<ur_event_handle_t>(numDevices)};
+  }
 
   // Initialize the PI context.
   ur_result_t initialize();
