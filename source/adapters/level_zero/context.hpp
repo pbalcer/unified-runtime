@@ -98,7 +98,7 @@ struct ur_context_handle_t_ : _ur_object {
   ur_context_handle_t_(ze_context_handle_t ZeContext, uint32_t NumDevices,
                        const ur_device_handle_t *Devs, bool OwnZeContext)
       : ZeContext{ZeContext}, Devices{Devs, Devs + NumDevices},
-        NumDevices{NumDevices}, EventCaches(createEventCaches(NumDevices)) {
+        NumDevices{NumDevices}, EventCaches(createEventCaches(8)) {
 
     OwnNativeHandle = OwnZeContext;
   }
@@ -227,11 +227,11 @@ struct ur_context_handle_t_ : _ur_object {
   using CachesArray = std::array<ShardedCache<ur_event_handle_t>, 4>;
   // Caches for events.
   CachesArray EventCaches;
-  CachesArray createEventCaches(size_t numDevices) {
-    return {ShardedCache<ur_event_handle_t>(numDevices),
-            ShardedCache<ur_event_handle_t>(numDevices),
-            ShardedCache<ur_event_handle_t>(numDevices),
-            ShardedCache<ur_event_handle_t>(numDevices)};
+  CachesArray createEventCaches(size_t n) {
+    return {ShardedCache<ur_event_handle_t>(n),
+            ShardedCache<ur_event_handle_t>(n),
+            ShardedCache<ur_event_handle_t>(n),
+            ShardedCache<ur_event_handle_t>(n)};
   }
 
   // Initialize the PI context.

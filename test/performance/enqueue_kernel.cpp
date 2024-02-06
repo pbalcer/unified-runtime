@@ -17,7 +17,9 @@
 #include <nanobench.h>
 #include <sstream>
 #include <string>
-
+#include <thread>
+#include <vector>
+#include <chrono>
 #include "fixtures.hpp"
 #include "ur_api.h"
 #include "ur_print.hpp"
@@ -29,27 +31,55 @@ struct {
     uint32_t nDim;
     size_t size[3];
     const char *name;
-} kernelVariants[] = {{1, {1, 0, 0}, "small"}, {3, {128, 128, 128}, "large"}};
+} kernelVariants[] = { {3, {16, 16, 16}, "large"}};
 
 void runKernelVariants(Bench &bench, Device &device, ur_queue_flags_t flags,
                        const std::string &name) {
-    auto context = Context(device);
-    auto queue = Queue(context, device, flags);
+    // Start measuring time
+    auto start = std::chrono::high_resolution_clock::now();
+            auto context = Context(device);
 
-    /* kernels are implemented in conformance/device_code */
-    auto program = Program(context, "foo");
-    auto kernel = program.createKernel(program.entry_points[0]);
+    // Create and run threads
+    const int numThreads = 4;
+    std::vector<std::thread> threads;
+    for (int i = 0; i < numThreads; ++i) {
+        threads.emplace_back([&context, &device, flags, &name]() {
+            {
+                auto queue = Queue(context, device, flags);
 
-    const size_t offset[] = {0, 0, 0};
-    for (const auto &variant : kernelVariants) {
-        bench.run(name + " - " + variant.name, [&] {
-            urEnqueueKernelLaunch(queue.raw(), kernel.raw(), variant.nDim,
-                                  offset, variant.size, nullptr, 0, nullptr,
-                                  nullptr);
+                /* kernels are implemented in conformance/device_code */
+                auto program = Program(context, "foo");
+                auto kernel = program.createKernel(program.entry_points[0]);
+
+                const size_t offset[] = {0, 0, 0};
+                for (const auto &variant : kernelVariants) {
+                    //bench.run(name + " - " + variant.name, [&] {
+                    for (int i = 0; i < 100000; ++i) {
+                        
+                        urEnqueueKernelLaunch(queue.raw(), kernel.raw(), variant.nDim,
+                                              offset, variant.size, nullptr, 0, nullptr,
+                                              nullptr);
+                    }
+                    //});
+                    /* make sure everything finishes before starting another benchmark */
+                    urEnqueueEventsWaitWithBarrier(queue.raw(), 0, nullptr, nullptr);
+                }
+            }
         });
-        /* make sure everything finishes before starting another benchmark */
-        urEnqueueEventsWaitWithBarrier(queue.raw(), 0, nullptr, nullptr);
     }
+
+    // Join threads
+    for (auto& thread : threads) {
+        if (thread.joinable()) {
+            thread.join();
+        }
+    }
+
+    // Stop measuring time
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+
+    std::cout << "Total execution time: " << duration << " milliseconds" << std::endl;
 }
 
 struct {
@@ -57,13 +87,6 @@ struct {
     const char *name;
 } queueVariants[] = {
     {UR_QUEUE_FLAG_SUBMISSION_BATCHED, "Enqueue Batched in-order"},
-    {UR_QUEUE_FLAG_SUBMISSION_BATCHED |
-         UR_QUEUE_FLAG_OUT_OF_ORDER_EXEC_MODE_ENABLE,
-     "Enqueue Batched out-of-order"},
-    {UR_QUEUE_FLAG_SUBMISSION_IMMEDIATE |
-         UR_QUEUE_FLAG_OUT_OF_ORDER_EXEC_MODE_ENABLE,
-     "Enqueue Immcmd out-of-order"},
-    {UR_QUEUE_FLAG_SUBMISSION_IMMEDIATE, "Enqueue Immcmd in-order"},
 };
 
 void runQueueVariants(Bench &bench, Device &device) {
@@ -79,7 +102,7 @@ int main(int argc, const char *argv[]) {
     uint64_t epochIters = 1000;
     if (argc == 3) {
         try {
-            epochIters = std::stoull(argv[1]);
+            epochs = std::stoull(argv[1]);
             epochIters = std::stoull(argv[2]);
         } catch (const std::exception &e) {
             std::cerr << "Invalid arguments. Usage: " << argv[0]
@@ -106,8 +129,8 @@ int main(int argc, const char *argv[]) {
         }
     }
 
-    std::ofstream renderOut("enqueue_kernel.html");
-    render(ankerl::nanobench::templates::htmlBoxplot(), bench, renderOut);
+    //std::ofstream renderOut("enqueue_kernel.html");
+    //render(ankerl::nanobench::templates::htmlBoxplot(), bench, renderOut);
 
     return 0;
 }
