@@ -410,17 +410,9 @@ ur_result_t ur_context_handle_t_::finalize() {
       }
     }
   }
-  {
-    std::scoped_lock<ur_mutex> Lock(ZeEventPoolCacheMutex);
-    for (auto &ZePoolCache : ZeEventPoolCache) {
-      for (auto &ZePool : ZePoolCache) {
-        auto ZeResult = ZE_CALL_NOCHECK(zeEventPoolDestroy, (ZePool));
-        // Gracefully handle the case that L0 was already unloaded.
-        if (ZeResult && ZeResult != ZE_RESULT_ERROR_UNINITIALIZED)
-          return ze2urResult(ZeResult);
-      }
-      ZePoolCache.clear();
-    }
+
+  for (auto &ZePoolCache : ZeEventPoolCache) {
+    ZePoolCache.finalize();
   }
 
   // Destroy the command list used for initializations
@@ -473,35 +465,10 @@ static const uint32_t MaxNumEventsPerPool = [] {
 ur_result_t ur_context_handle_t_::getFreeSlotInExistingOrNewPool(
     ze_event_pool_handle_t &Pool, size_t &Index, bool HostVisible,
     bool ProfilingEnabled) {
-  // Lock while updating event pool machinery.
-  std::scoped_lock<ur_mutex> Lock(ZeEventPoolCacheMutex);
 
-  std::list<ze_event_pool_handle_t> *ZePoolCache =
-      getZeEventPoolCache(HostVisible, ProfilingEnabled);
-
-  if (!ZePoolCache->empty()) {
-    if (NumEventsAvailableInEventPool[ZePoolCache->front()] == 0) {
-      if (DisableEventsCaching) {
-        // Remove full pool from the cache if events caching is disabled.
-        ZePoolCache->erase(ZePoolCache->begin());
-      } else {
-        // If event caching is enabled then we don't destroy events so there is
-        // no need to remove pool from the cache and add it back when it has
-        // available slots. Just keep it in the tail of the cache so that all
-        // pools can be destroyed during context destruction.
-        ZePoolCache->push_front(nullptr);
-      }
-    }
-  }
-  if (ZePoolCache->empty()) {
-    ZePoolCache->push_back(nullptr);
-  }
-
-  // We shall be adding an event to the front pool.
-  ze_event_pool_handle_t *ZePool = &ZePoolCache->front();
-  Index = 0;
-  // Create one event ZePool per MaxNumEventsPerPool events
-  if (*ZePool == nullptr) {
+  auto *cache = getZeEventPoolCache(HostVisible, ProfilingEnabled);
+  auto descriptor = cache->allocate_index_in_pool([&](size_t &available) {
+    ze_event_pool_handle_t ZePool;
     ZeStruct<ze_event_pool_desc_t> ZeEventPoolDesc;
     ZeEventPoolDesc.count = MaxNumEventsPerPool;
     ZeEventPoolDesc.flags = 0;
@@ -511,21 +478,21 @@ ur_result_t ur_context_handle_t_::getFreeSlotInExistingOrNewPool(
       ZeEventPoolDesc.flags |= ZE_EVENT_POOL_FLAG_KERNEL_TIMESTAMP;
     urPrint("ze_event_pool_desc_t flags set to: %d\n", ZeEventPoolDesc.flags);
 
+    available = ZeEventPoolDesc.count;
+
     std::vector<ze_device_handle_t> ZeDevices;
     std::for_each(
         Devices.begin(), Devices.end(),
         [&](const ur_device_handle_t &D) { ZeDevices.push_back(D->ZeDevice); });
 
-    ZE2UR_CALL(zeEventPoolCreate, (ZeContext, &ZeEventPoolDesc,
-                                   ZeDevices.size(), &ZeDevices[0], ZePool));
-    NumEventsAvailableInEventPool[*ZePool] = MaxNumEventsPerPool - 1;
-    NumEventsUnreleasedInEventPool[*ZePool] = 1;
-  } else {
-    Index = MaxNumEventsPerPool - NumEventsAvailableInEventPool[*ZePool];
-    --NumEventsAvailableInEventPool[*ZePool];
-    ++NumEventsUnreleasedInEventPool[*ZePool];
-  }
-  Pool = *ZePool;
+    zeEventPoolCreate(ZeContext, &ZeEventPoolDesc,
+                                   ZeDevices.size(), &ZeDevices[0], &ZePool);
+                                   return ZePool;
+  });
+
+  Pool = descriptor.pool;
+  Index = descriptor.index;
+
   return UR_RESULT_SUCCESS;
 }
 
@@ -550,15 +517,15 @@ void ur_context_handle_t_::addEventToContextCache(ur_event_handle_t Event) {
 ur_result_t
 ur_context_handle_t_::decrementUnreleasedEventsInPool(ur_event_handle_t Event) {
   std::shared_lock<ur_shared_mutex> EventLock(Event->Mutex, std::defer_lock);
-  std::scoped_lock<ur_mutex, std::shared_lock<ur_shared_mutex>> LockAll(
-      ZeEventPoolCacheMutex, EventLock);
+  std::scoped_lock<std::shared_lock<ur_shared_mutex>> LockAll(
+      EventLock);
   if (!Event->ZeEventPool) {
     // This must be an interop event created on a users's pool.
     // Do nothing.
     return UR_RESULT_SUCCESS;
   }
-
-  std::list<ze_event_pool_handle_t> *ZePoolCache =
+#if 0
+  auto *cache =
       getZeEventPoolCache(Event->isHostVisible(), Event->isProfilingEnabled());
 
   // Put the empty pool to the cache of the pools.
@@ -570,6 +537,7 @@ ur_context_handle_t_::decrementUnreleasedEventsInPool(ur_event_handle_t Event) {
     }
     NumEventsAvailableInEventPool[Event->ZeEventPool] = MaxNumEventsPerPool;
   }
+#endif
 
   return UR_RESULT_SUCCESS;
 }

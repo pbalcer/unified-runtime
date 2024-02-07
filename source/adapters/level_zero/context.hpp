@@ -9,6 +9,7 @@
 //===----------------------------------------------------------------------===//
 #pragma once
 
+#include <atomic>
 #include <list>
 #include <map>
 #include <memory>
@@ -49,12 +50,27 @@ public:
     shard->push(value);
   }
 
+  void batch_insert(T* value, size_t nvalues) {
+    size_t per_shard = nvalues / shards.size();
+    for (int i = 0; i < shards.size(); ++i) {
+      auto &shard = shards[i];
+      shard->batch_insert(value + (i * per_shard), per_shard);
+    }
+    size_t distributed = per_shard * shards.size();
+    size_t leftover = nvalues - distributed;
+    if (leftover != 0) {
+      shards[0]->batch_insert(value + (distributed), leftover);
+    }
+  }
+
   std::optional<T> pop() {
     size_t start = thread_shard_id();
     size_t numShards = shards.size();
 
     for (size_t i = 0; i < numShards; ++i) {
       auto &shard = shards[(start + i) % numShards];
+      if (shard->likely_empty()) continue;
+
       if (auto value = shard->pop(); value) {
         return value;
       }
@@ -72,23 +88,36 @@ private:
 
   class Shard {
   public:
+    void batch_insert(T* value, size_t nvalues) {
+      std::scoped_lock Lock(lock);
+      for (int i = 0; i < nvalues; ++i) {
+        stack.push(value[i]);
+      }
+      nelements.fetch_add(nvalues, std::memory_order_relaxed);
+    }
     void push(T value) {
       std::scoped_lock Lock(lock);
       stack.push(value);
+      nelements.fetch_add(1, std::memory_order_relaxed);
     }
     std::optional<T> pop() {
       std::scoped_lock Lock(lock);
       if (!stack.empty()) {
         T value = stack.top();
         stack.pop();
+        nelements.fetch_sub(1, std::memory_order_relaxed);
         return value;
       }
       return std::nullopt;
+    }
+    bool likely_empty() {
+      return nelements.load(std::memory_order_relaxed) == 0;
     }
 
   private:
     std::stack<T> stack;
     ur_mutex lock;
+    std::atomic<ssize_t> nelements;
   };
 
   std::vector<std::unique_ptr<Shard>> shards;
@@ -98,7 +127,7 @@ struct ur_context_handle_t_ : _ur_object {
   ur_context_handle_t_(ze_context_handle_t ZeContext, uint32_t NumDevices,
                        const ur_device_handle_t *Devs, bool OwnZeContext)
       : ZeContext{ZeContext}, Devices{Devs, Devs + NumDevices},
-        NumDevices{NumDevices}, EventCaches(createEventCaches(8)) {
+        NumDevices{NumDevices}, EventCaches(createEventCaches(NumDevices)) {
 
     OwnNativeHandle = OwnZeContext;
   }
@@ -206,23 +235,104 @@ struct ur_context_handle_t_ : _ur_object {
   // head. In case there is no next pool, a new pool is created and made the
   // head.
   //
+
+  struct ur_event_descriptor {
+    uint32_t index;
+    ze_event_pool_handle_t pool;
+  };
+
+  class ur_event_pool {
+    public:
+    ur_event_pool(ze_event_pool_handle_t pool, int64_t available) : pool(pool), available(available) {}
+    ur_event_pool(const ur_event_pool &) = delete;
+    ur_event_pool &operator=(const ur_event_pool &) = delete;
+
+    ur_result_t finalize() {
+      auto ZeResult = ZE_CALL_NOCHECK(zeEventPoolDestroy, (pool));
+      return ze2urResult(ZeResult);
+    }
+
+    std::optional<uint32_t> allocate_index() {
+      auto n = available.fetch_sub(1, std::memory_order_acq_rel) - 1;
+      return n > 0 ? std::optional(n) : std::nullopt;
+    }
+    ze_event_pool_handle_t get_pool() {
+      return pool;
+    }
+    uint64_t get_available() {
+      return available.load(std::memory_order_acquire) - 1 > 0;
+    }
+    private:
+    ze_event_pool_handle_t pool;
+    std::atomic<int64_t> available;
+  };
+  class ur_event_pool_cache {
+    public:
+    ur_event_pool_cache() {}
+    ur_event_pool_cache(const ur_event_pool_cache &) = delete;
+    ur_event_pool_cache &operator=(const ur_event_pool_cache &) = delete;
+
+    ~ur_event_pool_cache() {
+
+    }
+    ur_result_t finalize() {
+      if (active) {
+        delete active;
+      }
+
+      ur_result_t result = UR_RESULT_SUCCESS;
+      for (auto & ptr : full) {
+          result = ptr->finalize();
+
+        delete ptr;
+      }
+      return result;
+    }
+
+    ur_event_descriptor allocate_index_in_pool(std::function<ze_event_pool_handle_t(size_t &available)> poolCreate) {
+      auto pool = active.load(std::memory_order_acquire);
+      if (pool == nullptr) {
+        lock.lock();
+        if ((pool = active.load(std::memory_order_acquire)); pool != nullptr) {
+          lock.unlock();
+          return allocate_index_in_pool(poolCreate);
+        }
+        size_t available;
+        auto zepool = poolCreate(available);
+        auto n = new ur_event_pool(zepool, available);
+        active.store(n, std::memory_order_release);
+
+        lock.unlock();
+        return allocate_index_in_pool(poolCreate);
+      }
+
+      if (auto index = pool->allocate_index(); index) {
+        return ur_event_descriptor{*index, pool->get_pool()};
+      }
+
+      if (active.compare_exchange_strong(pool, nullptr, std::memory_order_acq_rel, std::memory_order_acquire)) {
+        if (false /*DisableEventsCaching*/) {
+
+        } else {
+          std::unique_lock Lock (lock);
+          full.push_back(pool);
+        }
+      }
+
+      return allocate_index_in_pool(poolCreate);
+    }
+
+    private:
+    std::atomic<ur_event_pool *> active;
+
+    ur_mutex lock;
+    std::vector<ur_event_pool *> full;
+  };
+
+  using EventPoolArray = std::array<ur_event_pool_cache, 4>;
+
   // Cache of event pools to which host-visible events are added to.
-  std::vector<std::list<ze_event_pool_handle_t>> ZeEventPoolCache{4};
-
-  // This map will be used to determine if a pool is full or not
-  // by storing number of empty slots available in the pool.
-  std::unordered_map<ze_event_pool_handle_t, uint32_t>
-      NumEventsAvailableInEventPool;
-  // This map will be used to determine number of unreleased events in the pool.
-  // We use separate maps for number of event slots available in the pool from
-  // the number of events unreleased in the pool.
-  // This will help when we try to make the code thread-safe.
-  std::unordered_map<ze_event_pool_handle_t, uint32_t>
-      NumEventsUnreleasedInEventPool;
-
-  // Mutex to control operations on event pool caches and the helper maps
-  // holding the current pool usage counts.
-  ur_mutex ZeEventPoolCacheMutex;
+  EventPoolArray ZeEventPoolCache;
 
   using CachesArray = std::array<ShardedCache<ur_event_handle_t>, 4>;
   // Caches for events.

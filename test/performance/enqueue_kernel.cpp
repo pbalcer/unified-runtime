@@ -31,7 +31,7 @@ struct {
     uint32_t nDim;
     size_t size[3];
     const char *name;
-} kernelVariants[] = { {3, {16, 16, 16}, "large"}};
+} kernelVariants[] = { {3, {128, 128, 128}, "large"}};
 
 void runKernelVariants(Bench &bench, Device &device, ur_queue_flags_t flags,
                        const std::string &name) {
@@ -40,7 +40,7 @@ void runKernelVariants(Bench &bench, Device &device, ur_queue_flags_t flags,
             auto context = Context(device);
 
     // Create and run threads
-    const int numThreads = 4;
+    const int numThreads = 8;
     std::vector<std::thread> threads;
     for (int i = 0; i < numThreads; ++i) {
         threads.emplace_back([&context, &device, flags, &name]() {
@@ -55,10 +55,11 @@ void runKernelVariants(Bench &bench, Device &device, ur_queue_flags_t flags,
                 for (const auto &variant : kernelVariants) {
                     //bench.run(name + " - " + variant.name, [&] {
                     for (int i = 0; i < 100000; ++i) {
-                        
+                        ur_event_handle_t e;
                         urEnqueueKernelLaunch(queue.raw(), kernel.raw(), variant.nDim,
                                               offset, variant.size, nullptr, 0, nullptr,
-                                              nullptr);
+                                              &e);
+                        urEventRelease(e);
                     }
                     //});
                     /* make sure everything finishes before starting another benchmark */
