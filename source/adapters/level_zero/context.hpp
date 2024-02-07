@@ -97,14 +97,14 @@ private:
     }
     void push(T value) {
       std::scoped_lock Lock(lock);
-      stack.push(value);
+      stack.push_back(value);
       nelements.fetch_add(1, std::memory_order_relaxed);
     }
     std::optional<T> pop() {
       std::scoped_lock Lock(lock);
       if (!stack.empty()) {
-        T value = stack.top();
-        stack.pop();
+        T value = stack.back();
+        stack.pop_back();
         nelements.fetch_sub(1, std::memory_order_relaxed);
         return value;
       }
@@ -115,7 +115,7 @@ private:
     }
 
   private:
-    std::stack<T> stack;
+    std::vector<T> stack;
     ur_mutex lock;
     std::atomic<ssize_t> nelements;
   };

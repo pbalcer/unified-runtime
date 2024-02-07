@@ -54,12 +54,12 @@ void runKernelVariants(Bench &bench, Device &device, ur_queue_flags_t flags,
                 const size_t offset[] = {0, 0, 0};
                 for (const auto &variant : kernelVariants) {
                     //bench.run(name + " - " + variant.name, [&] {
-                    for (int i = 0; i < 100000; ++i) {
-                        ur_event_handle_t e;
+                    for (int i = 0; i < 10000; ++i) {
+                        //ur_event_handle_t e;
                         urEnqueueKernelLaunch(queue.raw(), kernel.raw(), variant.nDim,
                                               offset, variant.size, nullptr, 0, nullptr,
-                                              &e);
-                        urEventRelease(e);
+                                              nullptr);
+                        //urEventRelease(e);
                     }
                     //});
                     /* make sure everything finishes before starting another benchmark */
