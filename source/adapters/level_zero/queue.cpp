@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <climits>
 #include <cstdint>
+#include <emmintrin.h>
 #include <optional>
 #include <string.h>
 #include <vector>
@@ -57,7 +58,7 @@ bool ur_completion_batch::isFull() {
   return numEvents >= CompletionEventsPerBatch;
 }
 
-void ur_completion_batch::append() {
+void ur_completion_batch::append(ur_event_handle_t event) {
   assert(st == ACCUMULATING);
   numEvents++;
 }
@@ -65,7 +66,6 @@ void ur_completion_batch::append() {
 ur_result_t ur_completion_batch::reset() {
   st = EMPTY;
   numEvents = 0;
-
   // we reuse the UR event handle but reset the internal level-zero one
   if (barrierEvent)
     ZE2UR_CALL(zeEventHostReset, (barrierEvent->ZeEvent));
@@ -134,7 +134,7 @@ ur_result_t ur_completion_batch::seal(ur_queue_handle_t queue,
 }
 
 void ur_completion_batches::append(ur_event_handle_t event) {
-  active->append();
+  active->append(event);
   event->completionBatch = active;
 }
 
@@ -167,14 +167,28 @@ ur_result_t ur_completion_batches::removeCompletedEvents(
 }
 
 ur_result_t ur_completion_batches::cleanupAndUseFirstEmpty(
-    std::vector<ur_event_handle_t> &events) {
+    std::vector<ur_event_handle_t> &events, bool soft) {
+
+  if (sealed.empty()) {
+    if (soft) {
+      return UR_RESULT_SUCCESS;
+    } else {
+      ur::unreachable();
+    }
+  }
 
   auto oldest_sealed = sealed.front();
   if (oldest_sealed->getState() != ur_completion_batch::COMPLETED) {
+    if (soft) {
+      return UR_RESULT_SUCCESS;
+    }
+
     if (batches.size() < CompletionBatchesMax) {
       // if the oldest batch that was sealed isn't yet complete, try creating
       // a new batch if allowed by the limit.
       active = batches.emplace(batches.end());
+      printf("adding %lu\n", batches.size());
+      active->use();
       return UR_RESULT_SUCCESS;
     } else {
       // otherwise synchronously wait for the oldest batch of events to complete
@@ -186,6 +200,7 @@ ur_result_t ur_completion_batches::cleanupAndUseFirstEmpty(
   active = oldest_sealed;
   UR_CALL(removeCompletedEvents(active, events));
   UR_CALL(active->reset());
+  active->use();
 
   return UR_RESULT_SUCCESS;
 }
@@ -199,19 +214,21 @@ ur_completion_batches::ur_completion_batches() {
 ur_result_t
 ur_completion_batches::cleanupIfFull(ur_queue_handle_t queue,
                                      ze_command_list_handle_t cmdlist,
-                                     std::vector<ur_event_handle_t> &events) {
+                                     std::vector<ur_event_handle_t> &events, bool soft = false) {
   if (!active->isFull())
     return UR_RESULT_SUCCESS;
 
-  UR_CALL(active->seal(queue, cmdlist));
-  sealed.push(active);
+  if (!soft && active->getState() != ur_completion_batch::SEALED) {
+    UR_CALL(active->seal(queue, cmdlist));
+    sealed.push(active);
+  }
 
-  UR_CALL(cleanupAndUseFirstEmpty(events));
+  UR_CALL(cleanupAndUseFirstEmpty(events, soft));
 
   return UR_RESULT_SUCCESS;
 }
 
-void ur_completion_batches::reset() {
+void ur_completion_batches::clean() {
   for (auto &b : batches) {
     b.reset();
   }
@@ -292,8 +309,12 @@ ur_result_t CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue,
       // Fallback to resetCommandList over all command lists.
       for (auto &&It = UrQueue->CommandListMap.begin();
            It != UrQueue->CommandListMap.end(); ++It) {
-        UR_CALL(UrQueue->resetCommandList(It, true, EventListToCleanup,
-                                          true /* CheckStatus */));
+            if (auto &completions = It->second.completions; completions) {
+              completions->cleanupIfFull(UrQueue, It->first, It->second.EventList, true);
+            } else {
+          UR_CALL(UrQueue->resetCommandList(It, true, EventListToCleanup,
+                                            true /* CheckStatus */));
+            }
       }
     }
   }
@@ -721,8 +742,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueGetNativeHandle(
   return UR_RESULT_SUCCESS;
 }
 
-void ur_queue_handle_t_::ur_queue_group_t::setImmCmdList(
-    ur_queue_handle_t queue, ze_command_list_handle_t ZeCommandList) {
+void ur_queue_handle_t_::ur_queue_group_t::setImmCmdList(ze_command_list_handle_t ZeCommandList) {
   // An immediate command list was given to us but we don't have the queue
   // descriptor information. Create a dummy and note that it is not recycleable.
   ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
@@ -733,7 +753,7 @@ void ur_queue_handle_t_::ur_queue_group_t::setImmCmdList(
           .insert(std::pair<ze_command_list_handle_t, ur_command_list_info_t>{
               ZeCommandList,
               ur_command_list_info_t(nullptr, true, false, nullptr, ZeQueueDesc,
-                                     queue->useCompletionBatching(), false)})
+                                     Queue->useCompletionBatching(), false)})
           .first);
 }
 
@@ -801,8 +821,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
       return UR_RESULT_ERROR_UNKNOWN;
     }
     auto &InitialGroup = (*RetQueue)->ComputeQueueGroupsByTID.begin()->second;
-    InitialGroup.setImmCmdList(*RetQueue,
-                               ur_cast<ze_command_list_handle_t>(NativeQueue));
+    InitialGroup.setImmCmdList(ur_cast<ze_command_list_handle_t>(NativeQueue));
   } else {
     auto ZeQueue = ur_cast<ze_command_queue_handle_t>(NativeQueue);
     // Assume this is the "0" index queue in the compute command-group.
@@ -1600,7 +1619,7 @@ ur_result_t ur_queue_handle_t_::synchronize() {
     CleanupEventListFromResetCmdList(ImmCmdList->second.EventList, true);
     ImmCmdList->second.EventList.clear();
     if (auto &completions = ImmCmdList->second.completions; completions) {
-      completions.reset();
+      completions->clean();
     }
     return UR_RESULT_SUCCESS;
   };

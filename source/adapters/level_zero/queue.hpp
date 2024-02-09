@@ -61,7 +61,7 @@ struct ur_completion_batch {
   bool isFull();
 
   // Appends an event to the batch.
-  void append();
+  void append(ur_event_handle_t event);
 
   // Seals the event batch and appends a barrier to the command list.
   // Adding any further events after this, but before reset, is undefined.
@@ -94,7 +94,7 @@ private:
 // in batches of events instead of individually, reducing the number of total
 // queries necessary to determine whether a set of events have signaled.
 struct ur_completion_batches {
-  // This structure should never be moved because it contains a stable iterator
+  // This structure should never be copied because it contains a stable iterator
   // into a list. Copying it would likely result in unexpected behavior.
   ur_completion_batches(const ur_completion_batches &) = delete;
   ur_completion_batches &operator=(const ur_completion_batches &) = delete;
@@ -102,6 +102,8 @@ struct ur_completion_batches {
   ur_completion_batches &operator=(ur_completion_batches &&) = default;
 
   ur_completion_batches();
+  ~ur_completion_batches() {
+  }
 
   // Checks whether the current active batch is full, if it is, the active
   // batch is sealed, and a next available batch is used.
@@ -109,7 +111,7 @@ struct ur_completion_batches {
   // provided vector from completed events.
   ur_result_t cleanupIfFull(ur_queue_handle_t queue,
                             ze_command_list_handle_t cmdlist,
-                            std::vector<ur_event_handle_t> &events);
+                            std::vector<ur_event_handle_t> &events, bool soft);
 
   // Adds an event to the the active batch. The underlying level-zero event
   // must outlive the accumulating phase of the active batch.
@@ -119,11 +121,11 @@ struct ur_completion_batches {
   void append(ur_event_handle_t event);
 
   // Resets all the batches without waiting for event completion.
-  void reset();
+  void clean();
 
 private:
   // Cleans up all completed batches, and activates the first empty one.
-  ur_result_t cleanupAndUseFirstEmpty(std::vector<ur_event_handle_t> &events);
+  ur_result_t cleanupAndUseFirstEmpty(std::vector<ur_event_handle_t> &events, bool soft);
   // Removes completed events from the provided vector.
   ur_result_t removeCompletedEvents(ur_completion_batch_it it,
                                     std::vector<ur_event_handle_t> &events);
@@ -143,6 +145,11 @@ CleanupEventsInImmCmdLists(ur_queue_handle_t UrQueue, bool QueueLocked = false,
 // This is because command-lists are re-used across multiple queues
 // in the same context.
 struct ur_command_list_info_t {
+  ur_command_list_info_t(const ur_command_list_info_t &) = delete;
+  ur_command_list_info_t &operator=(const ur_command_list_info_t &) = delete;
+  ur_command_list_info_t(ur_command_list_info_t &&) = default;
+  ur_command_list_info_t &operator=(ur_command_list_info_t &&) = default;
+
   ur_command_list_info_t(ze_fence_handle_t ZeFence, bool ZeFenceInUse,
                          bool IsClosed, ze_command_queue_handle_t ZeQueue,
                          ZeStruct<ze_command_queue_desc_t> ZeQueueDesc,
@@ -249,7 +256,7 @@ struct ur_queue_handle_t_ : _ur_object {
     ze_command_queue_handle_t &getZeQueue(uint32_t *QueueGroupOrdinal);
 
     // This function sets an immediate commandlist from the interop interface.
-    void setImmCmdList(ur_queue_handle_t queue, ze_command_list_handle_t);
+    void setImmCmdList(ze_command_list_handle_t);
 
     // This function returns the next immediate commandlist to use.
     ur_command_list_ptr_t &getImmCmdList();

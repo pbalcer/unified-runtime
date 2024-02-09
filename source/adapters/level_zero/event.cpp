@@ -1204,6 +1204,7 @@ ur_result_t _ur_ze_event_list_t::createAndRetainUrZeEventList(
           // Poll of the host-visible events.
           auto HostVisibleEvent = EventList[I]->HostVisibleEvent;
           if (FilterEventWaitList && HostVisibleEvent) {
+            printf("here\n");
             auto Res = ZE_CALL_NOCHECK(zeEventQueryStatus,
                                        (HostVisibleEvent->ZeEvent));
             if (Res == ZE_RESULT_SUCCESS) {

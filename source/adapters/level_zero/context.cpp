@@ -516,6 +516,7 @@ ur_result_t ur_context_handle_t_::getFreeSlotInExistingOrNewPool(
         Devices.begin(), Devices.end(),
         [&](const ur_device_handle_t &D) { ZeDevices.push_back(D->ZeDevice); });
 
+    //printf("creating event pool\n");
     ZE2UR_CALL(zeEventPoolCreate, (ZeContext, &ZeEventPoolDesc,
                                    ZeDevices.size(), &ZeDevices[0], ZePool));
     NumEventsAvailableInEventPool[*ZePool] = MaxNumEventsPerPool - 1;
@@ -633,7 +634,7 @@ ur_result_t ur_context_handle_t_::getAvailableCommandList(
     CommandList = Queue->getQueueGroup(UseCopyEngine).getImmCmdList();
     if (auto &completions = CommandList->second.completions; completions) {
       UR_CALL(completions->cleanupIfFull(Queue, CommandList->first,
-                                         CommandList->second.EventList));
+                                         CommandList->second.EventList, false));
     } else if (CommandList->second.EventList.size() >
                ImmCmdListsEventCleanupThreshold) {
       std::vector<ur_event_handle_t> EventListToCleanup;
