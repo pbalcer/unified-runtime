@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: xt0rted/pull-request-comment-branch@06f34cd2aa47e0aca6a68f9dcea2bc12e984ac41
+    - uses: xt0rted/pull-request-comment-branch@d97294d304604fa98a2600a6e2f916a84b596dc7 # v2.0.0
       id: comment-branch
 
     - name: Checkout UR
@@ -58,7 +58,7 @@ jobs:
           const success = '${{ job.status }}' === 'success';
           const body = `${name}: E2E ${adapter} ${success ? 'succeeded' : 'failed'}\n${url}`;
 
-          await github.rest.issues.createComment({
+          github.rest.issues.createComment({
             issue_number: context.issue.number,
             owner: context.repo.owner,
             repo: context.repo.repo,
