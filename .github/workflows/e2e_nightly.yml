@@ -4,6 +4,8 @@ on:
   schedule:
     # Run every day at 23:00 UTC
     - cron: '0 23 * * *'
+  issue_comment:
+    types: [created, edited, deleted]
 
 permissions:
   contents: read
@@ -20,7 +22,9 @@ jobs:
         build_type: [Release]
         compiler: [{c: clang, cxx: clang++}]
 
-    runs-on: ${{matrix.adapter.name}}
+    #runs-on: ${{matrix.adapter.name}}
+    if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/e2e') }}
+    runs-on: 'ubuntu-20.04'
 
     steps:
     # Workspace on self-hosted runners is not cleaned automatically.
