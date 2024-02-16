@@ -8,7 +8,7 @@
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/oneapi-src/unified-runtime/badge)](https://securityscorecards.dev/viewer/?uri=github.com/oneapi-src/unified-runtime)
 
 <!-- TODO: add general description and purpose of the project -->
-
+ 
 ## Table of contents
 
 - [Unified Runtime](#unified-runtime)
