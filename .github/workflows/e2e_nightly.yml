@@ -23,7 +23,8 @@ jobs:
         compiler: [{c: clang, cxx: clang++}]
 
     if: ${{ github.event.issue.pull_request && contains(github.event.comment.body, '/e2e') }}
-    runs-on: ${{matrix.adapter.name}}
+    #runs-on: ${{matrix.adapter.name}}
+    runs-on: ubuntu-latest
 
     steps:
     - uses: xt0rted/pull-request-comment-branch@06f34cd2aa47e0aca6a68f9dcea2bc12e984ac41
@@ -55,7 +56,7 @@ jobs:
           const adapter = '${{ matrix.adapter.name }}';
           const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
           const success = '${{ job.status }}' === 'success';
-          const body = `${name}: E2E ${adapter} ${success ? 'succeeded ✅' : 'failed ❌'}\n${url}`;
+          const body = `${name}: E2E ${adapter} ${success ? 'succeeded' : 'failed'}\n${url}`;
 
           await github.rest.issues.createComment({
             issue_number: context.issue.number,
