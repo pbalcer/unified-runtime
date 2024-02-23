@@ -843,22 +843,27 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramCreateWithNativeHandle(
                                  ///< program object created.
 ) {
   std::ignore = Properties;
-  auto ZeModule = ur_cast<ze_module_handle_t>(NativeProgram);
 
-  // We assume here that programs created from a native handle always
-  // represent a fully linked executable (state Exe) and not an unlinked
-  // executable (state Object).
-
+   auto ZeModule = ur_cast<ze_module_handle_t>(NativeProgram);
   try {
-    ur_program_handle_t_ *UrProgram =
-        new ur_program_handle_t_(ur_program_handle_t_::Exe, Context, ZeModule,
-                                 Properties->isNativeHandleOwned);
+
+    size_t size;
+    ZE_CALL_NOCHECK(zeModuleGetNativeBinary, (ZeModule, &size, nullptr));
+    uint8_t *binary = (uint8_t *)malloc(size + 1);
+    ZE_CALL_NOCHECK(zeModuleGetNativeBinary, (ZeModule, &size, binary));
+
+    ur_program_handle_t_ *UrProgram = new ur_program_handle_t_(
+        ur_program_handle_t_::Native, Context, binary, size);
+
+    urProgramBuildExp(UrProgram, Context->Devices.size(), Context->Devices.data(), nullptr);
+
     *Program = reinterpret_cast<ur_program_handle_t>(UrProgram);
   } catch (const std::bad_alloc &) {
     return UR_RESULT_ERROR_OUT_OF_HOST_MEMORY;
   } catch (...) {
     return UR_RESULT_ERROR_UNKNOWN;
   }
+
   return UR_RESULT_SUCCESS;
 }
 
