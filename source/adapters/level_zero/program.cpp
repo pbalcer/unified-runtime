@@ -601,12 +601,34 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramGetInfo(
     return ReturnValue(uint32_t{Program->RefCount.load()});
   case UR_PROGRAM_INFO_CONTEXT:
     return ReturnValue(Program->Context);
-  case UR_PROGRAM_INFO_NUM_DEVICES:
-    // TODO: return true number of devices this program exists for.
-    return ReturnValue(uint32_t{1});
-  case UR_PROGRAM_INFO_DEVICES:
-    // TODO: return all devices this program exists for.
-    return ReturnValue(Program->Context->Devices[0]);
+  case UR_PROGRAM_INFO_NUM_DEVICES: {
+    if (Program->ZeModuleMap.empty()) {
+      return ReturnValue(uint32_t{1});
+    }
+    return ReturnValue(static_cast<uint32_t>(Program->ZeModuleMap.size()));
+  }
+  case UR_PROGRAM_INFO_DEVICES: {
+    if (Program->ZeModuleMap.empty()) {
+      // TODO: this is the case with urProgramCreateWithBinary.
+      // We get the devices, but we ignore them. The fix here
+      // is to store those received devices for later retrieval
+      // here
+      return ReturnValue(Program->Context->Devices[0]);
+    }
+    std::vector<ur_device_handle_t> devices;
+    for (const auto &entry : Program->ZeModuleMap) {
+      const auto &devs = Program->Context->Devices;
+      auto it = std::find_if(devs.begin(), devs.end(), [entry] (const ur_device_handle_t &d) {
+        return d->ZeDevice == entry.first;
+      });
+      if (it != devs.end()) {
+        devices.push_back(*it);
+      } else {
+        assert(0);
+      }
+    }
+    return ReturnValue(devices.data(), devices.size());
+  }
   case UR_PROGRAM_INFO_BINARY_SIZES: {
     std::shared_lock<ur_shared_mutex> Guard(Program->Mutex);
     size_t SzBinary;
