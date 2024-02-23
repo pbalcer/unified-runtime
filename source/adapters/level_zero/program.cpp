@@ -601,12 +601,16 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramGetInfo(
     return ReturnValue(uint32_t{Program->RefCount.load()});
   case UR_PROGRAM_INFO_CONTEXT:
     return ReturnValue(Program->Context);
-  case UR_PROGRAM_INFO_NUM_DEVICES:
-    // TODO: return true number of devices this program exists for.
-    return ReturnValue(uint32_t{1});
-  case UR_PROGRAM_INFO_DEVICES:
-    // TODO: return all devices this program exists for.
-    return ReturnValue(Program->Context->Devices[0]);
+  case UR_PROGRAM_INFO_NUM_DEVICES: {
+    return ReturnValue(static_cast<uint32_t>(Program->ZeModuleMap.size()));
+  }
+  case UR_PROGRAM_INFO_DEVICES: {
+    std::vector<ze_device_handle_t> devices;
+    for (const auto &entry : Program->ZeModuleMap) {
+      devices.push_back(entry.first);
+    }
+    return ReturnValue(devices.data(), devices.size());
+  }
   case UR_PROGRAM_INFO_BINARY_SIZES: {
     std::shared_lock<ur_shared_mutex> Guard(Program->Mutex);
     size_t SzBinary;
