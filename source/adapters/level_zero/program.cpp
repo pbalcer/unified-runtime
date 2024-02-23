@@ -81,7 +81,6 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramCreateWithBinary(
     ur_program_handle_t
         *Program ///< [out] pointer to handle of Program object created.
 ) {
-  std::ignore = Device;
   std::ignore = Properties;
   // In OpenCL, clCreateProgramWithBinary() can be used to load any of the
   // following: "program executable", "compiled program", or "library of
@@ -97,6 +96,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramCreateWithBinary(
   try {
     ur_program_handle_t_ *UrProgram = new ur_program_handle_t_(
         ur_program_handle_t_::Native, Context, Binary, Size);
+    UrProgram->deviceFromBinary = Device;
     *Program = reinterpret_cast<ur_program_handle_t>(UrProgram);
   } catch (const std::bad_alloc &) {
     return UR_RESULT_ERROR_OUT_OF_HOST_MEMORY;
@@ -609,11 +609,11 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramGetInfo(
   }
   case UR_PROGRAM_INFO_DEVICES: {
     if (Program->ZeModuleMap.empty()) {
-      // TODO: this is the case with urProgramCreateWithBinary.
-      // We get the devices, but we ignore them. The fix here
-      // is to store those received devices for later retrieval
-      // here
-      return ReturnValue(Program->Context->Devices[0]);
+      if (Program->deviceFromBinary) {
+        return ReturnValue(Program->deviceFromBinary);
+      } else {
+        return ReturnValue(Program->Context->Devices[0]);
+      }
     }
     std::vector<ur_device_handle_t> devices;
     for (const auto &entry : Program->ZeModuleMap) {

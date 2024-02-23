@@ -9,6 +9,7 @@
 //===----------------------------------------------------------------------===//
 #pragma once
 
+#include "adapters/level_zero/device.hpp"
 #include "common.hpp"
 
 struct ur_program_handle_t_ : _ur_object {
@@ -147,4 +148,7 @@ struct ur_program_handle_t_ : _ur_object {
   // Program has been built.
   std::unordered_map<ze_device_handle_t, ze_module_build_log_handle_t>
       ZeBuildLogMap;
+
+  // Passed to UR from urProgramCreateWithBinary
+  ur_device_handle_t deviceFromBinary = nullptr;
 };
