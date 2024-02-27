@@ -1427,7 +1427,12 @@ ur_result_t ur_queue_handle_t_::synchronize() {
     // zero handle can have device scope, so we can't synchronize the last
     // event.
     if (isInOrderQueue() && !LastCommandEvent->IsDiscarded) {
-      ZE2UR_CALL(zeHostSynchronize, (LastCommandEvent->ZeEvent));
+      {
+        std::scoped_lock<ur_shared_mutex> EventLock(LastCommandEvent->Mutex);
+        if (!LastCommandEvent->Completed) {
+          ZE2UR_CALL(zeHostSynchronize, (LastCommandEvent->ZeEvent));
+        }
+      }
 
       // clean up all events known to have been completed as well,
       // so they can be reused later
