@@ -24,6 +24,8 @@
 #include "ur_util.hpp"
 #include "ze_api.h"
 
+#include "common/latency_tracker.hpp"
+
 // Hard limit for the event completion batches.
 static const uint64_t CompletionBatchesMax = [] {
   // Default value chosen empirically to maximize the number of asynchronous
@@ -847,6 +849,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
 }
 
 ur_result_t ur_queue_handle_legacy_t_::queueFinish() {
+  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::queueFinish");
   auto Queue = this;
   if (Queue->UsingImmCmdLists) {
     // Lock automatically releases when this goes out of scope.

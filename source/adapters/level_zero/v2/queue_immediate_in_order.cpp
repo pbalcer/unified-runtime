@@ -14,6 +14,8 @@
 #include "../helpers/kernel_helpers.hpp"
 #include "../program.hpp"
 
+#include "../common/latency_tracker.hpp"
+
 namespace v2 {
 
 std::pair<ze_event_handle_t *, uint32_t>
@@ -134,6 +136,7 @@ ur_result_t ur_queue_immediate_in_order_t::queueGetNativeHandle(
 }
 
 ur_result_t ur_queue_immediate_in_order_t::queueFinish() {
+  TRACK_SCOPE_LATENCY("ur_queue_immediate_in_order_t::queueFinish");
   std::unique_lock<ur_shared_mutex> lock(this->Mutex);
 
   if (!lastHandler) {
@@ -159,8 +162,15 @@ ur_result_t ur_queue_immediate_in_order_t::enqueueKernelLaunch(
     const size_t *pGlobalWorkOffset, const size_t *pGlobalWorkSize,
     const size_t *pLocalWorkSize, uint32_t numEventsInWaitList,
     const ::ur_event_handle_t *phEventWaitList, ::ur_event_handle_t *phEvent) {
+  TRACK_SCOPE_LATENCY("ur_queue_immediate_in_order_t::enqueueKernelLaunch");
+
   UR_ASSERT(hKernel->hProgram, UR_RESULT_ERROR_INVALID_NULL_POINTER);
-  auto hZeKernel = hKernel->getZeHandle(hDevice);
+
+  ze_kernel_handle_t hZeKernel;
+  {
+    TRACK_SCOPE_LATENCY("getZeHandle");
+    hZeKernel = hKernel->getZeHandle(hDevice);
+  }
 
   // Lock automatically releases when this goes out of scope.
   std::scoped_lock<ur_shared_mutex, ur_shared_mutex, ur_shared_mutex> Lock(
@@ -183,6 +193,8 @@ ur_result_t ur_queue_immediate_in_order_t::enqueueKernelLaunch(
                                         pGlobalWorkSize, pLocalWorkSize));
 
   ZE2UR_CALL(zeKernelSetGroupSize, (hZeKernel, WG[0], WG[1], WG[2]));
+
+  TRACK_SCOPE_LATENCY("afterSetting");
 
   auto v2WaitList =
       reinterpret_cast<const ur_event_handle_t *>(phEventWaitList);

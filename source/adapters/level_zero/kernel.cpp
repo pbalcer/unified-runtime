@@ -14,6 +14,7 @@
 #include "ur_level_zero.hpp"
 
 #include "helpers/kernel_helpers.hpp"
+#include "common/latency_tracker.hpp"
 
 UR_APIEXPORT ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
     ur_kernel_handle_t hKernel, ur_queue_handle_t hQueue, uint32_t workDim,
@@ -129,6 +130,7 @@ ur_result_t ur_queue_handle_legacy_t_::enqueueKernelLaunch(
         *OutEvent ///< [in,out][optional] return an event object that identifies
                   ///< this particular kernel execution instance.
 ) {
+  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::enqueueKernelLaunch");
   UR_ASSERT(WorkDim > 0, UR_RESULT_ERROR_INVALID_WORK_DIMENSION);
   UR_ASSERT(WorkDim < 4, UR_RESULT_ERROR_INVALID_WORK_DIMENSION);
 
@@ -754,6 +756,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urKernelSetArgValue(
     const void
         *PArgValue ///< [in] argument value represented as matching arg type.
 ) {
+  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::urKernelSetArgValue");
   std::ignore = Properties;
 
   UR_ASSERT(Kernel, UR_RESULT_ERROR_INVALID_NULL_HANDLE);

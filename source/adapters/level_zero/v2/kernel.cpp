@@ -157,6 +157,7 @@ ur_result_t ur_kernel_handle_t_::setArgValue(
     const void
         *pArgValue ///< [in] argument value represented as matching arg type.
 ) {
+  TRACK_SCOPE_LATENCY("ur_kernel_handle_t_::setArgValue");
   std::ignore = pProperties;
 
   // OpenCL: "the arg_value pointer can be NULL or point to a NULL value

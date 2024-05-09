@@ -14,17 +14,15 @@
 #include "event_pool.hpp"
 #include "event_provider.hpp"
 
-namespace v2 {
-
-ur_event_handle_t_::ur_event_handle_t_(event_allocation eventAllocation,
-                                       event_pool *pool)
+ur_event_handle_t_::ur_event_handle_t_(v2::event_allocation eventAllocation,
+                                       v2::event_pool *pool)
     : type(eventAllocation.type), zeEvent(std::move(eventAllocation.borrow)),
       pool(pool) {}
 
 void ur_event_handle_t_::reset() {
   // consider make an abstraction for regular/counter based
   // events if there's more of this type of conditions
-  if (type == event_type::EVENT_REGULAR) {
+  if (type == v2::event_type::EVENT_REGULAR) {
     zeEventHostReset(zeEvent.get());
   }
 }
@@ -48,4 +46,10 @@ ur_result_t ur_event_handle_t_::release() {
   return UR_RESULT_SUCCESS;
 }
 
-} // namespace v2
+UR_APIEXPORT ur_result_t UR_APICALL urEventRetain(ur_event_handle_t hEvent) {
+  return hEvent->retain();
+}
+
+UR_APIEXPORT ur_result_t UR_APICALL urEventRelease(ur_event_handle_t hEvent) {
+  return hEvent->release();
+}
