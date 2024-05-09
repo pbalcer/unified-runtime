@@ -27,6 +27,97 @@
 
 #include <umf_helpers.hpp>
 
+template <typename T, const size_t NumShards = 5> class ShardedCache {
+public:
+  ShardedCache(const ShardedCache &) = delete;
+  ShardedCache &operator=(const ShardedCache &) = delete;
+  ShardedCache(ShardedCache &&) = default;
+  ShardedCache &operator=(ShardedCache &&) = default;
+
+  ShardedCache() {
+    for (size_t i = 0; i < NumShards; ++i) {
+      shards.emplace_back(std::make_unique<Shard>());
+    }
+  }
+
+  void push(T value) {
+    auto &shard = shards[thread_shard_id()];
+    shard->push(value);
+  }
+
+  void batch_insert(T* value, size_t nvalues) {
+    size_t per_shard = nvalues / shards.size();
+    for (int i = 0; i < shards.size(); ++i) {
+      auto &shard = shards[i];
+      shard->batch_insert(value + (i * per_shard), per_shard);
+    }
+    size_t distributed = per_shard * shards.size();
+    size_t leftover = nvalues - distributed;
+    if (leftover != 0) {
+      shards[0]->batch_insert(value + (distributed), leftover);
+    }
+  }
+
+  std::optional<T> pop() {
+    size_t start = thread_shard_id();
+    size_t numShards = shards.size();
+
+    for (size_t i = 0; i < numShards; ++i) {
+      auto &shard = shards[(start + i) % numShards];
+      if (shard->likely_empty()) continue;
+
+      if (auto value = shard->pop(); value) {
+        return value;
+      }
+    }
+    return std::nullopt;
+  }
+
+private:
+  size_t thread_shard_id() {
+    static std::atomic<size_t> nThreads = 0;
+    thread_local static size_t ThreadId = nThreads++;
+
+    return ThreadId % shards.size();
+  }
+
+  class Shard {
+  public:
+    void batch_insert(T* value, size_t nvalues) {
+      std::scoped_lock Lock(lock);
+      for (int i = 0; i < nvalues; ++i) {
+        stack.push(value[i]);
+      }
+      nelements.fetch_add(nvalues, std::memory_order_relaxed);
+    }
+    void push(T value) {
+      std::scoped_lock Lock(lock);
+      stack.push_back(value);
+      nelements.fetch_add(1, std::memory_order_relaxed);
+    }
+    std::optional<T> pop() {
+      std::scoped_lock Lock(lock);
+      if (!stack.empty()) {
+        T value = stack.back();
+        stack.pop_back();
+        nelements.fetch_sub(1, std::memory_order_relaxed);
+        return value;
+      }
+      return std::nullopt;
+    }
+    bool likely_empty() {
+      return nelements.load(std::memory_order_relaxed) == 0;
+    }
+
+  private:
+    std::vector<T> stack;
+    ur_mutex lock;
+    std::atomic<ssize_t> nelements;
+  };
+
+  std::vector<std::unique_ptr<Shard>> shards;
+};
+
 struct l0_command_list_cache_info {
   ZeStruct<ze_command_queue_desc_t> ZeQueueDesc;
   bool InOrderList = false;
@@ -168,11 +259,20 @@ struct ur_context_handle_t_ : _ur_object {
   // Mutex to control operations on event caches.
   ur_mutex EventCacheMutex;
 
-  // Caches for events.
-  using EventCache = std::vector<std::list<ur_event_handle_t>>;
-  EventCache EventCaches{4};
-  std::vector<std::unordered_map<ur_device_handle_t, size_t>>
-      EventCachesDeviceMap{4};
+  using EventCache = ShardedCache<ur_event_handle_t>;
+  void initCaches();
+
+  std::vector<EventCache> EventCaches;
+
+  size_t cacheId(bool HostVisible, bool WithProfiling, size_t DeviceId) {
+    return ((size_t)HostVisible) | ((size_t)WithProfiling << 1) | (DeviceId << 2);
+  }
+
+  // Get the cache of events for a provided scope and profiling mode.
+  EventCache& getEventCache(bool HostVisible, bool WithProfiling,
+                     ur_device_handle_t Device) {
+    return EventCaches[cacheId(HostVisible, WithProfiling, Device ? Device->id : 0)];
+  }
 
   // Initialize the PI context.
   ur_result_t initialize();
@@ -302,38 +402,6 @@ struct ur_context_handle_t_ : _ur_object {
   // For that the Device or its root devices need to be in the context.
   bool isValidDevice(ur_device_handle_t Device) const;
 
-private:
-  // Get the cache of events for a provided scope and profiling mode.
-  auto getEventCache(bool HostVisible, bool WithProfiling,
-                     ur_device_handle_t Device) {
-    if (HostVisible) {
-      if (Device) {
-        auto EventCachesMap =
-            WithProfiling ? &EventCachesDeviceMap[0] : &EventCachesDeviceMap[1];
-        if (EventCachesMap->find(Device) == EventCachesMap->end()) {
-          EventCaches.emplace_back();
-          EventCachesMap->insert(
-              std::make_pair(Device, EventCaches.size() - 1));
-        }
-        return &EventCaches[(*EventCachesMap)[Device]];
-      } else {
-        return WithProfiling ? &EventCaches[0] : &EventCaches[1];
-      }
-    } else {
-      if (Device) {
-        auto EventCachesMap =
-            WithProfiling ? &EventCachesDeviceMap[2] : &EventCachesDeviceMap[3];
-        if (EventCachesMap->find(Device) == EventCachesMap->end()) {
-          EventCaches.emplace_back();
-          EventCachesMap->insert(
-              std::make_pair(Device, EventCaches.size() - 1));
-        }
-        return &EventCaches[(*EventCachesMap)[Device]];
-      } else {
-        return WithProfiling ? &EventCaches[2] : &EventCaches[3];
-      }
-    }
-  }
 };
 
 // Helper function to release the context, a caller must lock the platform-level

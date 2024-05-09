@@ -316,6 +316,10 @@ ur_result_t ur_context_handle_t_::initialize() {
   ZE2UR_CALL(
       zeCommandListCreateImmediate,
       (ZeContext, Device->ZeDevice, &ZeCommandQueueDesc, &ZeCommandListInit));
+
+  size_t ncaches = cacheId(true, true, getPlatform()->URDevicesCache.size());
+  EventCaches.resize(ncaches);
+
   return UR_RESULT_SUCCESS;
 }
 
@@ -397,18 +401,20 @@ ur_result_t ur_context_handle_t_::finalize() {
   // deallocated. For example, event and event pool caches would be still alive.
 
   if (!DisableEventsCaching) {
-    std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
     for (auto &EventCache : EventCaches) {
-      for (auto &Event : EventCache) {
+      std::optional<ur_event_handle_t> element;
+      while ((element = EventCache.pop()).has_value()) {
+        auto Event = *element;
         auto ZeResult = ZE_CALL_NOCHECK(zeEventDestroy, (Event->ZeEvent));
         // Gracefully handle the case that L0 was already unloaded.
         if (ZeResult && ZeResult != ZE_RESULT_ERROR_UNINITIALIZED)
           return ze2urResult(ZeResult);
         delete Event;
       }
-      EventCache.clear();
     }
+    EventCaches.clear();
   }
+
   {
     std::scoped_lock<ur_mutex> Lock(ZeEventPoolCacheMutex);
     for (auto &ZePoolCache : ZeEventPoolCache) {
@@ -556,33 +562,26 @@ ur_result_t ur_context_handle_t_::getFreeSlotInExistingOrNewPool(
 ur_event_handle_t ur_context_handle_t_::getEventFromContextCache(
     bool HostVisible, bool WithProfiling, ur_device_handle_t Device,
     bool CounterBasedEventEnabled) {
-  std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
-  auto Cache = getEventCache(HostVisible, WithProfiling, Device);
-  if (Cache->empty())
-    return nullptr;
+  // todo: CounterBasedEventEnabled
+  auto &Cache = getEventCache(HostVisible, WithProfiling, Device);
+  if (auto event = Cache.pop(); event) {
+    (*event)->reset();
 
-  auto It = Cache->begin();
-  ur_event_handle_t Event = *It;
-  if (Event->CounterBasedEventsEnabled != CounterBasedEventEnabled) {
-    return nullptr;
+    return *event;
   }
-  Cache->erase(It);
-  // We have to reset event before using it.
-  Event->reset();
-  return Event;
+
+  return nullptr;
 }
 
 void ur_context_handle_t_::addEventToContextCache(ur_event_handle_t Event) {
-  std::scoped_lock<ur_mutex> Lock(EventCacheMutex);
   ur_device_handle_t Device = nullptr;
 
   if (!Event->IsMultiDevice && Event->UrQueue) {
     Device = Event->UrQueue->Device;
   }
-
-  auto Cache = getEventCache(Event->isHostVisible(),
-                             Event->isProfilingEnabled(), Device);
-  Cache->emplace_back(Event);
+  auto &Cache =
+      getEventCache(Event->isHostVisible(), Event->isProfilingEnabled(), Device);
+  Cache.push(Event);
 }
 
 ur_result_t

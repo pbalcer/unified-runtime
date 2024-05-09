@@ -417,6 +417,12 @@ ur_result_t ur_platform_handle_t_::populateDeviceCacheIfNeeded() {
     return UR_RESULT_ERROR_UNKNOWN;
   }
   DeviceCachePopulated = true;
+
+  size_t id = 0;
+  for (auto &dev : URDevicesCache) {
+    dev->id = id++;
+  }
+
   return UR_RESULT_SUCCESS;
 }
 
