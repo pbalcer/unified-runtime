@@ -1,4 +1,4 @@
-name: E2E build & run
+name: Compute Benchmarks
 
 on:
   # this workflow can by only triggered by other workflows
@@ -12,10 +12,6 @@ on:
         required: true
       str_name:
         description: Formatted adapter name
-        type: string
-        required: true
-      prefix:
-        description: Prefix for cmake parameter
         type: string
         required: true
       config:
@@ -34,18 +30,6 @@ on:
         description: Type of workflow trigger
         type: string
         required: true
-      xfail:
-        description: Allow test failures
-        type: string
-        required: false
-      xfail_not:
-        description: Not xfail
-        type: string
-        required: false
-      filter_out:
-        description: Tests to filter out completely
-        type: string
-        required: false
   
 permissions:
   contents: read
@@ -54,13 +38,12 @@ permissions:
 jobs:
   e2e-build-hw:
     # if: github.repository == 'oneapi-src/unified-runtime'  # run only on upstream; forks will not have the HW
-    name: Build SYCL, UR, run E2E
+    name: Build SYCL, UR, run Compute Benchmarks
     strategy:
       matrix:
         adapter: [
           {name: "${{inputs.name}}",
           str_name: "${{inputs.str_name}}",
-          prefix: "${{inputs.prefix}}",
           config: "${{inputs.config}}",
           unit: "${{inputs.unit}}"}
         ]
@@ -85,7 +68,7 @@ jobs:
         script: |
           const adapter = '${{ matrix.adapter.name }}';
           const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
-          const body = `E2E ${adapter} build: \n${url}`;
+          const body = `Compute Benchmarks ${adapter} run: \n${url}`;
 
           github.rest.issues.createComment({
             issue_number: context.issue.number,
@@ -141,12 +124,6 @@ jobs:
     - name: Build SYCL
       run: cmake --build ${{github.workspace}}/sycl_build -j
 
-    - name: Run check-sycl
-      # Remove after fixing SYCL test :: abi/layout_handler.cpp
-      # This issue does not affect further execution of e2e with UR.
-      continue-on-error: true
-      run: cmake --build ${{github.workspace}}/sycl_build --target check-sycl -j6
-
     - name: Set additional env. vars
       run: |
         echo "${{github.workspace}}/sycl_build/bin" >> $GITHUB_PATH
@@ -158,36 +135,51 @@ jobs:
         which clang++ sycl-ls
         SYCL_PI_TRACE=-1 sycl-ls
 
-    - name: Build e2e tests
+    - name: Checkout Compute Benchmarks
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      with:
+        repository: intel/compute-benchmarks
+        path: compute-benchmarks-repo
+        submodules: recursive
+
+    - name: Configure Compute Benchmarks
       run: >
         cmake
-        -GNinja
-        -B ${{github.workspace}}/build-e2e/
-        -S ${{github.workspace}}/sycl-repo/sycl/test-e2e/
-        -DSYCL_TEST_E2E_TARGETS="${{matrix.adapter.prefix}}${{matrix.adapter.str_name}}:${{matrix.adapter.unit}}"
-        -DCMAKE_CXX_COMPILER="$(which clang++)"
-        -DLLVM_LIT="${{github.workspace}}/sycl-repo/llvm/utils/lit/lit.py"
+        -B ${{github.workspace}}/compute-benchmarks-build/
+        -S ${{github.workspace}}/compute-benchmarks-repo/
+        -DCMAKE_BUILD_TYPE=Release
+        -DBUILD_SYCL=ON
+        -DSYCL_COMPILER_ROOT=${{github.workspace}}/sycl_build
+        -DALLOW_WARNINGS=ON
 
-    - name: Set test filters
+    - name: Build Compute Benchmarks
+      run: cmake --build ${{github.workspace}}/compute-benchmarks-build/ -j
+
+    - name: Set oneAPI Device Selector
       run: |
-        echo "LIT_XFAIL_NOT=${{inputs.xfail_not}}" >> $GITHUB_ENV
-        echo "LIT_XFAIL=${{inputs.xfail}}" >> $GITHUB_ENV
-        echo "LIT_FILTER_OUT=${{inputs.filter_out}}" >> $GITHUB_ENV
+        echo "ONEAPI_DEVICE_SELECTOR=${{ matrix.adapter.str_name }}:${{ matrix.adapter.unit }}" >> $GITHUB_ENV
 
-    - name: Run e2e tests
-      id: tests
-      run: ninja -C build-e2e check-sycl-e2e
+    - name: Run SYCL API Overhead benchmark
+      id: benchmarks
+      run: ${{github.workspace}}/ur-repo/.github/scripts/compute_benchmarks.py ${{github.workspace}}/compute-benchmarks-build/bin/
 
     - name: Add comment to PR
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
       if: ${{ always() && inputs.trigger != 'schedule' }}
       with:
         script: |
+          let mermaid = ""
+          try {
+            const fs = require('fs');
+            mermaid = fs.readFileSync('benchmark_chart.mmd', 'utf8');
+          } catch(err) {
+          }
+
           const adapter = '${{ matrix.adapter.name }}';
           const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
-          const test_status = '${{ steps.tests.outcome }}';
+          const test_status = '${{ steps.benchmarks.outcome }}';
           const job_status = '${{ job.status }}';
-          const body = `E2E ${adapter} build:\n${url}\nJob status: ${job_status}. Test status: ${test_status}`;
+          const body = `E2E ${adapter} build:\n${url}\nJob status: ${job_status}. Test status: ${test_status}.\n\`\`\`mermaid\n${mermaid}\n\`\`\``;
 
           github.rest.issues.createComment({
             issue_number: context.issue.number,
