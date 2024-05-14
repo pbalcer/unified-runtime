@@ -161,6 +161,11 @@ jobs:
         -DCMAKE_CXX_COMPILER="$(which clang++)"
         -DLLVM_LIT="${{github.workspace}}/sycl-repo/llvm/utils/lit/lit.py"
 
+    - name: Set test filters
+      run: |
+        echo "LIT_XFAIL_NOT=${{matrix.adapter.xfail_not}}" >> $GITHUB_ENV
+        echo "LIT_XFAIL=${{matrix.adapter.xfail}}" >> $GITHUB_ENV
+
     - name: Run e2e tests
       id: tests
       run: ninja -C build-e2e check-sycl-e2e
