@@ -103,5 +103,8 @@ def main(directory):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run benchmarks and generate a Mermaid bar chart script.')
     parser.add_argument('benchmark_directory', type=str, help='The directory where the benchmarks are located.')
+    parser.add_argument("env", type=str, help='Add env variable', action="append", default=[])
     args = parser.parse_args()
+    for e in args.env:
+        print(f"Extra env argument {e}")
     main(args.benchmark_directory)
