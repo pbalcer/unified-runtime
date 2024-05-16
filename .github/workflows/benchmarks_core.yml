@@ -112,7 +112,7 @@ jobs:
         ref: sycl
         path: sycl-repo
         fetch-depth: 1
-        tags: false
+        fetch-tags: false
 
     - name: Set CUDA env vars
       if: matrix.adapter.name == 'CUDA'
