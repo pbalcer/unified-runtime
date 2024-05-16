@@ -103,6 +103,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: sycl-repo/.git
+        key: sycl
 
     - name: Checkout SYCL
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
