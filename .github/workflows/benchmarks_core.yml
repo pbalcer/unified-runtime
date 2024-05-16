@@ -98,18 +98,11 @@ jobs:
         git checkout origin/pr/${PR_NO}/merge
         git rev-parse origin/pr/${PR_NO}/merge
 
-    - name: Cache SYCL
-      id: cache-primes
-      uses: actions/cache@v4
-      with:
-        path: sycl-repo/.git
-        key: sycl
-
     - name: Checkout SYCL
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         repository: intel/llvm
-        ref: sycl
+        ref: refs/heads/sycl
         path: sycl-repo
         fetch-depth: 1
         fetch-tags: false
@@ -174,9 +167,7 @@ jobs:
 
     - name: Extract arguments from comment
       id: args
-      run: |
-        ARGS=$(echo "${{ inputs.comment }}" | sed -n 's/.*\/benchmarks-${{ matrix.adapter.str_name }} \(.*\)/\1/p')
-        echo "ARGS=$ARGS" >> $GITHUB_ENV
+      run: echo "ARGS=$(echo '${{ inputs.comment }}' | sed -n 's/.*\/benchmarks-[^ ]* \(.*\)/\1/p')" >> $GITHUB_ENV
 
     - name: Run SYCL API Overhead benchmark
       id: benchmarks
