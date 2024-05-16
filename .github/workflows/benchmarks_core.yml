@@ -178,10 +178,10 @@ jobs:
       if: ${{ always() && inputs.trigger != 'schedule' }}
       with:
         script: |
-          let mermaid = ""
+          let markdown = ""
           try {
             const fs = require('fs');
-            mermaid = fs.readFileSync('benchmark_chart.mmd', 'utf8');
+            markdown = fs.readFileSync('benchmark_results.md', 'utf8');
           } catch(err) {
           }
 
@@ -189,7 +189,7 @@ jobs:
           const url = '${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}';
           const test_status = '${{ steps.benchmarks.outcome }}';
           const job_status = '${{ job.status }}';
-          const body = `Compute Benchmarks ${adapter} run:\n${url}\nJob status: ${job_status}. Test status: ${test_status}.\n\`\`\`mermaid\n${mermaid}\n\`\`\``;
+          const body = `Compute Benchmarks ${adapter} run:\n${url}\nJob status: ${job_status}. Test status: ${test_status}.\n ${markdown}`;
 
           github.rest.issues.createComment({
             issue_number: context.issue.number,
