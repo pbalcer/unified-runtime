@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   e2e-build-hw:
-    if: github.repository == 'oneapi-src/unified-runtime'  # run only on upstream; forks will not have the HW
+    #if: github.repository == 'oneapi-src/unified-runtime'  # run only on upstream; forks will not have the HW
     name: Start e2e job
     # use core flow, run it with L0 specific parameters
     uses: ./.github/workflows/e2e_core.yml
