@@ -8,6 +8,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   ubuntu-build:
@@ -196,7 +197,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    needs: [ubuntu-build, level-zero]
     uses: ./.github/workflows/e2e_level_zero.yml
 
   e2e-opencl:
