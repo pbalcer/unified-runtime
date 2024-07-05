@@ -58,6 +58,6 @@ ur_result_t bounds(ur_queue_handle_t queue, const void *ptr, size_t offset,
 ur_result_t boundsImage(ur_mem_handle_t image, ur_rect_offset_t origin,
                         ur_rect_region_t region);
 
-extern context_t context;
+context_t *getContext();
 
 } // namespace ur_validation_layer

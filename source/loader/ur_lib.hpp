@@ -70,7 +70,7 @@ class __urdlllocal context_t {
     ur_dditable_t urDdiTable = {};
 
     const std::vector<proxy_layer_context_t *> layers = {
-        &ur_validation_layer::context,
+        ur_validation_layer::getContext(),
 #if UR_ENABLE_TRACING
         &ur_tracing_layer::context,
 #endif
@@ -87,9 +87,12 @@ class __urdlllocal context_t {
     void parseEnvEnabledLayers();
     void initLayers() const;
     void tearDownLayers() const;
+
+    std::atomic_int refCount;
 };
 
-extern context_t *context;
+context_t *getContext();
+
 ur_result_t urLoaderConfigCreate(ur_loader_config_handle_t *phLoaderConfig);
 ur_result_t urLoaderConfigRetain(ur_loader_config_handle_t hLoaderConfig);
 ur_result_t urLoaderConfigRelease(ur_loader_config_handle_t hLoaderConfig);
@@ -99,6 +102,8 @@ ur_result_t urLoaderConfigGetInfo(ur_loader_config_handle_t hLoaderConfig,
                                   size_t *pPropSizeRet);
 ur_result_t urLoaderConfigEnableLayer(ur_loader_config_handle_t hLoaderConfig,
                                       const char *pLayerName);
+ur_result_t UR_APICALL urLoaderInit(ur_device_init_flags_t device_flags,
+                                    ur_loader_config_handle_t);
 ur_result_t urLoaderTearDown();
 ur_result_t
 urLoaderConfigSetCodeLocationCallback(ur_loader_config_handle_t hLoaderConfig,

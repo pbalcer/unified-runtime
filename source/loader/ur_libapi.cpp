@@ -223,18 +223,7 @@ ur_result_t UR_APICALL urLoaderInit(
     ur_loader_config_handle_t
         hLoaderConfig ///< [in][optional] Handle of loader config handle.
     ) try {
-
-    if (UR_DEVICE_INIT_FLAGS_MASK & device_flags) {
-        return UR_RESULT_ERROR_INVALID_ENUMERATION;
-    }
-
-    static ur_result_t result = UR_RESULT_SUCCESS;
-    std::call_once(
-        ur_lib::getContext()->initOnce, [device_flags, hLoaderConfig]() {
-            result = ur_lib::getContext()->Init(device_flags, hLoaderConfig);
-        });
-
-    return result;
+    return ur_lib::urLoaderInit(device_flags, hLoaderConfig);
 } catch (...) {
     return exceptionToResult(std::current_exception());
 }

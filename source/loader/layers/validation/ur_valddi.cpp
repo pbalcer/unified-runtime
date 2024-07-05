@@ -29,18 +29,18 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGet(
     uint32_t *
         pNumAdapters ///< [out][optional] returns the total number of adapters available.
 ) {
-    auto pfnAdapterGet = context.urDdiTable.Global.pfnAdapterGet;
+    auto pfnAdapterGet = getContext()->urDdiTable.Global.pfnAdapterGet;
 
     if (nullptr == pfnAdapterGet) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
     }
 
     ur_result_t result = pfnAdapterGet(NumEntries, phAdapters, pNumAdapters);
 
-    if (context.enableLeakChecking && phAdapters &&
+    if (getContext()->enableLeakChecking && phAdapters &&
         result == UR_RESULT_SUCCESS) {
         for (uint32_t i = 0; i < NumEntries; i++) {
             refCountContext.createOrIncrementRefCount(phAdapters[i], true);
@@ -55,13 +55,13 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGet(
 __urdlllocal ur_result_t UR_APICALL urAdapterRelease(
     ur_adapter_handle_t hAdapter ///< [in][release] Adapter handle to release
 ) {
-    auto pfnAdapterRelease = context.urDdiTable.Global.pfnAdapterRelease;
+    auto pfnAdapterRelease = getContext()->urDdiTable.Global.pfnAdapterRelease;
 
     if (nullptr == pfnAdapterRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hAdapter) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -69,7 +69,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterRelease(
 
     ur_result_t result = pfnAdapterRelease(hAdapter);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hAdapter, true);
     }
 
@@ -81,13 +81,13 @@ __urdlllocal ur_result_t UR_APICALL urAdapterRelease(
 __urdlllocal ur_result_t UR_APICALL urAdapterRetain(
     ur_adapter_handle_t hAdapter ///< [in] Adapter handle to retain
 ) {
-    auto pfnAdapterRetain = context.urDdiTable.Global.pfnAdapterRetain;
+    auto pfnAdapterRetain = getContext()->urDdiTable.Global.pfnAdapterRetain;
 
     if (nullptr == pfnAdapterRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hAdapter) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -95,7 +95,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterRetain(
 
     ur_result_t result = pfnAdapterRetain(hAdapter);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hAdapter, true);
     }
 
@@ -114,13 +114,13 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGetLastError(
                ///< be stored.
 ) {
     auto pfnAdapterGetLastError =
-        context.urDdiTable.Global.pfnAdapterGetLastError;
+        getContext()->urDdiTable.Global.pfnAdapterGetLastError;
 
     if (nullptr == pfnAdapterGetLastError) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hAdapter) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -134,7 +134,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGetLastError(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hAdapter)) {
         refCountContext.logInvalidReference(hAdapter);
     }
@@ -159,13 +159,13 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual number of bytes being queried by pPropValue.
 ) {
-    auto pfnAdapterGetInfo = context.urDdiTable.Global.pfnAdapterGetInfo;
+    auto pfnAdapterGetInfo = getContext()->urDdiTable.Global.pfnAdapterGetInfo;
 
     if (nullptr == pfnAdapterGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hAdapter) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -187,7 +187,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hAdapter)) {
         refCountContext.logInvalidReference(hAdapter);
     }
@@ -216,13 +216,13 @@ __urdlllocal ur_result_t UR_APICALL urPlatformGet(
     uint32_t *
         pNumPlatforms ///< [out][optional] returns the total number of platforms available.
 ) {
-    auto pfnGet = context.urDdiTable.Platform.pfnGet;
+    auto pfnGet = getContext()->urDdiTable.Platform.pfnGet;
 
     if (nullptr == pfnGet) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == phAdapters) {
             return UR_RESULT_ERROR_INVALID_NULL_POINTER;
         }
@@ -253,13 +253,13 @@ __urdlllocal ur_result_t UR_APICALL urPlatformGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual number of bytes being queried by pPlatformInfo.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Platform.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Platform.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -293,13 +293,13 @@ __urdlllocal ur_result_t UR_APICALL urPlatformGetApiVersion(
     ur_platform_handle_t hPlatform, ///< [in] handle of the platform
     ur_api_version_t *pVersion      ///< [out] api version
 ) {
-    auto pfnGetApiVersion = context.urDdiTable.Platform.pfnGetApiVersion;
+    auto pfnGetApiVersion = getContext()->urDdiTable.Platform.pfnGetApiVersion;
 
     if (nullptr == pfnGetApiVersion) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -321,13 +321,14 @@ __urdlllocal ur_result_t UR_APICALL urPlatformGetNativeHandle(
     ur_native_handle_t *
         phNativePlatform ///< [out] a pointer to the native handle of the platform.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Platform.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Platform.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -355,13 +356,13 @@ __urdlllocal ur_result_t UR_APICALL urPlatformCreateWithNativeHandle(
         phPlatform ///< [out] pointer to the handle of the platform object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Platform.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Platform.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hAdapter) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -371,7 +372,7 @@ __urdlllocal ur_result_t UR_APICALL urPlatformCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hAdapter)) {
         refCountContext.logInvalidReference(hAdapter);
     }
@@ -392,13 +393,14 @@ __urdlllocal ur_result_t UR_APICALL urPlatformGetBackendOption(
         ppPlatformOption ///< [out] returns the correct platform specific compiler option based on
                          ///< the frontend option.
 ) {
-    auto pfnGetBackendOption = context.urDdiTable.Platform.pfnGetBackendOption;
+    auto pfnGetBackendOption =
+        getContext()->urDdiTable.Platform.pfnGetBackendOption;
 
     if (nullptr == pfnGetBackendOption) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -435,13 +437,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGet(
     uint32_t *pNumDevices ///< [out][optional] pointer to the number of devices.
     ///< pNumDevices will be updated with the total number of devices available.
 ) {
-    auto pfnGet = context.urDdiTable.Device.pfnGet;
+    auto pfnGet = getContext()->urDdiTable.Device.pfnGet;
 
     if (nullptr == pfnGet) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -462,7 +464,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGet(
     ur_result_t result =
         pfnGet(hPlatform, DeviceType, NumEntries, phDevices, pNumDevices);
 
-    if (context.enableLeakChecking && phDevices &&
+    if (getContext()->enableLeakChecking && phDevices &&
         result == UR_RESULT_SUCCESS) {
         for (uint32_t i = 0; i < NumEntries; i++) {
             refCountContext.createOrIncrementRefCount(phDevices[i], false);
@@ -488,13 +490,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Device.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Device.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -516,7 +518,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -533,13 +535,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceRetain(
     ur_device_handle_t
         hDevice ///< [in] handle of the device to get a reference of.
 ) {
-    auto pfnRetain = context.urDdiTable.Device.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Device.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -547,7 +549,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceRetain(
 
     ur_result_t result = pfnRetain(hDevice);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hDevice, false);
     }
 
@@ -560,13 +562,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceRelease(
     ur_device_handle_t
         hDevice ///< [in][release] handle of the device to release.
 ) {
-    auto pfnRelease = context.urDdiTable.Device.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Device.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -574,7 +576,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceRelease(
 
     ur_result_t result = pfnRelease(hDevice);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hDevice, false);
     }
 
@@ -596,13 +598,13 @@ __urdlllocal ur_result_t UR_APICALL urDevicePartition(
         pNumDevicesRet ///< [out][optional] pointer to the number of sub-devices the device can be
     ///< partitioned into according to the partitioning property.
 ) {
-    auto pfnPartition = context.urDdiTable.Device.pfnPartition;
+    auto pfnPartition = getContext()->urDdiTable.Device.pfnPartition;
 
     if (nullptr == pfnPartition) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -616,7 +618,7 @@ __urdlllocal ur_result_t UR_APICALL urDevicePartition(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -641,13 +643,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceSelectBinary(
         pSelectedBinary ///< [out] the index of the selected binary in the input array of binaries.
     ///< If a suitable binary was not found the function returns ::UR_RESULT_ERROR_INVALID_BINARY.
 ) {
-    auto pfnSelectBinary = context.urDdiTable.Device.pfnSelectBinary;
+    auto pfnSelectBinary = getContext()->urDdiTable.Device.pfnSelectBinary;
 
     if (nullptr == pfnSelectBinary) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -665,7 +667,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceSelectBinary(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -683,13 +685,14 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGetNativeHandle(
     ur_native_handle_t
         *phNativeDevice ///< [out] a pointer to the native handle of the device.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Device.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Device.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -699,7 +702,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -721,13 +724,13 @@ __urdlllocal ur_result_t UR_APICALL urDeviceCreateWithNativeHandle(
         *phDevice ///< [out] pointer to the handle of the device object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Device.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Device.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPlatform) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -740,7 +743,7 @@ __urdlllocal ur_result_t UR_APICALL urDeviceCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(hNativeDevice, hPlatform,
                                                    pProperties, phDevice);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phDevice);
     }
 
@@ -759,19 +762,19 @@ __urdlllocal ur_result_t UR_APICALL urDeviceGetGlobalTimestamps(
                        ///< correlates with the Device's global timestamp value
 ) {
     auto pfnGetGlobalTimestamps =
-        context.urDdiTable.Device.pfnGetGlobalTimestamps;
+        getContext()->urDdiTable.Device.pfnGetGlobalTimestamps;
 
     if (nullptr == pfnGetGlobalTimestamps) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -793,13 +796,13 @@ __urdlllocal ur_result_t UR_APICALL urContextCreate(
     ur_context_handle_t
         *phContext ///< [out] pointer to handle of context object created
 ) {
-    auto pfnCreate = context.urDdiTable.Context.pfnCreate;
+    auto pfnCreate = getContext()->urDdiTable.Context.pfnCreate;
 
     if (nullptr == pfnCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == phDevices) {
             return UR_RESULT_ERROR_INVALID_NULL_POINTER;
         }
@@ -816,7 +819,7 @@ __urdlllocal ur_result_t UR_APICALL urContextCreate(
     ur_result_t result =
         pfnCreate(DeviceCount, phDevices, pProperties, phContext);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phContext);
     }
 
@@ -829,13 +832,13 @@ __urdlllocal ur_result_t UR_APICALL urContextRetain(
     ur_context_handle_t
         hContext ///< [in] handle of the context to get a reference of.
 ) {
-    auto pfnRetain = context.urDdiTable.Context.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Context.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -843,7 +846,7 @@ __urdlllocal ur_result_t UR_APICALL urContextRetain(
 
     ur_result_t result = pfnRetain(hContext);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hContext, false);
     }
 
@@ -856,13 +859,13 @@ __urdlllocal ur_result_t UR_APICALL urContextRelease(
     ur_context_handle_t
         hContext ///< [in][release] handle of the context to release.
 ) {
-    auto pfnRelease = context.urDdiTable.Context.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Context.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -870,7 +873,7 @@ __urdlllocal ur_result_t UR_APICALL urContextRelease(
 
     ur_result_t result = pfnRelease(hContext);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hContext, false);
     }
 
@@ -894,13 +897,13 @@ __urdlllocal ur_result_t UR_APICALL urContextGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Context.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Context.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -922,7 +925,7 @@ __urdlllocal ur_result_t UR_APICALL urContextGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -940,13 +943,14 @@ __urdlllocal ur_result_t UR_APICALL urContextGetNativeHandle(
     ur_native_handle_t *
         phNativeContext ///< [out] a pointer to the native handle of the context.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Context.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Context.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -956,7 +960,7 @@ __urdlllocal ur_result_t UR_APICALL urContextGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -980,13 +984,13 @@ __urdlllocal ur_result_t UR_APICALL urContextCreateWithNativeHandle(
         phContext ///< [out] pointer to the handle of the context object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Context.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Context.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == phDevices) {
             return UR_RESULT_ERROR_INVALID_NULL_POINTER;
         }
@@ -999,7 +1003,7 @@ __urdlllocal ur_result_t UR_APICALL urContextCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(
         hNativeContext, numDevices, phDevices, pProperties, phContext);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phContext);
     }
 
@@ -1016,13 +1020,13 @@ __urdlllocal ur_result_t UR_APICALL urContextSetExtendedDeleter(
         pUserData ///< [in][out][optional] pointer to data to be passed to callback.
 ) {
     auto pfnSetExtendedDeleter =
-        context.urDdiTable.Context.pfnSetExtendedDeleter;
+        getContext()->urDdiTable.Context.pfnSetExtendedDeleter;
 
     if (nullptr == pfnSetExtendedDeleter) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1032,7 +1036,7 @@ __urdlllocal ur_result_t UR_APICALL urContextSetExtendedDeleter(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1053,13 +1057,13 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreate(
     void *pHost,           ///< [in][optional] pointer to the buffer data
     ur_mem_handle_t *phMem ///< [out] pointer to handle of image object created
 ) {
-    auto pfnImageCreate = context.urDdiTable.Mem.pfnImageCreate;
+    auto pfnImageCreate = getContext()->urDdiTable.Mem.pfnImageCreate;
 
     if (nullptr == pfnImageCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1113,7 +1117,7 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1121,7 +1125,7 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreate(
     ur_result_t result =
         pfnImageCreate(hContext, flags, pImageFormat, pImageDesc, pHost, phMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phMem);
     }
 
@@ -1139,13 +1143,13 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreate(
     ur_mem_handle_t
         *phBuffer ///< [out] pointer to handle of the memory buffer created
 ) {
-    auto pfnBufferCreate = context.urDdiTable.Mem.pfnBufferCreate;
+    auto pfnBufferCreate = getContext()->urDdiTable.Mem.pfnBufferCreate;
 
     if (nullptr == pfnBufferCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1181,7 +1185,7 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1189,7 +1193,7 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreate(
     ur_result_t result =
         pfnBufferCreate(hContext, flags, size, pProperties, phBuffer);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phBuffer);
     }
 
@@ -1201,13 +1205,13 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreate(
 __urdlllocal ur_result_t UR_APICALL urMemRetain(
     ur_mem_handle_t hMem ///< [in] handle of the memory object to get access
 ) {
-    auto pfnRetain = context.urDdiTable.Mem.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Mem.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1215,7 +1219,7 @@ __urdlllocal ur_result_t UR_APICALL urMemRetain(
 
     ur_result_t result = pfnRetain(hMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hMem, false);
     }
 
@@ -1228,13 +1232,13 @@ __urdlllocal ur_result_t UR_APICALL urMemRelease(
     ur_mem_handle_t
         hMem ///< [in][release] handle of the memory object to release
 ) {
-    auto pfnRelease = context.urDdiTable.Mem.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Mem.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1242,7 +1246,7 @@ __urdlllocal ur_result_t UR_APICALL urMemRelease(
 
     ur_result_t result = pfnRelease(hMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hMem, false);
     }
 
@@ -1261,13 +1265,13 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferPartition(
     ur_mem_handle_t
         *phMem ///< [out] pointer to the handle of sub buffer created
 ) {
-    auto pfnBufferPartition = context.urDdiTable.Mem.pfnBufferPartition;
+    auto pfnBufferPartition = getContext()->urDdiTable.Mem.pfnBufferPartition;
 
     if (nullptr == pfnBufferPartition) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1293,7 +1297,7 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferPartition(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -1314,13 +1318,13 @@ __urdlllocal ur_result_t UR_APICALL urMemGetNativeHandle(
     ur_native_handle_t
         *phNativeMem ///< [out] a pointer to the native handle of the mem.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Mem.pfnGetNativeHandle;
+    auto pfnGetNativeHandle = getContext()->urDdiTable.Mem.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1330,12 +1334,12 @@ __urdlllocal ur_result_t UR_APICALL urMemGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hMem)) {
         refCountContext.logInvalidReference(hMem);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -1357,13 +1361,13 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreateWithNativeHandle(
         *phMem ///< [out] pointer to handle of buffer memory object created.
 ) {
     auto pfnBufferCreateWithNativeHandle =
-        context.urDdiTable.Mem.pfnBufferCreateWithNativeHandle;
+        getContext()->urDdiTable.Mem.pfnBufferCreateWithNativeHandle;
 
     if (nullptr == pfnBufferCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1373,7 +1377,7 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1381,7 +1385,7 @@ __urdlllocal ur_result_t UR_APICALL urMemBufferCreateWithNativeHandle(
     ur_result_t result = pfnBufferCreateWithNativeHandle(hNativeMem, hContext,
                                                          pProperties, phMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phMem);
     }
 
@@ -1403,13 +1407,13 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreateWithNativeHandle(
         *phMem ///< [out] pointer to handle of image memory object created.
 ) {
     auto pfnImageCreateWithNativeHandle =
-        context.urDdiTable.Mem.pfnImageCreateWithNativeHandle;
+        getContext()->urDdiTable.Mem.pfnImageCreateWithNativeHandle;
 
     if (nullptr == pfnImageCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1427,7 +1431,7 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1435,7 +1439,7 @@ __urdlllocal ur_result_t UR_APICALL urMemImageCreateWithNativeHandle(
     ur_result_t result = pfnImageCreateWithNativeHandle(
         hNativeMem, hContext, pImageFormat, pImageDesc, pProperties, phMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phMem);
     }
 
@@ -1459,13 +1463,13 @@ __urdlllocal ur_result_t UR_APICALL urMemGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Mem.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Mem.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hMemory) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1487,7 +1491,7 @@ __urdlllocal ur_result_t UR_APICALL urMemGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hMemory)) {
         refCountContext.logInvalidReference(hMemory);
     }
@@ -1514,13 +1518,13 @@ __urdlllocal ur_result_t UR_APICALL urMemImageGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
-    auto pfnImageGetInfo = context.urDdiTable.Mem.pfnImageGetInfo;
+    auto pfnImageGetInfo = getContext()->urDdiTable.Mem.pfnImageGetInfo;
 
     if (nullptr == pfnImageGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hMemory) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1542,7 +1546,7 @@ __urdlllocal ur_result_t UR_APICALL urMemImageGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hMemory)) {
         refCountContext.logInvalidReference(hMemory);
     }
@@ -1561,13 +1565,13 @@ __urdlllocal ur_result_t UR_APICALL urSamplerCreate(
     ur_sampler_handle_t
         *phSampler ///< [out] pointer to handle of sampler object created
 ) {
-    auto pfnCreate = context.urDdiTable.Sampler.pfnCreate;
+    auto pfnCreate = getContext()->urDdiTable.Sampler.pfnCreate;
 
     if (nullptr == pfnCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1590,14 +1594,14 @@ __urdlllocal ur_result_t UR_APICALL urSamplerCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
     ur_result_t result = pfnCreate(hContext, pDesc, phSampler);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phSampler);
     }
 
@@ -1610,13 +1614,13 @@ __urdlllocal ur_result_t UR_APICALL urSamplerRetain(
     ur_sampler_handle_t
         hSampler ///< [in] handle of the sampler object to get access
 ) {
-    auto pfnRetain = context.urDdiTable.Sampler.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Sampler.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hSampler) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1624,7 +1628,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerRetain(
 
     ur_result_t result = pfnRetain(hSampler);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hSampler, false);
     }
 
@@ -1637,13 +1641,13 @@ __urdlllocal ur_result_t UR_APICALL urSamplerRelease(
     ur_sampler_handle_t
         hSampler ///< [in][release] handle of the sampler object to release
 ) {
-    auto pfnRelease = context.urDdiTable.Sampler.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Sampler.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hSampler) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1651,7 +1655,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerRelease(
 
     ur_result_t result = pfnRelease(hSampler);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hSampler, false);
     }
 
@@ -1671,13 +1675,13 @@ __urdlllocal ur_result_t UR_APICALL urSamplerGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] size in bytes returned in sampler property value
 ) {
-    auto pfnGetInfo = context.urDdiTable.Sampler.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Sampler.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hSampler) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1699,7 +1703,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hSampler)) {
         refCountContext.logInvalidReference(hSampler);
     }
@@ -1717,13 +1721,14 @@ __urdlllocal ur_result_t UR_APICALL urSamplerGetNativeHandle(
     ur_native_handle_t *
         phNativeSampler ///< [out] a pointer to the native handle of the sampler.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Sampler.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Sampler.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hSampler) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1733,7 +1738,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hSampler)) {
         refCountContext.logInvalidReference(hSampler);
     }
@@ -1755,13 +1760,13 @@ __urdlllocal ur_result_t UR_APICALL urSamplerCreateWithNativeHandle(
         phSampler ///< [out] pointer to the handle of the sampler object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Sampler.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Sampler.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1771,7 +1776,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -1779,7 +1784,7 @@ __urdlllocal ur_result_t UR_APICALL urSamplerCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(hNativeSampler, hContext,
                                                    pProperties, phSampler);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phSampler);
     }
 
@@ -1798,13 +1803,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMHostAlloc(
         size, ///< [in] minimum size in bytes of the USM memory object to be allocated
     void **ppMem ///< [out] pointer to USM host memory object
 ) {
-    auto pfnHostAlloc = context.urDdiTable.USM.pfnHostAlloc;
+    auto pfnHostAlloc = getContext()->urDdiTable.USM.pfnHostAlloc;
 
     if (nullptr == pfnHostAlloc) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1827,12 +1832,12 @@ __urdlllocal ur_result_t UR_APICALL urUSMHostAlloc(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(pool)) {
         refCountContext.logInvalidReference(pool);
     }
@@ -1855,13 +1860,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMDeviceAlloc(
         size, ///< [in] minimum size in bytes of the USM memory object to be allocated
     void **ppMem ///< [out] pointer to USM device memory object
 ) {
-    auto pfnDeviceAlloc = context.urDdiTable.USM.pfnDeviceAlloc;
+    auto pfnDeviceAlloc = getContext()->urDdiTable.USM.pfnDeviceAlloc;
 
     if (nullptr == pfnDeviceAlloc) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1888,17 +1893,17 @@ __urdlllocal ur_result_t UR_APICALL urUSMDeviceAlloc(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(pool)) {
         refCountContext.logInvalidReference(pool);
     }
@@ -1922,13 +1927,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMSharedAlloc(
         size, ///< [in] minimum size in bytes of the USM memory object to be allocated
     void **ppMem ///< [out] pointer to USM shared memory object
 ) {
-    auto pfnSharedAlloc = context.urDdiTable.USM.pfnSharedAlloc;
+    auto pfnSharedAlloc = getContext()->urDdiTable.USM.pfnSharedAlloc;
 
     if (nullptr == pfnSharedAlloc) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1955,17 +1960,17 @@ __urdlllocal ur_result_t UR_APICALL urUSMSharedAlloc(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(pool)) {
         refCountContext.logInvalidReference(pool);
     }
@@ -1982,13 +1987,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMFree(
     ur_context_handle_t hContext, ///< [in] handle of the context object
     void *pMem                    ///< [in] pointer to USM memory object
 ) {
-    auto pfnFree = context.urDdiTable.USM.pfnFree;
+    auto pfnFree = getContext()->urDdiTable.USM.pfnFree;
 
     if (nullptr == pfnFree) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -1998,7 +2003,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMFree(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2023,13 +2028,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMGetMemAllocInfo(
     size_t *
         pPropSizeRet ///< [out][optional] bytes returned in USM allocation property
 ) {
-    auto pfnGetMemAllocInfo = context.urDdiTable.USM.pfnGetMemAllocInfo;
+    auto pfnGetMemAllocInfo = getContext()->urDdiTable.USM.pfnGetMemAllocInfo;
 
     if (nullptr == pfnGetMemAllocInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2043,7 +2048,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMGetMemAllocInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2063,13 +2068,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolCreate(
                    ///< ::ur_usm_pool_limits_desc_t
     ur_usm_pool_handle_t *ppPool ///< [out] pointer to USM memory pool
 ) {
-    auto pfnPoolCreate = context.urDdiTable.USM.pfnPoolCreate;
+    auto pfnPoolCreate = getContext()->urDdiTable.USM.pfnPoolCreate;
 
     if (nullptr == pfnPoolCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2087,14 +2092,14 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
     ur_result_t result = pfnPoolCreate(hContext, pPoolDesc, ppPool);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*ppPool);
     }
 
@@ -2106,13 +2111,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolCreate(
 __urdlllocal ur_result_t UR_APICALL urUSMPoolRetain(
     ur_usm_pool_handle_t pPool ///< [in] pointer to USM memory pool
 ) {
-    auto pfnPoolRetain = context.urDdiTable.USM.pfnPoolRetain;
+    auto pfnPoolRetain = getContext()->urDdiTable.USM.pfnPoolRetain;
 
     if (nullptr == pfnPoolRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == pPool) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2120,7 +2125,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolRetain(
 
     ur_result_t result = pfnPoolRetain(pPool);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(pPool, false);
     }
 
@@ -2132,13 +2137,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolRetain(
 __urdlllocal ur_result_t UR_APICALL urUSMPoolRelease(
     ur_usm_pool_handle_t pPool ///< [in][release] pointer to USM memory pool
 ) {
-    auto pfnPoolRelease = context.urDdiTable.USM.pfnPoolRelease;
+    auto pfnPoolRelease = getContext()->urDdiTable.USM.pfnPoolRelease;
 
     if (nullptr == pfnPoolRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == pPool) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2146,7 +2151,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolRelease(
 
     ur_result_t result = pfnPoolRelease(pPool);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(pPool, false);
     }
 
@@ -2165,13 +2170,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] size in bytes returned in pool property value
 ) {
-    auto pfnPoolGetInfo = context.urDdiTable.USM.pfnPoolGetInfo;
+    auto pfnPoolGetInfo = getContext()->urDdiTable.USM.pfnPoolGetInfo;
 
     if (nullptr == pfnPoolGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPool) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2193,7 +2198,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMPoolGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hPool)) {
         refCountContext.logInvalidReference(hPool);
     }
@@ -2224,13 +2229,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemGranularityGetInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName."
 ) {
     auto pfnGranularityGetInfo =
-        context.urDdiTable.VirtualMem.pfnGranularityGetInfo;
+        getContext()->urDdiTable.VirtualMem.pfnGranularityGetInfo;
 
     if (nullptr == pfnGranularityGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2252,12 +2257,12 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemGranularityGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -2282,13 +2287,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemReserve(
         ppStart ///< [out] pointer to the returned address at the start of reserved virtual
                 ///< memory range.
 ) {
-    auto pfnReserve = context.urDdiTable.VirtualMem.pfnReserve;
+    auto pfnReserve = getContext()->urDdiTable.VirtualMem.pfnReserve;
 
     if (nullptr == pfnReserve) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2298,7 +2303,7 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemReserve(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2316,13 +2321,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemFree(
         pStart, ///< [in] pointer to the start of the virtual memory range to free.
     size_t size ///< [in] size in bytes of the virtual memory range to free.
 ) {
-    auto pfnFree = context.urDdiTable.VirtualMem.pfnFree;
+    auto pfnFree = getContext()->urDdiTable.VirtualMem.pfnFree;
 
     if (nullptr == pfnFree) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2332,7 +2337,7 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemFree(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2356,13 +2361,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemMap(
     ur_virtual_mem_access_flags_t
         flags ///< [in] access flags for the physical memory mapping.
 ) {
-    auto pfnMap = context.urDdiTable.VirtualMem.pfnMap;
+    auto pfnMap = getContext()->urDdiTable.VirtualMem.pfnMap;
 
     if (nullptr == pfnMap) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2380,12 +2385,12 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemMap(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hPhysicalMem)) {
         refCountContext.logInvalidReference(hPhysicalMem);
     }
@@ -2404,13 +2409,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemUnmap(
         pStart, ///< [in] pointer to the start of the mapped virtual memory range
     size_t size ///< [in] size in bytes of the virtual memory range.
 ) {
-    auto pfnUnmap = context.urDdiTable.VirtualMem.pfnUnmap;
+    auto pfnUnmap = getContext()->urDdiTable.VirtualMem.pfnUnmap;
 
     if (nullptr == pfnUnmap) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2420,7 +2425,7 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemUnmap(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2440,13 +2445,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemSetAccess(
     ur_virtual_mem_access_flags_t
         flags ///< [in] access flags to set for the mapped virtual memory range.
 ) {
-    auto pfnSetAccess = context.urDdiTable.VirtualMem.pfnSetAccess;
+    auto pfnSetAccess = getContext()->urDdiTable.VirtualMem.pfnSetAccess;
 
     if (nullptr == pfnSetAccess) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2460,7 +2465,7 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemSetAccess(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2488,13 +2493,13 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName."
 ) {
-    auto pfnGetInfo = context.urDdiTable.VirtualMem.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.VirtualMem.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2508,7 +2513,7 @@ __urdlllocal ur_result_t UR_APICALL urVirtualMemGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2532,13 +2537,13 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemCreate(
     ur_physical_mem_handle_t *
         phPhysicalMem ///< [out] pointer to handle of physical memory object created.
 ) {
-    auto pfnCreate = context.urDdiTable.PhysicalMem.pfnCreate;
+    auto pfnCreate = getContext()->urDdiTable.PhysicalMem.pfnCreate;
 
     if (nullptr == pfnCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2557,12 +2562,12 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -2570,7 +2575,7 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemCreate(
     ur_result_t result =
         pfnCreate(hContext, hDevice, size, pProperties, phPhysicalMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phPhysicalMem);
     }
 
@@ -2583,13 +2588,13 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemRetain(
     ur_physical_mem_handle_t
         hPhysicalMem ///< [in] handle of the physical memory object to retain.
 ) {
-    auto pfnRetain = context.urDdiTable.PhysicalMem.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.PhysicalMem.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPhysicalMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2597,7 +2602,7 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemRetain(
 
     ur_result_t result = pfnRetain(hPhysicalMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hPhysicalMem, false);
     }
 
@@ -2610,13 +2615,13 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemRelease(
     ur_physical_mem_handle_t
         hPhysicalMem ///< [in][release] handle of the physical memory object to release.
 ) {
-    auto pfnRelease = context.urDdiTable.PhysicalMem.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.PhysicalMem.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hPhysicalMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2624,7 +2629,7 @@ __urdlllocal ur_result_t UR_APICALL urPhysicalMemRelease(
 
     ur_result_t result = pfnRelease(hPhysicalMem);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hPhysicalMem, false);
     }
 
@@ -2642,13 +2647,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithIL(
     ur_program_handle_t
         *phProgram ///< [out] pointer to handle of program object created.
 ) {
-    auto pfnCreateWithIL = context.urDdiTable.Program.pfnCreateWithIL;
+    auto pfnCreateWithIL = getContext()->urDdiTable.Program.pfnCreateWithIL;
 
     if (nullptr == pfnCreateWithIL) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2676,7 +2681,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithIL(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2684,7 +2689,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithIL(
     ur_result_t result =
         pfnCreateWithIL(hContext, pIL, length, pProperties, phProgram);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phProgram);
     }
 
@@ -2704,13 +2709,14 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithBinary(
     ur_program_handle_t
         *phProgram ///< [out] pointer to handle of Program object created.
 ) {
-    auto pfnCreateWithBinary = context.urDdiTable.Program.pfnCreateWithBinary;
+    auto pfnCreateWithBinary =
+        getContext()->urDdiTable.Program.pfnCreateWithBinary;
 
     if (nullptr == pfnCreateWithBinary) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2738,12 +2744,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithBinary(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -2751,7 +2757,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithBinary(
     ur_result_t result = pfnCreateWithBinary(hContext, hDevice, size, pBinary,
                                              pProperties, phProgram);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phProgram);
     }
 
@@ -2766,13 +2772,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramBuild(
     const char *
         pOptions ///< [in][optional] pointer to build options null-terminated string.
 ) {
-    auto pfnBuild = context.urDdiTable.Program.pfnBuild;
+    auto pfnBuild = getContext()->urDdiTable.Program.pfnBuild;
 
     if (nullptr == pfnBuild) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2782,12 +2788,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramBuild(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -2806,13 +2812,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramCompile(
     const char *
         pOptions ///< [in][optional] pointer to build options null-terminated string.
 ) {
-    auto pfnCompile = context.urDdiTable.Program.pfnCompile;
+    auto pfnCompile = getContext()->urDdiTable.Program.pfnCompile;
 
     if (nullptr == pfnCompile) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2822,12 +2828,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramCompile(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -2849,13 +2855,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramLink(
     ur_program_handle_t
         *phProgram ///< [out] pointer to handle of program object created.
 ) {
-    auto pfnLink = context.urDdiTable.Program.pfnLink;
+    auto pfnLink = getContext()->urDdiTable.Program.pfnLink;
 
     if (nullptr == pfnLink) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2873,7 +2879,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramLink(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -2889,13 +2895,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramLink(
 __urdlllocal ur_result_t UR_APICALL urProgramRetain(
     ur_program_handle_t hProgram ///< [in] handle for the Program to retain
 ) {
-    auto pfnRetain = context.urDdiTable.Program.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Program.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2903,7 +2909,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramRetain(
 
     ur_result_t result = pfnRetain(hProgram);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hProgram, false);
     }
 
@@ -2916,13 +2922,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramRelease(
     ur_program_handle_t
         hProgram ///< [in][release] handle for the Program to release
 ) {
-    auto pfnRelease = context.urDdiTable.Program.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Program.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2930,7 +2936,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramRelease(
 
     ur_result_t result = pfnRelease(hProgram);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hProgram, false);
     }
 
@@ -2952,13 +2958,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetFunctionPointer(
         ppFunctionPointer ///< [out] Returns the pointer to the function if it is found in the program.
 ) {
     auto pfnGetFunctionPointer =
-        context.urDdiTable.Program.pfnGetFunctionPointer;
+        getContext()->urDdiTable.Program.pfnGetFunctionPointer;
 
     if (nullptr == pfnGetFunctionPointer) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -2976,12 +2982,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetFunctionPointer(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3008,13 +3014,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetGlobalVariablePointer(
         ppGlobalVariablePointerRet ///< [out] Returns the pointer to the global variable if it is found in the program.
 ) {
     auto pfnGetGlobalVariablePointer =
-        context.urDdiTable.Program.pfnGetGlobalVariablePointer;
+        getContext()->urDdiTable.Program.pfnGetGlobalVariablePointer;
 
     if (nullptr == pfnGetGlobalVariablePointer) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3032,12 +3038,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetGlobalVariablePointer(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3065,13 +3071,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Program.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Program.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3093,7 +3099,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3122,13 +3128,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetBuildInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of data being
                      ///< queried by propName.
 ) {
-    auto pfnGetBuildInfo = context.urDdiTable.Program.pfnGetBuildInfo;
+    auto pfnGetBuildInfo = getContext()->urDdiTable.Program.pfnGetBuildInfo;
 
     if (nullptr == pfnGetBuildInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3142,12 +3148,12 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetBuildInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -3168,13 +3174,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramSetSpecializationConstants(
                        ///< descriptions
 ) {
     auto pfnSetSpecializationConstants =
-        context.urDdiTable.Program.pfnSetSpecializationConstants;
+        getContext()->urDdiTable.Program.pfnSetSpecializationConstants;
 
     if (nullptr == pfnSetSpecializationConstants) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3188,7 +3194,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramSetSpecializationConstants(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3206,13 +3212,14 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetNativeHandle(
     ur_native_handle_t *
         phNativeProgram ///< [out] a pointer to the native handle of the program.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Program.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Program.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3222,7 +3229,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3244,13 +3251,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithNativeHandle(
         phProgram ///< [out] pointer to the handle of the program object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Program.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Program.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3260,7 +3267,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -3268,7 +3275,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(hNativeProgram, hContext,
                                                    pProperties, phProgram);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phProgram);
     }
 
@@ -3283,13 +3290,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelCreate(
     ur_kernel_handle_t
         *phKernel ///< [out] pointer to handle of kernel object created.
 ) {
-    auto pfnCreate = context.urDdiTable.Kernel.pfnCreate;
+    auto pfnCreate = getContext()->urDdiTable.Kernel.pfnCreate;
 
     if (nullptr == pfnCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3303,14 +3310,14 @@ __urdlllocal ur_result_t UR_APICALL urKernelCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
 
     ur_result_t result = pfnCreate(hProgram, pKernelName, phKernel);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phKernel);
     }
 
@@ -3328,13 +3335,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgValue(
     const void
         *pArgValue ///< [in] argument value represented as matching arg type.
 ) {
-    auto pfnSetArgValue = context.urDdiTable.Kernel.pfnSetArgValue;
+    auto pfnSetArgValue = getContext()->urDdiTable.Kernel.pfnSetArgValue;
 
     if (nullptr == pfnSetArgValue) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3344,7 +3351,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgValue(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3365,19 +3372,19 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgLocal(
     const ur_kernel_arg_local_properties_t
         *pProperties ///< [in][optional] pointer to local buffer properties.
 ) {
-    auto pfnSetArgLocal = context.urDdiTable.Kernel.pfnSetArgLocal;
+    auto pfnSetArgLocal = getContext()->urDdiTable.Kernel.pfnSetArgLocal;
 
     if (nullptr == pfnSetArgLocal) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3405,13 +3412,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of data being
                      ///< queried by propName.
 ) {
-    auto pfnGetInfo = context.urDdiTable.Kernel.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Kernel.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3433,7 +3440,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3459,13 +3466,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetGroupInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of data being
                      ///< queried by propName.
 ) {
-    auto pfnGetGroupInfo = context.urDdiTable.Kernel.pfnGetGroupInfo;
+    auto pfnGetGroupInfo = getContext()->urDdiTable.Kernel.pfnGetGroupInfo;
 
     if (nullptr == pfnGetGroupInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3479,12 +3486,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetGroupInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -3510,13 +3517,14 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetSubGroupInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of data being
                      ///< queried by propName.
 ) {
-    auto pfnGetSubGroupInfo = context.urDdiTable.Kernel.pfnGetSubGroupInfo;
+    auto pfnGetSubGroupInfo =
+        getContext()->urDdiTable.Kernel.pfnGetSubGroupInfo;
 
     if (nullptr == pfnGetSubGroupInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3530,12 +3538,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetSubGroupInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -3551,13 +3559,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetSubGroupInfo(
 __urdlllocal ur_result_t UR_APICALL urKernelRetain(
     ur_kernel_handle_t hKernel ///< [in] handle for the Kernel to retain
 ) {
-    auto pfnRetain = context.urDdiTable.Kernel.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Kernel.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3565,7 +3573,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelRetain(
 
     ur_result_t result = pfnRetain(hKernel);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hKernel, false);
     }
 
@@ -3578,13 +3586,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelRelease(
     ur_kernel_handle_t
         hKernel ///< [in][release] handle for the Kernel to release
 ) {
-    auto pfnRelease = context.urDdiTable.Kernel.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Kernel.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3592,7 +3600,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelRelease(
 
     ur_result_t result = pfnRelease(hKernel);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hKernel, false);
     }
 
@@ -3610,19 +3618,19 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgPointer(
         pArgValue ///< [in][optional] Pointer obtained by USM allocation or virtual memory
     ///< mapping operation. If null then argument value is considered null.
 ) {
-    auto pfnSetArgPointer = context.urDdiTable.Kernel.pfnSetArgPointer;
+    auto pfnSetArgPointer = getContext()->urDdiTable.Kernel.pfnSetArgPointer;
 
     if (nullptr == pfnSetArgPointer) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3645,13 +3653,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetExecInfo(
         pPropValue ///< [in][typename(propName, propSize)] pointer to memory location holding
                    ///< the property value.
 ) {
-    auto pfnSetExecInfo = context.urDdiTable.Kernel.pfnSetExecInfo;
+    auto pfnSetExecInfo = getContext()->urDdiTable.Kernel.pfnSetExecInfo;
 
     if (nullptr == pfnSetExecInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3665,7 +3673,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetExecInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3685,13 +3693,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgSampler(
         *pProperties, ///< [in][optional] pointer to sampler properties.
     ur_sampler_handle_t hArgValue ///< [in] handle of Sampler object.
 ) {
-    auto pfnSetArgSampler = context.urDdiTable.Kernel.pfnSetArgSampler;
+    auto pfnSetArgSampler = getContext()->urDdiTable.Kernel.pfnSetArgSampler;
 
     if (nullptr == pfnSetArgSampler) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3701,12 +3709,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgSampler(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hArgValue)) {
         refCountContext.logInvalidReference(hArgValue);
     }
@@ -3726,13 +3734,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgMemObj(
         *pProperties, ///< [in][optional] pointer to Memory object properties.
     ur_mem_handle_t hArgValue ///< [in][optional] handle of Memory object.
 ) {
-    auto pfnSetArgMemObj = context.urDdiTable.Kernel.pfnSetArgMemObj;
+    auto pfnSetArgMemObj = getContext()->urDdiTable.Kernel.pfnSetArgMemObj;
 
     if (nullptr == pfnSetArgMemObj) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3743,12 +3751,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetArgMemObj(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hArgValue)) {
         refCountContext.logInvalidReference(hArgValue);
     }
@@ -3768,13 +3776,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetSpecializationConstants(
         pSpecConstants ///< [in] array of specialization constant value descriptions
 ) {
     auto pfnSetSpecializationConstants =
-        context.urDdiTable.Kernel.pfnSetSpecializationConstants;
+        getContext()->urDdiTable.Kernel.pfnSetSpecializationConstants;
 
     if (nullptr == pfnSetSpecializationConstants) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3788,7 +3796,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelSetSpecializationConstants(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3806,13 +3814,14 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetNativeHandle(
     ur_native_handle_t
         *phNativeKernel ///< [out] a pointer to the native handle of the kernel.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Kernel.pfnGetNativeHandle;
+    auto pfnGetNativeHandle =
+        getContext()->urDdiTable.Kernel.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3822,7 +3831,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -3846,13 +3855,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelCreateWithNativeHandle(
         *phKernel ///< [out] pointer to the handle of the kernel object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Kernel.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Kernel.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3866,12 +3875,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -3879,7 +3888,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(
         hNativeKernel, hContext, hProgram, pProperties, phKernel);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phKernel);
     }
 
@@ -3906,13 +3915,13 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
     ///< suggested local work size that will contain the result of the query
 ) {
     auto pfnGetSuggestedLocalWorkSize =
-        context.urDdiTable.Kernel.pfnGetSuggestedLocalWorkSize;
+        getContext()->urDdiTable.Kernel.pfnGetSuggestedLocalWorkSize;
 
     if (nullptr == pfnGetSuggestedLocalWorkSize) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3934,12 +3943,12 @@ __urdlllocal ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -3964,13 +3973,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueGetInfo(
     size_t *
         pPropSizeRet ///< [out][optional] size in bytes returned in queue property value
 ) {
-    auto pfnGetInfo = context.urDdiTable.Queue.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Queue.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -3992,7 +4001,7 @@ __urdlllocal ur_result_t UR_APICALL urQueueGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4013,13 +4022,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreate(
     ur_queue_handle_t
         *phQueue ///< [out] pointer to handle of queue object created
 ) {
-    auto pfnCreate = context.urDdiTable.Queue.pfnCreate;
+    auto pfnCreate = getContext()->urDdiTable.Queue.pfnCreate;
 
     if (nullptr == pfnCreate) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4049,19 +4058,19 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreate(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
     ur_result_t result = pfnCreate(hContext, hDevice, pProperties, phQueue);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phQueue);
     }
 
@@ -4073,13 +4082,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreate(
 __urdlllocal ur_result_t UR_APICALL urQueueRetain(
     ur_queue_handle_t hQueue ///< [in] handle of the queue object to get access
 ) {
-    auto pfnRetain = context.urDdiTable.Queue.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Queue.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4087,7 +4096,7 @@ __urdlllocal ur_result_t UR_APICALL urQueueRetain(
 
     ur_result_t result = pfnRetain(hQueue);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hQueue, false);
     }
 
@@ -4100,13 +4109,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueRelease(
     ur_queue_handle_t
         hQueue ///< [in][release] handle of the queue object to release
 ) {
-    auto pfnRelease = context.urDdiTable.Queue.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Queue.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4114,7 +4123,7 @@ __urdlllocal ur_result_t UR_APICALL urQueueRelease(
 
     ur_result_t result = pfnRelease(hQueue);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hQueue, false);
     }
 
@@ -4130,13 +4139,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueGetNativeHandle(
     ur_native_handle_t
         *phNativeQueue ///< [out] a pointer to the native handle of the queue.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Queue.pfnGetNativeHandle;
+    auto pfnGetNativeHandle = getContext()->urDdiTable.Queue.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4146,7 +4155,7 @@ __urdlllocal ur_result_t UR_APICALL urQueueGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4169,13 +4178,13 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
         *phQueue ///< [out] pointer to the handle of the queue object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Queue.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Queue.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4189,12 +4198,12 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -4202,7 +4211,7 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
     ur_result_t result = pfnCreateWithNativeHandle(
         hNativeQueue, hContext, hDevice, pProperties, phQueue);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phQueue);
     }
 
@@ -4214,19 +4223,19 @@ __urdlllocal ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
 __urdlllocal ur_result_t UR_APICALL urQueueFinish(
     ur_queue_handle_t hQueue ///< [in] handle of the queue to be finished.
 ) {
-    auto pfnFinish = context.urDdiTable.Queue.pfnFinish;
+    auto pfnFinish = getContext()->urDdiTable.Queue.pfnFinish;
 
     if (nullptr == pfnFinish) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4241,19 +4250,19 @@ __urdlllocal ur_result_t UR_APICALL urQueueFinish(
 __urdlllocal ur_result_t UR_APICALL urQueueFlush(
     ur_queue_handle_t hQueue ///< [in] handle of the queue to be flushed.
 ) {
-    auto pfnFlush = context.urDdiTable.Queue.pfnFlush;
+    auto pfnFlush = getContext()->urDdiTable.Queue.pfnFlush;
 
     if (nullptr == pfnFlush) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4274,13 +4283,13 @@ __urdlllocal ur_result_t UR_APICALL urEventGetInfo(
                     ///< property
     size_t *pPropSizeRet ///< [out][optional] bytes returned in event property
 ) {
-    auto pfnGetInfo = context.urDdiTable.Event.pfnGetInfo;
+    auto pfnGetInfo = getContext()->urDdiTable.Event.pfnGetInfo;
 
     if (nullptr == pfnGetInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4302,7 +4311,7 @@ __urdlllocal ur_result_t UR_APICALL urEventGetInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hEvent)) {
         refCountContext.logInvalidReference(hEvent);
     }
@@ -4327,13 +4336,14 @@ __urdlllocal ur_result_t UR_APICALL urEventGetProfilingInfo(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes returned in
                      ///< propValue
 ) {
-    auto pfnGetProfilingInfo = context.urDdiTable.Event.pfnGetProfilingInfo;
+    auto pfnGetProfilingInfo =
+        getContext()->urDdiTable.Event.pfnGetProfilingInfo;
 
     if (nullptr == pfnGetProfilingInfo) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4347,7 +4357,7 @@ __urdlllocal ur_result_t UR_APICALL urEventGetProfilingInfo(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hEvent)) {
         refCountContext.logInvalidReference(hEvent);
     }
@@ -4366,13 +4376,13 @@ __urdlllocal ur_result_t UR_APICALL urEventWait(
         phEventWaitList ///< [in][range(0, numEvents)] pointer to a list of events to wait for
                         ///< completion
 ) {
-    auto pfnWait = context.urDdiTable.Event.pfnWait;
+    auto pfnWait = getContext()->urDdiTable.Event.pfnWait;
 
     if (nullptr == pfnWait) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == phEventWaitList) {
             return UR_RESULT_ERROR_INVALID_NULL_POINTER;
         }
@@ -4392,13 +4402,13 @@ __urdlllocal ur_result_t UR_APICALL urEventWait(
 __urdlllocal ur_result_t UR_APICALL urEventRetain(
     ur_event_handle_t hEvent ///< [in] handle of the event object
 ) {
-    auto pfnRetain = context.urDdiTable.Event.pfnRetain;
+    auto pfnRetain = getContext()->urDdiTable.Event.pfnRetain;
 
     if (nullptr == pfnRetain) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4406,7 +4416,7 @@ __urdlllocal ur_result_t UR_APICALL urEventRetain(
 
     ur_result_t result = pfnRetain(hEvent);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.incrementRefCount(hEvent, false);
     }
 
@@ -4418,13 +4428,13 @@ __urdlllocal ur_result_t UR_APICALL urEventRetain(
 __urdlllocal ur_result_t UR_APICALL urEventRelease(
     ur_event_handle_t hEvent ///< [in][release] handle of the event object
 ) {
-    auto pfnRelease = context.urDdiTable.Event.pfnRelease;
+    auto pfnRelease = getContext()->urDdiTable.Event.pfnRelease;
 
     if (nullptr == pfnRelease) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4432,7 +4442,7 @@ __urdlllocal ur_result_t UR_APICALL urEventRelease(
 
     ur_result_t result = pfnRelease(hEvent);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.decrementRefCount(hEvent, false);
     }
 
@@ -4446,13 +4456,13 @@ __urdlllocal ur_result_t UR_APICALL urEventGetNativeHandle(
     ur_native_handle_t
         *phNativeEvent ///< [out] a pointer to the native handle of the event.
 ) {
-    auto pfnGetNativeHandle = context.urDdiTable.Event.pfnGetNativeHandle;
+    auto pfnGetNativeHandle = getContext()->urDdiTable.Event.pfnGetNativeHandle;
 
     if (nullptr == pfnGetNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4462,7 +4472,7 @@ __urdlllocal ur_result_t UR_APICALL urEventGetNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hEvent)) {
         refCountContext.logInvalidReference(hEvent);
     }
@@ -4484,13 +4494,13 @@ __urdlllocal ur_result_t UR_APICALL urEventCreateWithNativeHandle(
         *phEvent ///< [out] pointer to the handle of the event object created.
 ) {
     auto pfnCreateWithNativeHandle =
-        context.urDdiTable.Event.pfnCreateWithNativeHandle;
+        getContext()->urDdiTable.Event.pfnCreateWithNativeHandle;
 
     if (nullptr == pfnCreateWithNativeHandle) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4500,7 +4510,7 @@ __urdlllocal ur_result_t UR_APICALL urEventCreateWithNativeHandle(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -4508,7 +4518,7 @@ __urdlllocal ur_result_t UR_APICALL urEventCreateWithNativeHandle(
     ur_result_t result =
         pfnCreateWithNativeHandle(hNativeEvent, hContext, pProperties, phEvent);
 
-    if (context.enableLeakChecking && result == UR_RESULT_SUCCESS) {
+    if (getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS) {
         refCountContext.createRefCount(*phEvent);
     }
 
@@ -4524,13 +4534,13 @@ __urdlllocal ur_result_t UR_APICALL urEventSetCallback(
     void *
         pUserData ///< [in][out][optional] pointer to data to be passed to callback.
 ) {
-    auto pfnSetCallback = context.urDdiTable.Event.pfnSetCallback;
+    auto pfnSetCallback = getContext()->urDdiTable.Event.pfnSetCallback;
 
     if (nullptr == pfnSetCallback) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hEvent) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4548,7 +4558,7 @@ __urdlllocal ur_result_t UR_APICALL urEventSetCallback(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hEvent)) {
         refCountContext.logInvalidReference(hEvent);
     }
@@ -4590,13 +4600,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueKernelLaunch(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< kernel execution instance.
 ) {
-    auto pfnKernelLaunch = context.urDdiTable.Enqueue.pfnKernelLaunch;
+    auto pfnKernelLaunch = getContext()->urDdiTable.Enqueue.pfnKernelLaunch;
 
     if (nullptr == pfnKernelLaunch) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4630,12 +4640,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueKernelLaunch(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -4662,13 +4672,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueEventsWait(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnEventsWait = context.urDdiTable.Enqueue.pfnEventsWait;
+    auto pfnEventsWait = getContext()->urDdiTable.Enqueue.pfnEventsWait;
 
     if (nullptr == pfnEventsWait) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4690,7 +4700,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueEventsWait(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4717,13 +4727,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueEventsWaitWithBarrier(
                 ///< command instance.
 ) {
     auto pfnEventsWaitWithBarrier =
-        context.urDdiTable.Enqueue.pfnEventsWaitWithBarrier;
+        getContext()->urDdiTable.Enqueue.pfnEventsWaitWithBarrier;
 
     if (nullptr == pfnEventsWaitWithBarrier) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4745,7 +4755,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueEventsWaitWithBarrier(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -4776,13 +4786,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferRead(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferRead = context.urDdiTable.Enqueue.pfnMemBufferRead;
+    auto pfnMemBufferRead = getContext()->urDdiTable.Enqueue.pfnMemBufferRead;
 
     if (nullptr == pfnMemBufferRead) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4817,12 +4827,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferRead(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -4856,13 +4866,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferWrite(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferWrite = context.urDdiTable.Enqueue.pfnMemBufferWrite;
+    auto pfnMemBufferWrite = getContext()->urDdiTable.Enqueue.pfnMemBufferWrite;
 
     if (nullptr == pfnMemBufferWrite) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -4897,12 +4907,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferWrite(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -4946,13 +4956,14 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferReadRect(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferReadRect = context.urDdiTable.Enqueue.pfnMemBufferReadRect;
+    auto pfnMemBufferReadRect =
+        getContext()->urDdiTable.Enqueue.pfnMemBufferReadRect;
 
     if (nullptr == pfnMemBufferReadRect) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5027,12 +5038,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferReadRect(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -5081,13 +5092,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferWriteRect(
                 ///< command instance.
 ) {
     auto pfnMemBufferWriteRect =
-        context.urDdiTable.Enqueue.pfnMemBufferWriteRect;
+        getContext()->urDdiTable.Enqueue.pfnMemBufferWriteRect;
 
     if (nullptr == pfnMemBufferWriteRect) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5162,12 +5173,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferWriteRect(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -5201,13 +5212,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferCopy(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferCopy = context.urDdiTable.Enqueue.pfnMemBufferCopy;
+    auto pfnMemBufferCopy = getContext()->urDdiTable.Enqueue.pfnMemBufferCopy;
 
     if (nullptr == pfnMemBufferCopy) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5247,17 +5258,17 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferCopy(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBufferSrc)) {
         refCountContext.logInvalidReference(hBufferSrc);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBufferDst)) {
         refCountContext.logInvalidReference(hBufferDst);
     }
@@ -5299,13 +5310,14 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferCopyRect(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferCopyRect = context.urDdiTable.Enqueue.pfnMemBufferCopyRect;
+    auto pfnMemBufferCopyRect =
+        getContext()->urDdiTable.Enqueue.pfnMemBufferCopyRect;
 
     if (nullptr == pfnMemBufferCopyRect) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5381,17 +5393,17 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferCopyRect(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBufferSrc)) {
         refCountContext.logInvalidReference(hBufferSrc);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBufferDst)) {
         refCountContext.logInvalidReference(hBufferDst);
     }
@@ -5424,13 +5436,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferFill(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemBufferFill = context.urDdiTable.Enqueue.pfnMemBufferFill;
+    auto pfnMemBufferFill = getContext()->urDdiTable.Enqueue.pfnMemBufferFill;
 
     if (nullptr == pfnMemBufferFill) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5485,12 +5497,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferFill(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -5527,13 +5539,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageRead(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemImageRead = context.urDdiTable.Enqueue.pfnMemImageRead;
+    auto pfnMemImageRead = getContext()->urDdiTable.Enqueue.pfnMemImageRead;
 
     if (nullptr == pfnMemImageRead) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5572,12 +5584,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageRead(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hImage)) {
         refCountContext.logInvalidReference(hImage);
     }
@@ -5615,13 +5627,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageWrite(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemImageWrite = context.urDdiTable.Enqueue.pfnMemImageWrite;
+    auto pfnMemImageWrite = getContext()->urDdiTable.Enqueue.pfnMemImageWrite;
 
     if (nullptr == pfnMemImageWrite) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5660,12 +5672,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageWrite(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hImage)) {
         refCountContext.logInvalidReference(hImage);
     }
@@ -5704,13 +5716,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageCopy(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemImageCopy = context.urDdiTable.Enqueue.pfnMemImageCopy;
+    auto pfnMemImageCopy = getContext()->urDdiTable.Enqueue.pfnMemImageCopy;
 
     if (nullptr == pfnMemImageCopy) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5754,17 +5766,17 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemImageCopy(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hImageSrc)) {
         refCountContext.logInvalidReference(hImageSrc);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hImageDst)) {
         refCountContext.logInvalidReference(hImageDst);
     }
@@ -5798,13 +5810,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferMap(
     void **ppRetMap ///< [out] return mapped pointer.  TODO: move it before
                     ///< numEventsInWaitList?
 ) {
-    auto pfnMemBufferMap = context.urDdiTable.Enqueue.pfnMemBufferMap;
+    auto pfnMemBufferMap = getContext()->urDdiTable.Enqueue.pfnMemBufferMap;
 
     if (nullptr == pfnMemBufferMap) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5843,12 +5855,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemBufferMap(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -5877,13 +5889,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemUnmap(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnMemUnmap = context.urDdiTable.Enqueue.pfnMemUnmap;
+    auto pfnMemUnmap = getContext()->urDdiTable.Enqueue.pfnMemUnmap;
 
     if (nullptr == pfnMemUnmap) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -5913,12 +5925,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueMemUnmap(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hMem)) {
         refCountContext.logInvalidReference(hMem);
     }
@@ -5952,13 +5964,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMFill(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnUSMFill = context.urDdiTable.Enqueue.pfnUSMFill;
+    auto pfnUSMFill = getContext()->urDdiTable.Enqueue.pfnUSMFill;
 
     if (nullptr == pfnUSMFill) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6009,7 +6021,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMFill(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6041,13 +6053,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMMemcpy(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnUSMMemcpy = context.urDdiTable.Enqueue.pfnUSMMemcpy;
+    auto pfnUSMMemcpy = getContext()->urDdiTable.Enqueue.pfnUSMMemcpy;
 
     if (nullptr == pfnUSMMemcpy) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6091,7 +6103,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMMemcpy(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6121,13 +6133,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMPrefetch(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnUSMPrefetch = context.urDdiTable.Enqueue.pfnUSMPrefetch;
+    auto pfnUSMPrefetch = getContext()->urDdiTable.Enqueue.pfnUSMPrefetch;
 
     if (nullptr == pfnUSMPrefetch) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6166,7 +6178,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMPrefetch(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6190,13 +6202,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMAdvise(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnUSMAdvise = context.urDdiTable.Enqueue.pfnUSMAdvise;
+    auto pfnUSMAdvise = getContext()->urDdiTable.Enqueue.pfnUSMAdvise;
 
     if (nullptr == pfnUSMAdvise) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6219,7 +6231,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMAdvise(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6256,13 +6268,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMFill2D(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< kernel execution instance.
 ) {
-    auto pfnUSMFill2D = context.urDdiTable.Enqueue.pfnUSMFill2D;
+    auto pfnUSMFill2D = getContext()->urDdiTable.Enqueue.pfnUSMFill2D;
 
     if (nullptr == pfnUSMFill2D) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6329,7 +6341,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMFill2D(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6367,13 +6379,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMMemcpy2D(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< kernel execution instance.
 ) {
-    auto pfnUSMMemcpy2D = context.urDdiTable.Enqueue.pfnUSMMemcpy2D;
+    auto pfnUSMMemcpy2D = getContext()->urDdiTable.Enqueue.pfnUSMMemcpy2D;
 
     if (nullptr == pfnUSMMemcpy2D) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6433,7 +6445,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueUSMMemcpy2D(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -6469,13 +6481,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueDeviceGlobalVariableWrite(
                 ///< kernel execution instance.
 ) {
     auto pfnDeviceGlobalVariableWrite =
-        context.urDdiTable.Enqueue.pfnDeviceGlobalVariableWrite;
+        getContext()->urDdiTable.Enqueue.pfnDeviceGlobalVariableWrite;
 
     if (nullptr == pfnDeviceGlobalVariableWrite) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6509,12 +6521,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueDeviceGlobalVariableWrite(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -6550,13 +6562,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueDeviceGlobalVariableRead(
                 ///< kernel execution instance.
 ) {
     auto pfnDeviceGlobalVariableRead =
-        context.urDdiTable.Enqueue.pfnDeviceGlobalVariableRead;
+        getContext()->urDdiTable.Enqueue.pfnDeviceGlobalVariableRead;
 
     if (nullptr == pfnDeviceGlobalVariableRead) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6590,12 +6602,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueDeviceGlobalVariableRead(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -6634,13 +6646,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueReadHostPipe(
                 ///< command
     ///< and can be used to query or queue a wait for this command to complete.
 ) {
-    auto pfnReadHostPipe = context.urDdiTable.Enqueue.pfnReadHostPipe;
+    auto pfnReadHostPipe = getContext()->urDdiTable.Enqueue.pfnReadHostPipe;
 
     if (nullptr == pfnReadHostPipe) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6674,12 +6686,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueReadHostPipe(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -6718,13 +6730,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueWriteHostPipe(
         phEvent ///< [out][optional] returns an event object that identifies this write command
     ///< and can be used to query or queue a wait for this command to complete.
 ) {
-    auto pfnWriteHostPipe = context.urDdiTable.Enqueue.pfnWriteHostPipe;
+    auto pfnWriteHostPipe = getContext()->urDdiTable.Enqueue.pfnWriteHostPipe;
 
     if (nullptr == pfnWriteHostPipe) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6758,12 +6770,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueWriteHostPipe(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -6792,13 +6804,14 @@ __urdlllocal ur_result_t UR_APICALL urUSMPitchedAllocExp(
     void **ppMem,         ///< [out] pointer to USM shared memory object
     size_t *pResultPitch  ///< [out] pitch of the allocation
 ) {
-    auto pfnPitchedAllocExp = context.urDdiTable.USMExp.pfnPitchedAllocExp;
+    auto pfnPitchedAllocExp =
+        getContext()->urDdiTable.USMExp.pfnPitchedAllocExp;
 
     if (nullptr == pfnPitchedAllocExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6829,17 +6842,17 @@ __urdlllocal ur_result_t UR_APICALL urUSMPitchedAllocExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(pool)) {
         refCountContext.logInvalidReference(pool);
     }
@@ -6861,13 +6874,14 @@ urBindlessImagesUnsampledImageHandleDestroyExp(
         hImage ///< [in][release] pointer to handle of image object to destroy
 ) {
     auto pfnUnsampledImageHandleDestroyExp =
-        context.urDdiTable.BindlessImagesExp.pfnUnsampledImageHandleDestroyExp;
+        getContext()
+            ->urDdiTable.BindlessImagesExp.pfnUnsampledImageHandleDestroyExp;
 
     if (nullptr == pfnUnsampledImageHandleDestroyExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6881,12 +6895,12 @@ urBindlessImagesUnsampledImageHandleDestroyExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -6907,13 +6921,14 @@ urBindlessImagesSampledImageHandleDestroyExp(
         hImage ///< [in][release] pointer to handle of image object to destroy
 ) {
     auto pfnSampledImageHandleDestroyExp =
-        context.urDdiTable.BindlessImagesExp.pfnSampledImageHandleDestroyExp;
+        getContext()
+            ->urDdiTable.BindlessImagesExp.pfnSampledImageHandleDestroyExp;
 
     if (nullptr == pfnSampledImageHandleDestroyExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6927,12 +6942,12 @@ urBindlessImagesSampledImageHandleDestroyExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -6955,13 +6970,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageAllocateExp(
         *phImageMem ///< [out] pointer to handle of image memory allocated
 ) {
     auto pfnImageAllocateExp =
-        context.urDdiTable.BindlessImagesExp.pfnImageAllocateExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnImageAllocateExp;
 
     if (nullptr == pfnImageAllocateExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -6987,12 +7002,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageAllocateExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7011,13 +7026,14 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageFreeExp(
     ur_exp_image_mem_handle_t
         hImageMem ///< [in][release] handle of image memory to be freed
 ) {
-    auto pfnImageFreeExp = context.urDdiTable.BindlessImagesExp.pfnImageFreeExp;
+    auto pfnImageFreeExp =
+        getContext()->urDdiTable.BindlessImagesExp.pfnImageFreeExp;
 
     if (nullptr == pfnImageFreeExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7031,12 +7047,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageFreeExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7060,13 +7076,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesUnsampledImageCreateExp(
         *phImage ///< [out] pointer to handle of image object created
 ) {
     auto pfnUnsampledImageCreateExp =
-        context.urDdiTable.BindlessImagesExp.pfnUnsampledImageCreateExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnUnsampledImageCreateExp;
 
     if (nullptr == pfnUnsampledImageCreateExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7096,12 +7112,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesUnsampledImageCreateExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7127,13 +7143,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesSampledImageCreateExp(
         *phImage ///< [out] pointer to handle of image object created
 ) {
     auto pfnSampledImageCreateExp =
-        context.urDdiTable.BindlessImagesExp.pfnSampledImageCreateExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnSampledImageCreateExp;
 
     if (nullptr == pfnSampledImageCreateExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7167,17 +7183,17 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesSampledImageCreateExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hSampler)) {
         refCountContext.logInvalidReference(hSampler);
     }
@@ -7223,13 +7239,14 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageCopyExp(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command instance.
 ) {
-    auto pfnImageCopyExp = context.urDdiTable.BindlessImagesExp.pfnImageCopyExp;
+    auto pfnImageCopyExp =
+        getContext()->urDdiTable.BindlessImagesExp.pfnImageCopyExp;
 
     if (nullptr == pfnImageCopyExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7267,7 +7284,7 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageCopyExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -7289,13 +7306,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImageGetInfoExp(
     size_t *pPropSizeRet ///< [out][optional] returned query value size
 ) {
     auto pfnImageGetInfoExp =
-        context.urDdiTable.BindlessImagesExp.pfnImageGetInfoExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnImageGetInfoExp;
 
     if (nullptr == pfnImageGetInfoExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hImageMem) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7327,13 +7344,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMipmapGetLevelExp(
         *phImageMem ///< [out] returning memory handle to the individual image
 ) {
     auto pfnMipmapGetLevelExp =
-        context.urDdiTable.BindlessImagesExp.pfnMipmapGetLevelExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnMipmapGetLevelExp;
 
     if (nullptr == pfnMipmapGetLevelExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7351,12 +7368,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMipmapGetLevelExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7376,13 +7393,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMipmapFreeExp(
         hMem ///< [in][release] handle of image memory to be freed
 ) {
     auto pfnMipmapFreeExp =
-        context.urDdiTable.BindlessImagesExp.pfnMipmapFreeExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnMipmapFreeExp;
 
     if (nullptr == pfnMipmapFreeExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7396,12 +7413,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMipmapFreeExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7425,13 +7442,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImportExternalMemoryExp(
         *phInteropMem ///< [out] interop memory handle to the external memory
 ) {
     auto pfnImportExternalMemoryExp =
-        context.urDdiTable.BindlessImagesExp.pfnImportExternalMemoryExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnImportExternalMemoryExp;
 
     if (nullptr == pfnImportExternalMemoryExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7453,12 +7470,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImportExternalMemoryExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7483,13 +7500,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMapExternalArrayExp(
         phImageMem ///< [out] image memory handle to the externally allocated memory
 ) {
     auto pfnMapExternalArrayExp =
-        context.urDdiTable.BindlessImagesExp.pfnMapExternalArrayExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnMapExternalArrayExp;
 
     if (nullptr == pfnMapExternalArrayExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7519,12 +7536,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesMapExternalArrayExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7544,13 +7561,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesReleaseInteropExp(
         hInteropMem ///< [in][release] handle of interop memory to be freed
 ) {
     auto pfnReleaseInteropExp =
-        context.urDdiTable.BindlessImagesExp.pfnReleaseInteropExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnReleaseInteropExp;
 
     if (nullptr == pfnReleaseInteropExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7564,12 +7581,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesReleaseInteropExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7592,13 +7609,14 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImportExternalSemaphoreExp(
         phInteropSemaphore ///< [out] interop semaphore handle to the external semaphore
 ) {
     auto pfnImportExternalSemaphoreExp =
-        context.urDdiTable.BindlessImagesExp.pfnImportExternalSemaphoreExp;
+        getContext()
+            ->urDdiTable.BindlessImagesExp.pfnImportExternalSemaphoreExp;
 
     if (nullptr == pfnImportExternalSemaphoreExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7621,12 +7639,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesImportExternalSemaphoreExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7647,13 +7665,14 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesDestroyExternalSemaphoreExp(
         hInteropSemaphore ///< [in][release] handle of interop semaphore to be destroyed
 ) {
     auto pfnDestroyExternalSemaphoreExp =
-        context.urDdiTable.BindlessImagesExp.pfnDestroyExternalSemaphoreExp;
+        getContext()
+            ->urDdiTable.BindlessImagesExp.pfnDestroyExternalSemaphoreExp;
 
     if (nullptr == pfnDestroyExternalSemaphoreExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7667,12 +7686,12 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesDestroyExternalSemaphoreExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7707,13 +7726,13 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesWaitExternalSemaphoreExp(
                 ///< command instance.
 ) {
     auto pfnWaitExternalSemaphoreExp =
-        context.urDdiTable.BindlessImagesExp.pfnWaitExternalSemaphoreExp;
+        getContext()->urDdiTable.BindlessImagesExp.pfnWaitExternalSemaphoreExp;
 
     if (nullptr == pfnWaitExternalSemaphoreExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7731,7 +7750,7 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesWaitExternalSemaphoreExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -7767,13 +7786,14 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesSignalExternalSemaphoreExp(
                 ///< command instance.
 ) {
     auto pfnSignalExternalSemaphoreExp =
-        context.urDdiTable.BindlessImagesExp.pfnSignalExternalSemaphoreExp;
+        getContext()
+            ->urDdiTable.BindlessImagesExp.pfnSignalExternalSemaphoreExp;
 
     if (nullptr == pfnSignalExternalSemaphoreExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7791,7 +7811,7 @@ __urdlllocal ur_result_t UR_APICALL urBindlessImagesSignalExternalSemaphoreExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -7813,13 +7833,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferCreateExp(
     ur_exp_command_buffer_handle_t
         *phCommandBuffer ///< [out] Pointer to command-Buffer handle.
 ) {
-    auto pfnCreateExp = context.urDdiTable.CommandBufferExp.pfnCreateExp;
+    auto pfnCreateExp = getContext()->urDdiTable.CommandBufferExp.pfnCreateExp;
 
     if (nullptr == pfnCreateExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7833,12 +7853,12 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferCreateExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDevice)) {
         refCountContext.logInvalidReference(hDevice);
     }
@@ -7855,13 +7875,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferRetainExp(
     ur_exp_command_buffer_handle_t
         hCommandBuffer ///< [in] Handle of the command-buffer object.
 ) {
-    auto pfnRetainExp = context.urDdiTable.CommandBufferExp.pfnRetainExp;
+    auto pfnRetainExp = getContext()->urDdiTable.CommandBufferExp.pfnRetainExp;
 
     if (nullptr == pfnRetainExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7878,13 +7898,14 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferReleaseExp(
     ur_exp_command_buffer_handle_t
         hCommandBuffer ///< [in][release] Handle of the command-buffer object.
 ) {
-    auto pfnReleaseExp = context.urDdiTable.CommandBufferExp.pfnReleaseExp;
+    auto pfnReleaseExp =
+        getContext()->urDdiTable.CommandBufferExp.pfnReleaseExp;
 
     if (nullptr == pfnReleaseExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7901,13 +7922,14 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferFinalizeExp(
     ur_exp_command_buffer_handle_t
         hCommandBuffer ///< [in] Handle of the command-buffer object.
 ) {
-    auto pfnFinalizeExp = context.urDdiTable.CommandBufferExp.pfnFinalizeExp;
+    auto pfnFinalizeExp =
+        getContext()->urDdiTable.CommandBufferExp.pfnFinalizeExp;
 
     if (nullptr == pfnFinalizeExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7942,13 +7964,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendKernelLaunchExp(
         *phCommand ///< [out][optional] Handle to this command.
 ) {
     auto pfnAppendKernelLaunchExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendKernelLaunchExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendKernelLaunchExp;
 
     if (nullptr == pfnAppendKernelLaunchExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -7974,7 +7996,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendKernelLaunchExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -8004,13 +8026,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendUSMMemcpyExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendUSMMemcpyExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendUSMMemcpyExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendUSMMemcpyExp;
 
     if (nullptr == pfnAppendUSMMemcpyExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8062,13 +8084,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendUSMFillExp(
         pSyncPoint ///< [out][optional] sync point associated with this command.
 ) {
     auto pfnAppendUSMFillExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendUSMFillExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendUSMFillExp;
 
     if (nullptr == pfnAppendUSMFillExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8132,13 +8154,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferCopyExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferCopyExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferCopyExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferCopyExp;
 
     if (nullptr == pfnAppendMemBufferCopyExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8160,12 +8182,12 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferCopyExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hSrcMem)) {
         refCountContext.logInvalidReference(hSrcMem);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDstMem)) {
         refCountContext.logInvalidReference(hDstMem);
     }
@@ -8196,13 +8218,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferWriteExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferWriteExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferWriteExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferWriteExp;
 
     if (nullptr == pfnAppendMemBufferWriteExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8224,7 +8246,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferWriteExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -8254,13 +8276,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferReadExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferReadExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferReadExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferReadExp;
 
     if (nullptr == pfnAppendMemBufferReadExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8282,7 +8304,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferReadExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -8320,13 +8342,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferCopyRectExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferCopyRectExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferCopyRectExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferCopyRectExp;
 
     if (nullptr == pfnAppendMemBufferCopyRectExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8348,12 +8370,12 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferCopyRectExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hSrcMem)) {
         refCountContext.logInvalidReference(hSrcMem);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hDstMem)) {
         refCountContext.logInvalidReference(hDstMem);
     }
@@ -8398,13 +8420,14 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferWriteRectExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferWriteRectExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferWriteRectExp;
+        getContext()
+            ->urDdiTable.CommandBufferExp.pfnAppendMemBufferWriteRectExp;
 
     if (nullptr == pfnAppendMemBufferWriteRectExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8426,7 +8449,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferWriteRectExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -8469,13 +8492,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferReadRectExp(
         pSyncPoint ///< [out][optional] Sync point associated with this command.
 ) {
     auto pfnAppendMemBufferReadRectExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferReadRectExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferReadRectExp;
 
     if (nullptr == pfnAppendMemBufferReadRectExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8497,7 +8520,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferReadRectExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -8530,13 +8553,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferFillExp(
         pSyncPoint ///< [out][optional] sync point associated with this command.
 ) {
     auto pfnAppendMemBufferFillExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendMemBufferFillExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendMemBufferFillExp;
 
     if (nullptr == pfnAppendMemBufferFillExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8558,7 +8581,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendMemBufferFillExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hBuffer)) {
         refCountContext.logInvalidReference(hBuffer);
     }
@@ -8587,13 +8610,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendUSMPrefetchExp(
         pSyncPoint ///< [out][optional] sync point associated with this command.
 ) {
     auto pfnAppendUSMPrefetchExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendUSMPrefetchExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendUSMPrefetchExp;
 
     if (nullptr == pfnAppendUSMPrefetchExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8643,13 +8666,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferAppendUSMAdviseExp(
         pSyncPoint ///< [out][optional] sync point associated with this command.
 ) {
     auto pfnAppendUSMAdviseExp =
-        context.urDdiTable.CommandBufferExp.pfnAppendUSMAdviseExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnAppendUSMAdviseExp;
 
     if (nullptr == pfnAppendUSMAdviseExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8698,13 +8721,14 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferEnqueueExp(
         phEvent ///< [out][optional] return an event object that identifies this particular
                 ///< command-buffer execution instance.
 ) {
-    auto pfnEnqueueExp = context.urDdiTable.CommandBufferExp.pfnEnqueueExp;
+    auto pfnEnqueueExp =
+        getContext()->urDdiTable.CommandBufferExp.pfnEnqueueExp;
 
     if (nullptr == pfnEnqueueExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8730,7 +8754,7 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferEnqueueExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -8748,13 +8772,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferRetainCommandExp(
         hCommand ///< [in] Handle of the command-buffer command.
 ) {
     auto pfnRetainCommandExp =
-        context.urDdiTable.CommandBufferExp.pfnRetainCommandExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnRetainCommandExp;
 
     if (nullptr == pfnRetainCommandExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommand) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8772,13 +8796,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferReleaseCommandExp(
         hCommand ///< [in][release] Handle of the command-buffer command.
 ) {
     auto pfnReleaseCommandExp =
-        context.urDdiTable.CommandBufferExp.pfnReleaseCommandExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnReleaseCommandExp;
 
     if (nullptr == pfnReleaseCommandExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommand) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8798,13 +8822,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferUpdateKernelLaunchExp(
         pUpdateKernelLaunch ///< [in] Struct defining how the kernel command is to be updated.
 ) {
     auto pfnUpdateKernelLaunchExp =
-        context.urDdiTable.CommandBufferExp.pfnUpdateKernelLaunchExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnUpdateKernelLaunchExp;
 
     if (nullptr == pfnUpdateKernelLaunchExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommand) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8835,13 +8859,14 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferGetInfoExp(
     size_t *
         pPropSizeRet ///< [out][optional] bytes returned in command-buffer property
 ) {
-    auto pfnGetInfoExp = context.urDdiTable.CommandBufferExp.pfnGetInfoExp;
+    auto pfnGetInfoExp =
+        getContext()->urDdiTable.CommandBufferExp.pfnGetInfoExp;
 
     if (nullptr == pfnGetInfoExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommandBuffer) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8885,13 +8910,13 @@ __urdlllocal ur_result_t UR_APICALL urCommandBufferCommandGetInfoExp(
         pPropSizeRet ///< [out][optional] bytes returned in command-buffer command property
 ) {
     auto pfnCommandGetInfoExp =
-        context.urDdiTable.CommandBufferExp.pfnCommandGetInfoExp;
+        getContext()->urDdiTable.CommandBufferExp.pfnCommandGetInfoExp;
 
     if (nullptr == pfnCommandGetInfoExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hCommand) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8951,13 +8976,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueCooperativeKernelLaunchExp(
                 ///< kernel execution instance.
 ) {
     auto pfnCooperativeKernelLaunchExp =
-        context.urDdiTable.EnqueueExp.pfnCooperativeKernelLaunchExp;
+        getContext()->urDdiTable.EnqueueExp.pfnCooperativeKernelLaunchExp;
 
     if (nullptr == pfnCooperativeKernelLaunchExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -8991,12 +9016,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueCooperativeKernelLaunchExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -9021,13 +9046,14 @@ __urdlllocal ur_result_t UR_APICALL urKernelSuggestMaxCooperativeGroupCountExp(
     uint32_t *pGroupCountRet ///< [out] pointer to maximum number of groups
 ) {
     auto pfnSuggestMaxCooperativeGroupCountExp =
-        context.urDdiTable.KernelExp.pfnSuggestMaxCooperativeGroupCountExp;
+        getContext()
+            ->urDdiTable.KernelExp.pfnSuggestMaxCooperativeGroupCountExp;
 
     if (nullptr == pfnSuggestMaxCooperativeGroupCountExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hKernel) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9037,7 +9063,7 @@ __urdlllocal ur_result_t UR_APICALL urKernelSuggestMaxCooperativeGroupCountExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -9072,13 +9098,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueTimestampRecordingExp(
     ///< reports the timestamp recorded when the command is executed on the device.
 ) {
     auto pfnTimestampRecordingExp =
-        context.urDdiTable.EnqueueExp.pfnTimestampRecordingExp;
+        getContext()->urDdiTable.EnqueueExp.pfnTimestampRecordingExp;
 
     if (nullptr == pfnTimestampRecordingExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9104,7 +9130,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueTimestampRecordingExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -9146,13 +9172,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueKernelLaunchCustomExp(
                 ///< kernel execution instance.
 ) {
     auto pfnKernelLaunchCustomExp =
-        context.urDdiTable.EnqueueExp.pfnKernelLaunchCustomExp;
+        getContext()->urDdiTable.EnqueueExp.pfnKernelLaunchCustomExp;
 
     if (nullptr == pfnKernelLaunchCustomExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9178,12 +9204,12 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueKernelLaunchCustomExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hKernel)) {
         refCountContext.logInvalidReference(hKernel);
     }
@@ -9206,13 +9232,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramBuildExp(
     const char *
         pOptions ///< [in][optional] pointer to build options null-terminated string.
 ) {
-    auto pfnBuildExp = context.urDdiTable.ProgramExp.pfnBuildExp;
+    auto pfnBuildExp = getContext()->urDdiTable.ProgramExp.pfnBuildExp;
 
     if (nullptr == pfnBuildExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9222,7 +9248,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramBuildExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -9243,13 +9269,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramCompileExp(
     const char *
         pOptions ///< [in][optional] pointer to build options null-terminated string.
 ) {
-    auto pfnCompileExp = context.urDdiTable.ProgramExp.pfnCompileExp;
+    auto pfnCompileExp = getContext()->urDdiTable.ProgramExp.pfnCompileExp;
 
     if (nullptr == pfnCompileExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hProgram) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9259,7 +9285,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramCompileExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hProgram)) {
         refCountContext.logInvalidReference(hProgram);
     }
@@ -9285,13 +9311,13 @@ __urdlllocal ur_result_t UR_APICALL urProgramLinkExp(
     ur_program_handle_t
         *phProgram ///< [out] pointer to handle of program object created.
 ) {
-    auto pfnLinkExp = context.urDdiTable.ProgramExp.pfnLinkExp;
+    auto pfnLinkExp = getContext()->urDdiTable.ProgramExp.pfnLinkExp;
 
     if (nullptr == pfnLinkExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9313,7 +9339,7 @@ __urdlllocal ur_result_t UR_APICALL urProgramLinkExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -9331,13 +9357,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMImportExp(
     void *pMem,                   ///< [in] pointer to host memory object
     size_t size ///< [in] size in bytes of the host memory object to be imported
 ) {
-    auto pfnImportExp = context.urDdiTable.USMExp.pfnImportExp;
+    auto pfnImportExp = getContext()->urDdiTable.USMExp.pfnImportExp;
 
     if (nullptr == pfnImportExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9347,7 +9373,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMImportExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -9363,13 +9389,13 @@ __urdlllocal ur_result_t UR_APICALL urUSMReleaseExp(
     ur_context_handle_t hContext, ///< [in] handle of the context object
     void *pMem                    ///< [in] pointer to host memory object
 ) {
-    auto pfnReleaseExp = context.urDdiTable.USMExp.pfnReleaseExp;
+    auto pfnReleaseExp = getContext()->urDdiTable.USMExp.pfnReleaseExp;
 
     if (nullptr == pfnReleaseExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hContext) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9379,7 +9405,7 @@ __urdlllocal ur_result_t UR_APICALL urUSMReleaseExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hContext)) {
         refCountContext.logInvalidReference(hContext);
     }
@@ -9397,13 +9423,13 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PEnablePeerAccessExp(
     ur_device_handle_t peerDevice ///< [in] handle of the peer device object
 ) {
     auto pfnEnablePeerAccessExp =
-        context.urDdiTable.UsmP2PExp.pfnEnablePeerAccessExp;
+        getContext()->urDdiTable.UsmP2PExp.pfnEnablePeerAccessExp;
 
     if (nullptr == pfnEnablePeerAccessExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == commandDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9413,12 +9439,12 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PEnablePeerAccessExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(commandDevice)) {
         refCountContext.logInvalidReference(commandDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(peerDevice)) {
         refCountContext.logInvalidReference(peerDevice);
     }
@@ -9436,13 +9462,13 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PDisablePeerAccessExp(
     ur_device_handle_t peerDevice ///< [in] handle of the peer device object
 ) {
     auto pfnDisablePeerAccessExp =
-        context.urDdiTable.UsmP2PExp.pfnDisablePeerAccessExp;
+        getContext()->urDdiTable.UsmP2PExp.pfnDisablePeerAccessExp;
 
     if (nullptr == pfnDisablePeerAccessExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == commandDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9452,12 +9478,12 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PDisablePeerAccessExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(commandDevice)) {
         refCountContext.logInvalidReference(commandDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(peerDevice)) {
         refCountContext.logInvalidReference(peerDevice);
     }
@@ -9486,13 +9512,13 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PPeerAccessGetInfoExp(
         pPropSizeRet ///< [out][optional] pointer to the actual size in bytes of the queried propName.
 ) {
     auto pfnPeerAccessGetInfoExp =
-        context.urDdiTable.UsmP2PExp.pfnPeerAccessGetInfoExp;
+        getContext()->urDdiTable.UsmP2PExp.pfnPeerAccessGetInfoExp;
 
     if (nullptr == pfnPeerAccessGetInfoExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == commandDevice) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9518,12 +9544,12 @@ __urdlllocal ur_result_t UR_APICALL urUsmP2PPeerAccessGetInfoExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(commandDevice)) {
         refCountContext.logInvalidReference(commandDevice);
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(peerDevice)) {
         refCountContext.logInvalidReference(peerDevice);
     }
@@ -9561,13 +9587,13 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueNativeCommandExp(
                 ///< been enqueued in nativeEnqueueFunc.
 ) {
     auto pfnNativeCommandExp =
-        context.urDdiTable.EnqueueExp.pfnNativeCommandExp;
+        getContext()->urDdiTable.EnqueueExp.pfnNativeCommandExp;
 
     if (nullptr == pfnNativeCommandExp) {
         return UR_RESULT_ERROR_UNINITIALIZED;
     }
 
-    if (context.enableParameterValidation) {
+    if (getContext()->enableParameterValidation) {
         if (NULL == hQueue) {
             return UR_RESULT_ERROR_INVALID_NULL_HANDLE;
         }
@@ -9594,7 +9620,7 @@ __urdlllocal ur_result_t UR_APICALL urEnqueueNativeCommandExp(
         }
     }
 
-    if (context.enableLifetimeValidation &&
+    if (getContext()->enableLifetimeValidation &&
         !refCountContext.isReferenceValid(hQueue)) {
         refCountContext.logInvalidReference(hQueue);
     }
@@ -9619,15 +9645,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetGlobalProcAddrTable(
     ur_global_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Global;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Global;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -9666,15 +9692,16 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetBindlessImagesExpProcAddrTable(
     ur_bindless_images_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.BindlessImagesExp;
+    auto &dditable =
+        ur_validation_layer::getContext()->urDdiTable.BindlessImagesExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -9771,15 +9798,16 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetCommandBufferExpProcAddrTable(
     ur_command_buffer_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.CommandBufferExp;
+    auto &dditable =
+        ur_validation_layer::getContext()->urDdiTable.CommandBufferExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -9887,15 +9915,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetContextProcAddrTable(
     ur_context_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Context;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Context;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -9942,15 +9970,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueProcAddrTable(
     ur_enqueue_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Enqueue;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Enqueue;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10056,15 +10084,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueExpProcAddrTable(
     ur_enqueue_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.EnqueueExp;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.EnqueueExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10104,15 +10132,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEventProcAddrTable(
     ur_event_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Event;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Event;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10161,15 +10189,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelProcAddrTable(
     ur_kernel_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Kernel;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Kernel;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10247,15 +10275,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelExpProcAddrTable(
     ur_kernel_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.KernelExp;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.KernelExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10283,15 +10311,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetMemProcAddrTable(
     ur_mem_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Mem;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Mem;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10348,15 +10376,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPhysicalMemProcAddrTable(
     ur_physical_mem_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.PhysicalMem;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.PhysicalMem;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10388,15 +10416,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPlatformProcAddrTable(
     ur_platform_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Platform;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Platform;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10440,15 +10468,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramProcAddrTable(
     ur_program_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Program;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Program;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10521,15 +10549,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramExpProcAddrTable(
     ur_program_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.ProgramExp;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.ProgramExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10561,15 +10589,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetQueueProcAddrTable(
     ur_queue_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Queue;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Queue;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10617,15 +10645,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetSamplerProcAddrTable(
     ur_sampler_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Sampler;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Sampler;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10668,15 +10696,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMProcAddrTable(
     ur_usm_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.USM;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.USM;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10726,15 +10754,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMExpProcAddrTable(
     ur_usm_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.USMExp;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.USMExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10766,15 +10794,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUsmP2PExpProcAddrTable(
     ur_usm_p2p_exp_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.UsmP2PExp;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.UsmP2PExp;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10809,15 +10837,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetVirtualMemProcAddrTable(
     ur_virtual_mem_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.VirtualMem;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.VirtualMem;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
@@ -10862,15 +10890,15 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetDeviceProcAddrTable(
     ur_device_dditable_t
         *pDdiTable ///< [in,out] pointer to table of DDI function pointers
 ) {
-    auto &dditable = ur_validation_layer::context.urDdiTable.Device;
+    auto &dditable = ur_validation_layer::getContext()->urDdiTable.Device;
 
     if (nullptr == pDdiTable) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (UR_MAJOR_VERSION(ur_validation_layer::context.version) !=
+    if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) !=
             UR_MAJOR_VERSION(version) ||
-        UR_MINOR_VERSION(ur_validation_layer::context.version) >
+        UR_MINOR_VERSION(ur_validation_layer::getContext()->version) >
             UR_MINOR_VERSION(version)) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }

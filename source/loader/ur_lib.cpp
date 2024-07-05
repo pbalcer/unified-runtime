@@ -26,7 +26,10 @@
 
 namespace ur_lib {
 ///////////////////////////////////////////////////////////////////////////////
-context_t *context;
+context_t *getContext() {
+    static context_t *context = new context_t;
+    return context;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 context_t::context_t() {
@@ -64,7 +67,7 @@ void context_t::parseEnvEnabledLayers() {
 void context_t::initLayers() const {
     for (auto &l : layers) {
         if (l->isAvailable()) {
-            l->init(&context->urDdiTable, enabledLayerNames, codelocData);
+            l->init(&getContext()->urDdiTable, enabledLayerNames, codelocData);
         }
     }
 }
@@ -85,7 +88,7 @@ __urdlllocal ur_result_t context_t::Init(
     logger::init(logger_name);
     logger::debug("Logger {} initialized successfully!", logger_name);
 
-    result = ur_loader::context->init();
+    result = ur_loader::getContext()->init();
 
     if (UR_RESULT_SUCCESS == result) {
         result = urLoaderInit();
@@ -144,14 +147,14 @@ ur_result_t urLoaderConfigGetInfo(ur_loader_config_handle_t hLoaderConfig,
     switch (propName) {
     case UR_LOADER_CONFIG_INFO_AVAILABLE_LAYERS: {
         if (pPropSizeRet) {
-            *pPropSizeRet = context->availableLayers.size() + 1;
+            *pPropSizeRet = getContext()->availableLayers.size() + 1;
         }
         if (pPropValue) {
             char *outString = static_cast<char *>(pPropValue);
-            if (propSize != context->availableLayers.size() + 1) {
+            if (propSize != getContext()->availableLayers.size() + 1) {
                 return UR_RESULT_ERROR_INVALID_SIZE;
             }
-            std::memcpy(outString, context->availableLayers.data(),
+            std::memcpy(outString, getContext()->availableLayers.data(),
                         propSize - 1);
             outString[propSize - 1] = '\0';
         }
@@ -185,15 +188,39 @@ ur_result_t urLoaderConfigEnableLayer(ur_loader_config_handle_t hLoaderConfig,
     if (!pLayerName) {
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
-    if (!context->layerExists(std::string(pLayerName))) {
+    if (!getContext()->layerExists(std::string(pLayerName))) {
         return UR_RESULT_ERROR_LAYER_NOT_PRESENT;
     }
     hLoaderConfig->enabledLayers.insert(pLayerName);
     return UR_RESULT_SUCCESS;
 }
 
+ur_result_t UR_APICALL urLoaderInit(ur_device_init_flags_t device_flags,
+                                    ur_loader_config_handle_t hLoaderConfig) {
+    if (UR_DEVICE_INIT_FLAGS_MASK & device_flags) {
+        return UR_RESULT_ERROR_INVALID_ENUMERATION;
+    }
+
+    ur_lib::getContext()->refCount++;
+
+    static ur_result_t result = UR_RESULT_SUCCESS;
+    std::call_once(
+        ur_lib::getContext()->initOnce, [device_flags, hLoaderConfig]() {
+            result = ur_lib::getContext()->Init(device_flags, hLoaderConfig);
+        });
+
+    return result;
+}
+
 ur_result_t urLoaderTearDown() {
-    context->tearDownLayers();
+    auto lib_context = ur_lib::getContext();
+    auto loader_context = ur_loader::getContext();
+
+    if (lib_context->refCount.fetch_sub(1) == 0) {
+        getContext()->tearDownLayers();
+        delete lib_context;
+        delete loader_context;
+    }
 
     return UR_RESULT_SUCCESS;
 }

@@ -47,13 +47,13 @@ namespace ur_validation_layer
         %endfor
         )
     {
-        auto ${th.make_pfn_name(n, tags, obj)} = context.${n}DdiTable.${th.get_table_name(n, tags, obj)}.${th.make_pfn_name(n, tags, obj)};
+        auto ${th.make_pfn_name(n, tags, obj)} = getContext()->${n}DdiTable.${th.get_table_name(n, tags, obj)}.${th.make_pfn_name(n, tags, obj)};
 
         if( nullptr == ${th.make_pfn_name(n, tags, obj)} ) {
             return ${X}_RESULT_ERROR_UNINITIALIZED;
         }
 
-        if( context.enableParameterValidation )
+        if( getContext()->enableParameterValidation )
         {
             %for key, values in sorted_param_checks:
             %for val in values:
@@ -80,7 +80,7 @@ namespace ur_validation_layer
                 is_related_create_get_retain_release_func = any(func_name in funcs for funcs in tp_input_handle_funcs.values())
             %>
             %if tp_input_handle_funcs and not is_related_create_get_retain_release_func:
-            if (context.enableLifetimeValidation && !refCountContext.isReferenceValid(${tp['name']})) {
+            if (getContext()->enableLifetimeValidation && !refCountContext.isReferenceValid(${tp['name']})) {
                 refCountContext.logInvalidReference(${tp['name']});
             }
             %endif
@@ -94,24 +94,24 @@ namespace ur_validation_layer
             is_handle_to_adapter = ("_adapter_handle_t" in tp['type'])
         %>
         %if func_name in tp_handle_funcs['create']:
-        if( context.enableLeakChecking && result == UR_RESULT_SUCCESS )
+        if( getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS )
         {
             refCountContext.createRefCount(*${tp['name']});
         }
         %elif func_name in tp_handle_funcs['get']:
-        if( context.enableLeakChecking && ${tp['name']} && result == UR_RESULT_SUCCESS )
+        if( getContext()->enableLeakChecking && ${tp['name']} && result == UR_RESULT_SUCCESS )
         {
             for (uint32_t i = ${th.param_traits.range_start(tp)}; i < ${th.param_traits.range_end(tp)}; i++) {
                 refCountContext.createOrIncrementRefCount(${tp['name']}[i], ${str(is_handle_to_adapter).lower()});
             }
         }
         %elif func_name in tp_handle_funcs['retain']:
-        if( context.enableLeakChecking && result == UR_RESULT_SUCCESS )
+        if( getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS )
         {
             refCountContext.incrementRefCount(${tp['name']}, ${str(is_handle_to_adapter).lower()});
         }
         %elif func_name in tp_handle_funcs['release']:
-        if( context.enableLeakChecking && result == UR_RESULT_SUCCESS )
+        if( getContext()->enableLeakChecking && result == UR_RESULT_SUCCESS )
         {
             refCountContext.decrementRefCount(${tp['name']}, ${str(is_handle_to_adapter).lower()});
         }
@@ -141,13 +141,13 @@ namespace ur_validation_layer
         %endfor
         )
     {
-        auto& dditable = ur_validation_layer::context.${n}DdiTable.${tbl['name']};
+        auto& dditable = ur_validation_layer::getContext()->${n}DdiTable.${tbl['name']};
 
         if( nullptr == pDdiTable )
             return ${X}_RESULT_ERROR_INVALID_NULL_POINTER;
 
-        if (UR_MAJOR_VERSION(ur_validation_layer::context.version) != UR_MAJOR_VERSION(version) ||
-            UR_MINOR_VERSION(ur_validation_layer::context.version) > UR_MINOR_VERSION(version))
+        if (UR_MAJOR_VERSION(ur_validation_layer::getContext()->version) != UR_MAJOR_VERSION(version) ||
+            UR_MINOR_VERSION(ur_validation_layer::getContext()->version) > UR_MINOR_VERSION(version))
             return ${X}_RESULT_ERROR_UNSUPPORTED_VERSION;
 
         ${x}_result_t result = ${X}_RESULT_SUCCESS;
