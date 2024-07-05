@@ -22,7 +22,8 @@
 
 namespace ur_tracing_layer {
 ///////////////////////////////////////////////////////////////////////////////
-class __urdlllocal context_t : public proxy_layer_context_t {
+class __urdlllocal context_t : public proxy_layer_context_t,
+                               public AtomicSingleton<context_t> {
   public:
     ur_dditable_t urDdiTable = {};
     codeloc_data codelocData;
@@ -50,7 +51,7 @@ class __urdlllocal context_t : public proxy_layer_context_t {
     const std::string name = "UR_LAYER_TRACING";
 };
 
-extern context_t context;
+context_t *getContext();
 } // namespace ur_tracing_layer
 
 #endif /* UR_TRACING_LAYER_H */

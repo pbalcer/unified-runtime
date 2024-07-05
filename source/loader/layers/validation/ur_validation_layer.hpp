@@ -18,7 +18,8 @@
 namespace ur_validation_layer {
 
 ///////////////////////////////////////////////////////////////////////////////
-class __urdlllocal context_t : public proxy_layer_context_t {
+class __urdlllocal context_t : public proxy_layer_context_t,
+                               public AtomicSingleton<context_t> {
   public:
     bool enableParameterValidation = false;
     bool enableLeakChecking = false;

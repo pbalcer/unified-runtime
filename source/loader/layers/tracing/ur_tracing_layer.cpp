@@ -18,7 +18,7 @@
 #include <sstream>
 
 namespace ur_tracing_layer {
-context_t context;
+context_t *getContext() { return context_t::get(); }
 
 constexpr auto CALL_STREAM_NAME = "ur";
 constexpr auto STREAM_VER_MAJOR = UR_MAJOR_VERSION(UR_API_VERSION_CURRENT);

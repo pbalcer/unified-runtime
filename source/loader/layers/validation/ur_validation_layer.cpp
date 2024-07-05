@@ -14,10 +14,7 @@
 #include <cassert>
 
 namespace ur_validation_layer {
-context_t *getContext() {
-    static context_t *context = new context_t;
-    return context;
-}
+context_t *getContext() { return context_t::get(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 context_t::context_t() : logger(logger::create_logger("validation")) {}

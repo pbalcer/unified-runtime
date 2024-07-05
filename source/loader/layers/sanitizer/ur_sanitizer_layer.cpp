@@ -14,7 +14,7 @@
 #include "asan_interceptor.hpp"
 
 namespace ur_sanitizer_layer {
-context_t context;
+context_t *getContext() { return context_t::get(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 context_t::context_t()

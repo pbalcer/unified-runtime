@@ -14,6 +14,7 @@
 
 #include <ur_api.h>
 
+#include <atomic>
 #include <iostream>
 #include <map>
 #include <optional>
@@ -343,4 +344,37 @@ splitMetadataName(const std::string &metadataName) {
     return std::make_pair(metadataName.substr(0, splitPos),
                           metadataName.substr(splitPos, metadataName.length()));
 }
+
+template <typename T> class AtomicSingleton {
+  private:
+    static std::atomic<T *> instance;
+
+  public:
+    static T *get() {
+        T *current = instance.load(std::memory_order_acquire);
+
+        if (current == nullptr) {
+            T *newContext = new T();
+            if (!instance.compare_exchange_strong(current, newContext,
+                                                  std::memory_order_acq_rel)) {
+                delete newContext;
+            } else {
+                current = newContext;
+            }
+        }
+        return current;
+    }
+
+    static void destroy() {
+        T *current = instance.load(std::memory_order_acquire);
+
+        if (current != nullptr &&
+            instance.compare_exchange_strong(current, nullptr,
+                                             std::memory_order_acq_rel)) {
+            delete current;
+        }
+    }
+};
+template <typename T> std::atomic<T *> AtomicSingleton<T>::instance(nullptr);
+
 #endif /* UR_UTIL_H */

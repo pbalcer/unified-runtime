@@ -26,16 +26,13 @@
 
 namespace ur_lib {
 ///////////////////////////////////////////////////////////////////////////////
-context_t *getContext() {
-    static context_t *context = new context_t;
-    return context;
-}
+context_t *getContext() { return context_t::get(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 context_t::context_t() {
-    for (auto l : layers) {
-        if (l->isAvailable()) {
-            for (auto &layerName : l->getNames()) {
+    for (auto &[layer, _] : layers) {
+        if (layer->isAvailable()) {
+            for (auto &layerName : layer->getNames()) {
                 availableLayers += layerName + ";";
             }
         }
@@ -65,18 +62,20 @@ void context_t::parseEnvEnabledLayers() {
 }
 
 void context_t::initLayers() const {
-    for (auto &l : layers) {
-        if (l->isAvailable()) {
-            l->init(&getContext()->urDdiTable, enabledLayerNames, codelocData);
+    for (auto &[layer, _] : layers) {
+        if (layer->isAvailable()) {
+            layer->init(&getContext()->urDdiTable, enabledLayerNames,
+                        codelocData);
         }
     }
 }
 
 void context_t::tearDownLayers() const {
-    for (auto &l : layers) {
-        if (l->isAvailable()) {
-            l->tearDown();
+    for (auto &[layer, destroy] : layers) {
+        if (layer->isAvailable()) {
+            layer->tearDown();
         }
+        destroy();
     }
 }
 
@@ -91,7 +90,7 @@ __urdlllocal ur_result_t context_t::Init(
     result = ur_loader::getContext()->init();
 
     if (UR_RESULT_SUCCESS == result) {
-        result = urLoaderInit();
+        result = ddiInit();
     }
 
     if (hLoaderConfig) {
@@ -213,13 +212,10 @@ ur_result_t UR_APICALL urLoaderInit(ur_device_init_flags_t device_flags,
 }
 
 ur_result_t urLoaderTearDown() {
-    auto lib_context = ur_lib::getContext();
-    auto loader_context = ur_loader::getContext();
-
-    if (lib_context->refCount.fetch_sub(1) == 0) {
-        getContext()->tearDownLayers();
-        delete lib_context;
-        delete loader_context;
+    if (ur_lib::getContext()->refCount.fetch_sub(1) == 1) {
+        ur_lib::getContext()->tearDownLayers();
+        ur_lib::context_t::destroy();
+        ur_loader::context_t::destroy();
     }
 
     return UR_RESULT_SUCCESS;

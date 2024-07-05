@@ -98,8 +98,9 @@ struct RefCountContext {
             break;
         }
 
-        getContext()->logger.debug("Reference count for handle {} changed to {}", ptr,
-                             it->second.refCount);
+        getContext()->logger.debug(
+            "Reference count for handle {} changed to {}", ptr,
+            it->second.refCount);
 
         if (it->second.refCount == 0) {
             counts.erase(ptr);
@@ -146,18 +147,19 @@ struct RefCountContext {
     void logInvalidReferences() {
         for (auto &[ptr, refRuntimeInfo] : counts) {
             getContext()->logger.error("Retained {} reference(s) to handle {}",
-                                 refRuntimeInfo.refCount, ptr);
-            getContext()->logger.error("Handle {} was recorded for first time here:",
-                                 ptr);
+                                       refRuntimeInfo.refCount, ptr);
+            getContext()->logger.error(
+                "Handle {} was recorded for first time here:", ptr);
             for (size_t i = 0; i < refRuntimeInfo.backtrace.size(); i++) {
                 getContext()->logger.error("#{} {}", i,
-                                     refRuntimeInfo.backtrace[i].c_str());
+                                           refRuntimeInfo.backtrace[i].c_str());
             }
         }
     }
 
     void logInvalidReference(void *ptr) {
-        getContext()->logger.error("There are no valid references to handle {}", ptr);
+        getContext()->logger.error("There are no valid references to handle {}",
+                                   ptr);
     }
 
 } refCountContext;

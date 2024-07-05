@@ -11,10 +11,7 @@
 
 namespace ur_loader {
 ///////////////////////////////////////////////////////////////////////////////
-context_t *getContext() {
-    static context_t *context = new context_t;
-    return context;
-}
+context_t *getContext() { return context_t::get(); }
 
 ///////////////////////////////////////////////////////////////////////////////
 ur_result_t context_t::init() {

@@ -52,7 +52,7 @@ struct ur_loader_config_handle_t_ {
 
 namespace ur_lib {
 ///////////////////////////////////////////////////////////////////////////////
-class __urdlllocal context_t {
+class __urdlllocal context_t : public AtomicSingleton<context_t> {
   public:
 #ifdef DYNAMIC_LOAD_LOADER
     HMODULE loader = nullptr;
@@ -66,16 +66,19 @@ class __urdlllocal context_t {
     ur_result_t Init(ur_device_init_flags_t dflags,
                      ur_loader_config_handle_t hLoaderConfig);
 
-    ur_result_t urLoaderInit();
+    ur_result_t ddiInit();
     ur_dditable_t urDdiTable = {};
 
-    const std::vector<proxy_layer_context_t *> layers = {
-        ur_validation_layer::getContext(),
+    using LayerData = std::pair<proxy_layer_context_t *, void (*)()>;
+    const std::vector<LayerData> layers = {
+        {ur_validation_layer::getContext(),
+         ur_validation_layer::context_t::destroy},
 #if UR_ENABLE_TRACING
-        &ur_tracing_layer::context,
+        {ur_tracing_layer::getContext(), ur_tracing_layer::context_t::destroy},
 #endif
 #if UR_ENABLE_SANITIZER
-        &ur_sanitizer_layer::context
+        {ur_sanitizer_layer::getContext(),
+         ur_sanitizer_layer::context_t::destroy},
 #endif
     };
     std::string availableLayers;
