@@ -41,7 +41,8 @@ class context_t {
     bool intercept_enabled = false;
 };
 
-extern context_t *context;
+context_t *getContext();
+
 extern ur_event_factory_t ur_event_factory;
 
 } // namespace ur_loader

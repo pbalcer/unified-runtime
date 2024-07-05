@@ -52,7 +52,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGet(
 
     size_t adapterIndex = 0;
     if (nullptr != phAdapters && NumEntries != 0) {
-        for (auto &platform : context->platforms) {
+        for (auto &platform : getContext()->platforms) {
             if (platform.initStatus != UR_RESULT_SUCCESS) {
                 continue;
             }
@@ -75,7 +75,7 @@ __urdlllocal ur_result_t UR_APICALL urAdapterGet(
     }
 
     if (pNumAdapters != nullptr) {
-        *pNumAdapters = static_cast<uint32_t>(context->platforms.size());
+        *pNumAdapters = static_cast<uint32_t>(getContext()->platforms.size());
     }
 
     return result;
@@ -8202,14 +8202,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetGlobalProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8223,8 +8223,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetGlobalProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnAdapterGet = ur_loader::urAdapterGet;
             pDdiTable->pfnAdapterRelease = ur_loader::urAdapterRelease;
@@ -8235,7 +8235,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetGlobalProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Global;
+                ur_loader::getContext()->platforms.front().dditable.ur.Global;
         }
     }
 
@@ -8260,14 +8260,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetBindlessImagesExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8284,8 +8284,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetBindlessImagesExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnUnsampledImageHandleDestroyExp =
                 ur_loader::urBindlessImagesUnsampledImageHandleDestroyExp;
@@ -8323,7 +8323,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetBindlessImagesExpProcAddrTable(
                 ur_loader::urBindlessImagesSignalExternalSemaphoreExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable = ur_loader::context->platforms.front()
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
                              .dditable.ur.BindlessImagesExp;
         }
     }
@@ -8349,14 +8350,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetCommandBufferExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8373,8 +8374,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetCommandBufferExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreateExp = ur_loader::urCommandBufferCreateExp;
             pDdiTable->pfnRetainExp = ur_loader::urCommandBufferRetainExp;
@@ -8416,7 +8417,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetCommandBufferExpProcAddrTable(
                 ur_loader::urCommandBufferCommandGetInfoExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable = ur_loader::context->platforms.front()
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
                              .dditable.ur.CommandBufferExp;
         }
     }
@@ -8442,14 +8444,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetContextProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8463,8 +8465,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetContextProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreate = ur_loader::urContextCreate;
             pDdiTable->pfnRetain = ur_loader::urContextRetain;
@@ -8478,7 +8480,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetContextProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Context;
+                ur_loader::getContext()->platforms.front().dditable.ur.Context;
         }
     }
 
@@ -8503,14 +8505,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8524,8 +8526,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnKernelLaunch = ur_loader::urEnqueueKernelLaunch;
             pDdiTable->pfnEventsWait = ur_loader::urEnqueueEventsWait;
@@ -8561,7 +8563,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Enqueue;
+                ur_loader::getContext()->platforms.front().dditable.ur.Enqueue;
         }
     }
 
@@ -8586,14 +8588,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8608,8 +8610,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnKernelLaunchCustomExp =
                 ur_loader::urEnqueueKernelLaunchCustomExp;
@@ -8621,8 +8623,9 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEnqueueExpProcAddrTable(
                 ur_loader::urEnqueueNativeCommandExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.EnqueueExp;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.EnqueueExp;
         }
     }
 
@@ -8647,14 +8650,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEventProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8668,8 +8671,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEventProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnGetInfo = ur_loader::urEventGetInfo;
             pDdiTable->pfnGetProfilingInfo = ur_loader::urEventGetProfilingInfo;
@@ -8683,7 +8686,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetEventProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Event;
+                ur_loader::getContext()->platforms.front().dditable.ur.Event;
         }
     }
 
@@ -8708,14 +8711,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8729,8 +8732,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreate = ur_loader::urKernelCreate;
             pDdiTable->pfnGetInfo = ur_loader::urKernelGetInfo;
@@ -8754,7 +8757,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Kernel;
+                ur_loader::getContext()->platforms.front().dditable.ur.Kernel;
         }
     }
 
@@ -8779,14 +8782,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8801,15 +8804,16 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetKernelExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnSuggestMaxCooperativeGroupCountExp =
                 ur_loader::urKernelSuggestMaxCooperativeGroupCountExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.KernelExp;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.KernelExp;
         }
     }
 
@@ -8834,14 +8838,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetMemProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8855,8 +8859,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetMemProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnImageCreate = ur_loader::urMemImageCreate;
             pDdiTable->pfnBufferCreate = ur_loader::urMemBufferCreate;
@@ -8872,7 +8876,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetMemProcAddrTable(
             pDdiTable->pfnImageGetInfo = ur_loader::urMemImageGetInfo;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable = ur_loader::context->platforms.front().dditable.ur.Mem;
+            *pDdiTable =
+                ur_loader::getContext()->platforms.front().dditable.ur.Mem;
         }
     }
 
@@ -8897,14 +8902,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPhysicalMemProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8919,16 +8924,17 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPhysicalMemProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreate = ur_loader::urPhysicalMemCreate;
             pDdiTable->pfnRetain = ur_loader::urPhysicalMemRetain;
             pDdiTable->pfnRelease = ur_loader::urPhysicalMemRelease;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.PhysicalMem;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.PhysicalMem;
         }
     }
 
@@ -8953,14 +8959,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPlatformProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -8974,8 +8980,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPlatformProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnGet = ur_loader::urPlatformGet;
             pDdiTable->pfnGetInfo = ur_loader::urPlatformGetInfo;
@@ -8989,7 +8995,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetPlatformProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Platform;
+                ur_loader::getContext()->platforms.front().dditable.ur.Platform;
         }
     }
 
@@ -9014,14 +9020,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9035,8 +9041,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreateWithIL = ur_loader::urProgramCreateWithIL;
             pDdiTable->pfnCreateWithBinary =
@@ -9060,7 +9066,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Program;
+                ur_loader::getContext()->platforms.front().dditable.ur.Program;
         }
     }
 
@@ -9085,14 +9091,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9107,16 +9113,17 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetProgramExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnBuildExp = ur_loader::urProgramBuildExp;
             pDdiTable->pfnCompileExp = ur_loader::urProgramCompileExp;
             pDdiTable->pfnLinkExp = ur_loader::urProgramLinkExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.ProgramExp;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.ProgramExp;
         }
     }
 
@@ -9141,14 +9148,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetQueueProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9162,8 +9169,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetQueueProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnGetInfo = ur_loader::urQueueGetInfo;
             pDdiTable->pfnCreate = ur_loader::urQueueCreate;
@@ -9177,7 +9184,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetQueueProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Queue;
+                ur_loader::getContext()->platforms.front().dditable.ur.Queue;
         }
     }
 
@@ -9202,14 +9209,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetSamplerProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9223,8 +9230,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetSamplerProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnCreate = ur_loader::urSamplerCreate;
             pDdiTable->pfnRetain = ur_loader::urSamplerRetain;
@@ -9236,7 +9243,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetSamplerProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Sampler;
+                ur_loader::getContext()->platforms.front().dditable.ur.Sampler;
         }
     }
 
@@ -9261,14 +9268,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9282,8 +9289,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnHostAlloc = ur_loader::urUSMHostAlloc;
             pDdiTable->pfnDeviceAlloc = ur_loader::urUSMDeviceAlloc;
@@ -9296,7 +9303,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMProcAddrTable(
             pDdiTable->pfnPoolGetInfo = ur_loader::urUSMPoolGetInfo;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable = ur_loader::context->platforms.front().dditable.ur.USM;
+            *pDdiTable =
+                ur_loader::getContext()->platforms.front().dditable.ur.USM;
         }
     }
 
@@ -9321,14 +9329,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9342,8 +9350,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnPitchedAllocExp = ur_loader::urUSMPitchedAllocExp;
             pDdiTable->pfnImportExp = ur_loader::urUSMImportExp;
@@ -9351,7 +9359,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUSMExpProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.USMExp;
+                ur_loader::getContext()->platforms.front().dditable.ur.USMExp;
         }
     }
 
@@ -9376,14 +9384,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUsmP2PExpProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9398,8 +9406,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUsmP2PExpProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnEnablePeerAccessExp =
                 ur_loader::urUsmP2PEnablePeerAccessExp;
@@ -9409,8 +9417,9 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetUsmP2PExpProcAddrTable(
                 ur_loader::urUsmP2PPeerAccessGetInfoExp;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.UsmP2PExp;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.UsmP2PExp;
         }
     }
 
@@ -9435,14 +9444,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetVirtualMemProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9457,8 +9466,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetVirtualMemProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnGranularityGetInfo =
                 ur_loader::urVirtualMemGranularityGetInfo;
@@ -9470,8 +9479,9 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetVirtualMemProcAddrTable(
             pDdiTable->pfnGetInfo = ur_loader::urVirtualMemGetInfo;
         } else {
             // return pointers directly to platform's DDIs
-            *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.VirtualMem;
+            *pDdiTable = ur_loader::getContext()
+                             ->platforms.front()
+                             .dditable.ur.VirtualMem;
         }
     }
 
@@ -9496,14 +9506,14 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetDeviceProcAddrTable(
         return UR_RESULT_ERROR_INVALID_NULL_POINTER;
     }
 
-    if (ur_loader::context->version < version) {
+    if (ur_loader::getContext()->version < version) {
         return UR_RESULT_ERROR_UNSUPPORTED_VERSION;
     }
 
     ur_result_t result = UR_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for (auto &platform : ur_loader::context->platforms) {
+    for (auto &platform : ur_loader::getContext()->platforms) {
         if (platform.initStatus != UR_RESULT_SUCCESS) {
             continue;
         }
@@ -9517,8 +9527,8 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetDeviceProcAddrTable(
     }
 
     if (UR_RESULT_SUCCESS == result) {
-        if (ur_loader::context->platforms.size() != 1 ||
-            ur_loader::context->forceIntercept) {
+        if (ur_loader::getContext()->platforms.size() != 1 ||
+            ur_loader::getContext()->forceIntercept) {
             // return pointers to loader's DDIs
             pDdiTable->pfnGet = ur_loader::urDeviceGet;
             pDdiTable->pfnGetInfo = ur_loader::urDeviceGetInfo;
@@ -9534,7 +9544,7 @@ UR_DLLEXPORT ur_result_t UR_APICALL urGetDeviceProcAddrTable(
         } else {
             // return pointers directly to platform's DDIs
             *pDdiTable =
-                ur_loader::context->platforms.front().dditable.ur.Device;
+                ur_loader::getContext()->platforms.front().dditable.ur.Device;
         }
     }
 

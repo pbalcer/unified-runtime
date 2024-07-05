@@ -69,15 +69,15 @@ try {
     %endfor
 
     static ${x}_result_t result = ${X}_RESULT_SUCCESS;
-    std::call_once(${x}_lib::context->initOnce, [device_flags, hLoaderConfig]() {
-        result = ${x}_lib::context->Init(device_flags, hLoaderConfig);
+    std::call_once(${x}_lib::getContext()->initOnce, [device_flags, hLoaderConfig]() {
+        result = ${x}_lib::getContext()->Init(device_flags, hLoaderConfig);
     });
 
     return result;
 %elif th.obj_traits.is_loader_only(obj):
     return ur_lib::${th.make_func_name(n, tags, obj)}(${", ".join(th.make_param_lines(n, tags, obj, format=["name"]))} );
 %else:
-    auto ${th.make_pfn_name(n, tags, obj)} = ${x}_lib::context->${n}DdiTable.${th.get_table_name(n, tags, obj)}.${th.make_pfn_name(n, tags, obj)};
+    auto ${th.make_pfn_name(n, tags, obj)} = ${x}_lib::getContext()->${n}DdiTable.${th.get_table_name(n, tags, obj)}.${th.make_pfn_name(n, tags, obj)};
     if( nullptr == ${th.make_pfn_name(n, tags, obj)} )
         return ${X}_RESULT_ERROR_UNINITIALIZED;
 

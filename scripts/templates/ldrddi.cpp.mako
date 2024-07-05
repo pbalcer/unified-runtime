@@ -56,7 +56,7 @@ namespace ur_loader
         size_t adapterIndex = 0;
         if( nullptr != ${obj['params'][1]['name']} && ${obj['params'][0]['name']} !=0)
         {
-            for( auto& platform : context->platforms )
+            for( auto& platform : getContext()->platforms )
             {
                 if(platform.initStatus != ${X}_RESULT_SUCCESS)
                     continue;
@@ -81,7 +81,7 @@ namespace ur_loader
 
         if( ${obj['params'][2]['name']} != nullptr )
         {
-            *${obj['params'][2]['name']} = static_cast<uint32_t>(context->platforms.size());
+            *${obj['params'][2]['name']} = static_cast<uint32_t>(getContext()->platforms.size());
         }
 
         %elif re.match(r"\w+PlatformGet$", th.make_func_name(n, tags, obj)):
@@ -360,13 +360,13 @@ ${tbl['export']['name']}(
     if( nullptr == pDdiTable )
         return ${X}_RESULT_ERROR_INVALID_NULL_POINTER;
 
-    if( ur_loader::context->version < version )
+    if( ur_loader::getContext()->version < version )
         return ${X}_RESULT_ERROR_UNSUPPORTED_VERSION;
 
     ${x}_result_t result = ${X}_RESULT_SUCCESS;
 
     // Load the device-platform DDI tables
-    for( auto& platform : ur_loader::context->platforms )
+    for( auto& platform : ur_loader::getContext()->platforms )
     {
         if(platform.initStatus != ${X}_RESULT_SUCCESS)
             continue;
@@ -379,7 +379,7 @@ ${tbl['export']['name']}(
 
     if( ${X}_RESULT_SUCCESS == result )
     {
-        if( ur_loader::context->platforms.size() != 1 || ur_loader::context->forceIntercept )
+        if( ur_loader::getContext()->platforms.size() != 1 || ur_loader::getContext()->forceIntercept )
         {
             // return pointers to loader's DDIs
             %for obj in tbl['functions']:
@@ -397,7 +397,7 @@ ${tbl['export']['name']}(
         else
         {
             // return pointers directly to platform's DDIs
-            *pDdiTable = ur_loader::context->platforms.front().dditable.${n}.${tbl['name']};
+            *pDdiTable = ur_loader::getContext()->platforms.front().dditable.${n}.${tbl['name']};
         }
     }
 
