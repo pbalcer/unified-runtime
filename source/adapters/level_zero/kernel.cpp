@@ -13,6 +13,8 @@
 #include "ur_api.h"
 #include "ur_level_zero.hpp"
 
+#include "helpers/kernel_helpers.hpp"
+
 UR_APIEXPORT ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
     ur_kernel_handle_t hKernel, ur_queue_handle_t hQueue, uint32_t workDim,
     [[maybe_unused]] const size_t *pGlobalWorkOffset,

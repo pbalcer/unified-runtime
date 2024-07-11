@@ -114,8 +114,8 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramBuild(
     const char *Options          ///< [in][optional] pointer to build options
                                  ///< null-terminated string.
 ) {
-  return urProgramBuildExp(Program, Context->Devices.size(),
-                           Context->Devices.data(), Options);
+  std::vector<ur_device_handle_t> Devices = Context->getDevices();
+  return urProgramBuildExp(Program, Devices.size(), Devices.data(), Options);
 }
 
 UR_APIEXPORT ur_result_t UR_APICALL urProgramBuildExp(
@@ -173,7 +173,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramBuildExp(
 
   for (uint32_t i = 0; i < numDevices; i++) {
     ze_device_handle_t ZeDevice = phDevices[i]->ZeDevice;
-    ze_context_handle_t ZeContext = hProgram->Context->ZeContext;
+    ze_context_handle_t ZeContext = hProgram->Context->getZeHandle();
     ze_module_handle_t ZeModuleHandle = nullptr;
     ze_module_build_log_handle_t ZeBuildLog{};
 
@@ -265,7 +265,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramCompile(
     // ze-opt-greater-than-4GB-buffer-required to disable
     // stateful optimizations and be able to use larger than
     // 4GB allocations on these kernels.
-    if (Context->Devices[0]->useRelaxedAllocationLimits()) {
+    if (Context->getDevices()[0]->useRelaxedAllocationLimits()) {
       Program->BuildFlags += " -ze-opt-greater-than-4GB-buffer-required";
     }
   }
@@ -284,9 +284,9 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramLink(
     ur_program_handle_t
         *Program ///< [out] pointer to handle of program object created.
 ) {
-  return urProgramLinkExp(Context, Context->Devices.size(),
-                          Context->Devices.data(), Count, Programs, Options,
-                          Program);
+  std::vector<ur_device_handle_t> Devices = Context->getDevices();
+  return urProgramLinkExp(Context, Devices.size(), Devices.data(), Count,
+                          Programs, Options, Program);
 }
 
 UR_APIEXPORT ur_result_t UR_APICALL urProgramLinkExp(
@@ -425,7 +425,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramLinkExp(
 
       // Call the Level Zero API to compile, link, and create the module.
       ze_device_handle_t ZeDevice = phDevices[i]->ZeDevice;
-      ze_context_handle_t ZeContext = hContext->ZeContext;
+      ze_context_handle_t ZeContext = hContext->getZeHandle();
       ze_module_handle_t ZeModule = nullptr;
       ze_module_build_log_handle_t ZeBuildLog = nullptr;
       ze_result_t ZeResult =
@@ -636,7 +636,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urProgramGetInfo(
     return ReturnValue(uint32_t{1});
   case UR_PROGRAM_INFO_DEVICES:
     // TODO: return all devices this program exists for.
-    return ReturnValue(Program->Context->Devices[0]);
+    return ReturnValue(Program->Context->getDevices()[0]);
   case UR_PROGRAM_INFO_BINARY_SIZES: {
     std::shared_lock<ur_shared_mutex> Guard(Program->Mutex);
     size_t SzBinary;

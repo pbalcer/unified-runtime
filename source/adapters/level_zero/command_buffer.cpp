@@ -8,6 +8,7 @@
 //
 //===----------------------------------------------------------------------===//
 #include "command_buffer.hpp"
+#include "helpers/kernel_helpers.hpp"
 #include "logger/ur_logger.hpp"
 #include "ur_level_zero.hpp"
 
@@ -880,7 +881,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urCommandBufferAppendKernelLaunchExp(
 
   ze_group_count_t ZeThreadGroupDimensions{1, 1, 1};
   uint32_t WG[3];
-  UR_CALL(calculateKernelWorkDimensions(Kernel, CommandBuffer->Device,
+  UR_CALL(calculateKernelWorkDimensions(Kernel->ZeKernel, CommandBuffer->Device,
                                         ZeThreadGroupDimensions, WG, WorkDim,
                                         GlobalWorkSize, LocalWorkSize));
 
@@ -1584,8 +1585,8 @@ ur_result_t updateKernelCommand(
 
     uint32_t WG[3];
     UR_CALL(calculateKernelWorkDimensions(
-        Command->Kernel, CommandBuffer->Device, ZeThreadGroupDimensions, WG,
-        Dim, NewGlobalWorkSize, NewLocalWorkSize));
+        Command->Kernel->ZeKernel, CommandBuffer->Device,
+        ZeThreadGroupDimensions, WG, Dim, NewGlobalWorkSize, NewLocalWorkSize));
 
     auto MutableGroupCountDesc =
         std::make_unique<ZeStruct<ze_mutable_group_count_exp_desc_t>>();
