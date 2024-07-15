@@ -67,6 +67,7 @@ set(UR_ADAPTER_HIP_SOURCE_DIR "" CACHE PATH
     "Path to external 'hip' adapter source dir")
 set(UR_ADAPTER_NATIVE_CPU_SOURCE_DIR "" CACHE PATH
     "Path to external 'native_cpu' adapter source dir")
+option(UR_STATIC_LOADER "build loader as a static library" OFF)
 
 # There's little reason not to generate the compile_commands.json
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

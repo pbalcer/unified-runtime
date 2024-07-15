@@ -9,8 +9,13 @@ configure_file(
     @ONLY
 )
 
+set(LOADER_LIB_TYPE SHARED)
+if(UR_STATIC_LOADER)
+  set(LOADER_LIB_TYPE STATIC)
+endif()
+
 add_ur_library(ur_loader
-    SHARED
+    ${LOADER_LIB_TYPE}
     ""
     ${CMAKE_CURRENT_BINARY_DIR}/UrLoaderVersion.rc
 )
@@ -88,12 +93,15 @@ if(UNIX)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libur_loader.pc" DESTINATION "${CMAKE_INSTALL_FULL_LIBDIR}/pkgconfig" COMPONENT unified-runtime)
 endif()
 
+# TODO: fix export all ur_loader dependencies when built as static
+if(UR_STATIC_LOADER)
 install(TARGETS ur_loader
     EXPORT ${PROJECT_NAME}-targets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT unified-runtime
 )
+endif()
 
 target_sources(ur_loader
     PRIVATE
