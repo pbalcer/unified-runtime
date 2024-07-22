@@ -33,6 +33,7 @@ def run(command, env_vars={}, cwd=None, add_sycl=False):
         print(result.stderr.decode())
         return result
     except subprocess.CalledProcessError as e:
+        print(e.stdout.decode())
         print(e.stderr.decode())
         raise
 

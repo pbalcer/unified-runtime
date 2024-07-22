@@ -160,7 +160,7 @@ jobs:
           const test_status = '${{ steps.benchmarks.outcome }}';
           const job_status = '${{ job.status }}';
           const params = '${{ inputs.bench_script_params }}';
-          const body = `Compute Benchmarks ${adapter} run (with params: ${params}):\n${url}\nJob status: ${job_status}. Test status: ${test_status}.\n ${markdown}`;
+          const body = `Compute Benchmarks ${adapter} run (${params}):\n${url}\nJob status: ${job_status}. Test status: ${test_status}.\n ${markdown}`;
 
           github.rest.issues.createComment({
             issue_number: pr_no,

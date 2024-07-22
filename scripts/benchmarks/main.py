@@ -8,13 +8,18 @@
 from utils.utils import cleanup_workdir, load_benchmark_results, save_benchmark_results;
 from benches.api_overhead import APIOverheadSYCL
 from benches.hashtable import Hashtable
+from benches.bitcracker import Bitcracker
+from benches.cudaSift import CudaSift
+from benches.easywave import Easywave
+from benches.quicksilver import QuickSilver
+from benches.SobelFilter import SobelFilter
 from benches.velocity import VelocityBench
 from benches.options import options
 from output import generate_markdown
 import argparse
 
 # Update this if you are changing the layout of the results files
-INTERNAL_WORKDIR_VERSION = '1.0'
+INTERNAL_WORKDIR_VERSION = '2.0'
 
 def main(directory, additional_env_vars, save_name, compare_names):
     variants = [
@@ -26,7 +31,16 @@ def main(directory, additional_env_vars, save_name, compare_names):
 
     vb = VelocityBench(directory)
 
-    benchmarks = [APIOverheadSYCL(directory), Hashtable(vb)]
+    benchmarks = [
+        APIOverheadSYCL(directory),
+        Hashtable(vb),
+        Bitcracker(vb),
+        #CudaSift(vb), TODO: the benchmark is passing, but is outputting "Failed to allocate device data"
+        Easywave(vb),
+        QuickSilver(vb),
+        SobelFilter(vb)
+    ]
+
     for benchmark in benchmarks:
         benchmark.setup()
 
@@ -71,10 +85,10 @@ def validate_and_parse_env_args(env_args):
     return env_vars
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run benchmarks and generate a Mermaid bar chart script.')
+    parser = argparse.ArgumentParser(description='Unified Runtime Benchmark Runner')
     parser.add_argument('benchmark_directory', type=str, help='Working directory to setup benchmarks.')
     parser.add_argument('sycl', type=str, help='Root directory of the SYCL compiler.')
-    parser.add_argument("--no-rebuild", help='Rebuild the benchmarks from scratch', action="store_true")
+    parser.add_argument("--no-rebuild", help='Rebuild the benchmarks from scratch.', action="store_true")
     parser.add_argument("--env", type=str, help='Use env variable for a benchmark run.', action="append", default=[])
     parser.add_argument("--save", type=str, help='Save the results for comparison under a specified name.')
     parser.add_argument("--compare", type=str, help='Compare results against previously saved data.', action="append", default=["baseline"])
