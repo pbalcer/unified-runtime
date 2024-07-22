@@ -46,7 +46,7 @@ class APIOverheadSYCL(Benchmark):
             f"--Ioq={ioq}",
             "--DiscardEvents=0",
             "--MeasureCompletion=0",
-            "--iterations=100",
+            "--iterations=100000",
             "--Profiling=0",
             "--NumKernels=10",
             "--KernelExecTime=1",

@@ -69,7 +69,13 @@ def load_benchmark_results(dir, compare_name) -> list[Result]:
     else:
         return None
 
-def cleanup_workdir(dir, version):
+def prepare_bench_cwd(dir):
+    options.benchmark_cwd = os.path.join(dir, 'bcwd')
+    if os.path.exists(options.benchmark_cwd):
+        shutil.rmtree(options.benchmark_cwd)
+    os.makedirs(options.benchmark_cwd)
+
+def prepare_workdir(dir, version):
     version_file_path = os.path.join(dir, 'BENCH_WORKDIR_VERSION')
 
     if os.path.exists(dir):
@@ -78,6 +84,7 @@ def cleanup_workdir(dir, version):
                 workdir_version = version_file.read().strip()
 
             if workdir_version == version:
+                prepare_bench_cwd(dir)
                 return
             else:
                 print(f"Version mismatch, cleaning up benchmark directory {dir}")
@@ -86,6 +93,7 @@ def cleanup_workdir(dir, version):
             raise Exception(f"The directory {dir} exists but is a benchmark work directory.")
 
     os.makedirs(dir)
+    prepare_bench_cwd(dir)
 
     with open(version_file_path, 'w') as version_file:
         version_file.write(version)

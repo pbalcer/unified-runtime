@@ -7,7 +7,9 @@ from .base import Benchmark
 from .result import Result
 from .velocity import VelocityBase, VelocityBench
 from utils.utils import run
+from .options import options
 import re
+import os
 
 class Easywave(VelocityBase):
     def __init__(self, vb: VelocityBench):
@@ -49,4 +51,4 @@ class Easywave(VelocityBase):
             raise e
 
     def parse_output(self, stdout: str) -> float:
-        return self.get_last_elapsed_time("easywave.log")
+        return self.get_last_elapsed_time(os.path.join(options.benchmark_cwd, "easywave.log"))

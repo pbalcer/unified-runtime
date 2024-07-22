@@ -18,7 +18,7 @@ class Benchmark:
         self.directory = directory
 
     def run_bench(self, command, env_vars):
-        return run(command=command, env_vars=env_vars, add_sycl=True).stdout.decode()
+        return run(command=command, env_vars=env_vars, add_sycl=True, cwd=options.benchmark_cwd).stdout.decode()
 
     def create_build_path(self, name):
         build_path = os.path.join(self.directory, name)

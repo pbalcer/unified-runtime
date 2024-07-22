@@ -5,7 +5,8 @@
 # See LICENSE.TXT
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-from utils.utils import cleanup_workdir, load_benchmark_results, save_benchmark_results;
+import os
+from utils.utils import prepare_workdir, load_benchmark_results, save_benchmark_results;
 from benches.api_overhead import APIOverheadSYCL
 from benches.hashtable import Hashtable
 from benches.bitcracker import Bitcracker
@@ -27,7 +28,7 @@ def main(directory, additional_env_vars, save_name, compare_names):
         ({'UR_L0_USE_IMMEDIATE_COMMANDLISTS': '1'}, ""),
     ]
 
-    cleanup_workdir(directory, INTERNAL_WORKDIR_VERSION)
+    prepare_workdir(directory, INTERNAL_WORKDIR_VERSION)
 
     vb = VelocityBench(directory)
 
