@@ -29,7 +29,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
   std::copy(pGlobalWorkSize, pGlobalWorkSize + workDim, GlobalWorkSize3D);
 
   ze_kernel_handle_t ZeKernel{};
-  UR_CALL(getZeKernel(Legacy(hQueue), hKernel, &ZeKernel));
+  UR_CALL(getZeKernel(Legacy(hQueue)->Device->ZeDevice, hKernel, &ZeKernel));
 
   UR_CALL(getSuggestedLocalWorkSize(Legacy(hQueue), ZeKernel, GlobalWorkSize3D,
                                     LocalWorkSize));
@@ -38,15 +38,12 @@ UR_APIEXPORT ur_result_t UR_APICALL urKernelGetSuggestedLocalWorkSize(
   return UR_RESULT_SUCCESS;
 }
 
-ur_result_t getZeKernel(ur_queue_handle_legacy_t hQueue,
-                        ur_kernel_handle_t hKernel,
+ur_result_t getZeKernel(ze_device_handle_t hDevice, ur_kernel_handle_t hKernel,
                         ze_kernel_handle_t *phZeKernel) {
-  auto ZeDevice = hQueue->Device->ZeDevice;
-
   if (hKernel->ZeKernelMap.empty()) {
     *phZeKernel = hKernel->ZeKernel;
   } else {
-    auto It = hKernel->ZeKernelMap.find(ZeDevice);
+    auto It = hKernel->ZeKernelMap.find(hDevice);
     if (It == hKernel->ZeKernelMap.end()) {
       /* kernel and queue don't match */
       return UR_RESULT_ERROR_INVALID_QUEUE;
@@ -137,7 +134,7 @@ ur_result_t ur_queue_handle_legacy_t_::enqueueKernelLaunch(
 
   auto Queue = this;
   ze_kernel_handle_t ZeKernel{};
-  UR_CALL(getZeKernel(Queue, Kernel, &ZeKernel));
+  UR_CALL(getZeKernel(Queue->Device->ZeDevice, Kernel, &ZeKernel));
 
   // Lock automatically releases when this goes out of scope.
   std::scoped_lock<ur_shared_mutex, ur_shared_mutex, ur_shared_mutex> Lock(

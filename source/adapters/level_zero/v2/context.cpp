@@ -8,15 +8,28 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include "context.hpp"
 #include "../device.hpp"
+
+#include "context.hpp"
+#include "event_provider_normal.hpp"
 
 ur_context_handle_t_::ur_context_handle_t_(ze_context_handle_t hContext,
                                            uint32_t numDevices,
                                            const ur_device_handle_t *phDevices,
-                                           bool)
+                                           bool ownZeContext)
     : hContext(hContext), hDevices(phDevices, phDevices + numDevices),
-      commandListCache(hContext) {}
+      commandListCache(hContext),
+      eventPoolCache(phDevices[0]->Platform->getNumDevices(),
+                     [context = this,
+                      platform = phDevices[0]->Platform](DeviceId deviceId) {
+                       auto device = platform->getDeviceById(deviceId);
+                       // TODO: just use per-context id?
+                       return std::make_unique<v2::provider_normal>(
+                           context, device, v2::EVENT_COUNTER,
+                           v2::QUEUE_IMMEDIATE);
+                     }) {
+  std::ignore = ownZeContext;
+}
 
 ur_context_handle_t_::~ur_context_handle_t_() noexcept(false) {
   // ur_context_handle_t_ is only created/destroyed through urContextCreate
