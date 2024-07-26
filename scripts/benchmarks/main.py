@@ -5,7 +5,6 @@
 # See LICENSE.TXT
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-import os
 from utils.utils import prepare_workdir, load_benchmark_results, save_benchmark_results;
 from benches.api_overhead import APIOverheadSYCL
 from benches.hashtable import Hashtable
@@ -18,22 +17,19 @@ from benches.velocity import VelocityBench
 from benches.options import options
 from output import generate_markdown
 import argparse
+import re
 
 # Update this if you are changing the layout of the results files
-INTERNAL_WORKDIR_VERSION = '1.0'
+INTERNAL_WORKDIR_VERSION = '1.4'
 
-def main(directory, additional_env_vars, save_name, compare_names):
-    variants = [
-        ({'UR_L0_USE_IMMEDIATE_COMMANDLISTS': '0'}, "Imm-CmdLists-OFF"),
-        ({'UR_L0_USE_IMMEDIATE_COMMANDLISTS': '1'}, ""),
-    ]
-
+def main(directory, additional_env_vars, save_name, compare_names, filter):
     prepare_workdir(directory, INTERNAL_WORKDIR_VERSION)
 
     vb = VelocityBench(directory)
 
     benchmarks = [
-        APIOverheadSYCL(directory),
+        APIOverheadSYCL(0, directory),
+        APIOverheadSYCL(1, directory),
         Hashtable(vb),
         Bitcracker(vb),
         #CudaSift(vb), TODO: the benchmark is passing, but is outputting "Failed to allocate device data"
@@ -42,22 +38,44 @@ def main(directory, additional_env_vars, save_name, compare_names):
         SobelFilter(vb)
     ]
 
+    if filter:
+        benchmarks = [benchmark for benchmark in benchmarks if filter.search(benchmark.name())]
+
     for benchmark in benchmarks:
+        print(f"setting up {benchmark.name()}... ", end='', flush=True)
         benchmark.setup()
+        print("complete.")
 
     results = []
     for benchmark in benchmarks:
-        for env_vars, extra_label in variants:
-            merged_env_vars = {**env_vars, **additional_env_vars}
+        merged_env_vars = {**additional_env_vars}
+        iteration_results = []
+        for iter in range(options.iterations):
+            print(f"running {benchmark.name()}, iteration {iter}... ", end='', flush=True)
             bench_results = benchmark.run(merged_env_vars)
-            for res in bench_results:
-                res.unit = benchmark.unit()
-                res.name = benchmark.name()
-                res.label += f" {extra_label}"
-                results.append(res)
+            if bench_results is not None:
+                print(f"complete ({bench_results.value} {bench_results.unit}).")
+                iteration_results.append(bench_results)
+            else:
+                print(f"did not finish.")
+
+        if len(iteration_results) == 0:
+            continue
+
+        iteration_results.sort(key=lambda res: res.value)
+        median_index = len(iteration_results) // 2
+        median_result = iteration_results[median_index]
+
+        median_result.unit = benchmark.unit()
+        median_result.name = benchmark.name()
+
+        results.append(median_result)
+
 
     for benchmark in benchmarks:
+        print(f"tearing down {benchmark.name()}... ", end='', flush=True)
         benchmark.teardown()
+        print("complete.")
 
     chart_data = {"This PR" : results}
 
@@ -93,11 +111,18 @@ if __name__ == "__main__":
     parser.add_argument("--env", type=str, help='Use env variable for a benchmark run.', action="append", default=[])
     parser.add_argument("--save", type=str, help='Save the results for comparison under a specified name.')
     parser.add_argument("--compare", type=str, help='Compare results against previously saved data.', action="append", default=["baseline"])
+    parser.add_argument("--iterations", type=int, help='Number of times to run each benchmark to select a median value.', default=5)
+    parser.add_argument("--timeout", type=int, help='Timeout for individual benchmarks in seconds.', default=600)
+    parser.add_argument("--filter", type=str, help='Regex pattern to filter benchmarks by name.', default=None)
 
     args = parser.parse_args()
     additional_env_vars = validate_and_parse_env_args(args.env)
 
     options.rebuild = not args.no_rebuild
     options.sycl = args.sycl
+    options.iterations = args.iterations
+    options.timeout = args.timeout
 
-    main(args.benchmark_directory, additional_env_vars, args.save, args.compare)
+    benchmark_filter = re.compile(args.filter) if args.filter else None
+
+    main(args.benchmark_directory, additional_env_vars, args.save, args.compare, benchmark_filter)
