@@ -20,16 +20,6 @@ class Benchmark:
     def run_bench(self, command, env_vars):
         return run(command=command, env_vars=env_vars, add_sycl=True, cwd=options.benchmark_cwd).stdout.decode()
 
-    def create_build_path(self, name):
-        build_path = os.path.join(self.directory, name)
-
-        if options.rebuild and Path(build_path).exists():
-           shutil.rmtree(build_path)
-
-        Path(build_path).mkdir(parents=True, exist_ok=True)
-
-        return build_path
-
     def create_data_path(self, name):
         data_path = os.path.join(self.directory, "data", name)
 
@@ -61,7 +51,7 @@ class Benchmark:
     def setup(self):
         raise NotImplementedError()
 
-    def run(self, env_vars):
+    def run(self, env_vars) -> Result:
         raise NotImplementedError()
 
     def teardown(self):
