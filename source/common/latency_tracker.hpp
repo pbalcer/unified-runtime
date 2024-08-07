@@ -10,12 +10,69 @@
 
 #pragma once
 
+#define _GNU_SOURCE
+
 #include <chrono>
 #include <cstdint>
 #include <limits>
 #include <memory>
+#include <dlfcn.h>
+#include <assert.h>
+#include <linux/perf_event.h>    /* Definition of PERF_* constants */
+#include <linux/hw_breakpoint.h> /* Definition of HW_* constants */
+#include <sys/syscall.h>         /* Definition of SYS_* constants */
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 #include "logger/ur_logger.hpp"
+
+static long
+perf_event_open(struct perf_event_attr *hw_event, pid_t pid,
+                int cpu, int group_fd, unsigned long flags)
+{
+    int ret;
+
+    ret = syscall(__NR_perf_event_open, hw_event, pid, cpu,
+                    group_fd, flags);
+    return ret;
+}
+
+struct PerfLib {
+    PerfLib() {
+        struct perf_event_attr pe;
+        memset(&pe, 0, sizeof(struct perf_event_attr));
+        pe.type = PERF_TYPE_HARDWARE;
+        pe.size = sizeof(struct perf_event_attr);
+        pe.config = PERF_COUNT_HW_INSTRUCTIONS;
+        pe.disabled = 1;
+        pe.exclude_kernel = 1;
+        // Don't count hypervisor events.
+        pe.exclude_hv = 1;
+
+        fd = perf_event_open(&pe, 0, -1, -1, 0);
+        if (fd == -1) {
+            fprintf(stderr, "Error opening leader %llx\n", pe.config);
+            exit(EXIT_FAILURE);
+        }
+    }
+    void start() {
+        ioctl(fd, PERF_EVENT_IOC_RESET, 0);
+        ioctl(fd, PERF_EVENT_IOC_ENABLE, 0);
+    }
+    uint64_t end() {
+        uint64_t count = 0;
+        ioctl(fd, PERF_EVENT_IOC_DISABLE, 0);
+        read(fd, &count, sizeof(uint64_t));
+        return count;
+    }
+	int fd;
+
+};
+
+inline PerfLib &Perf() {
+    static PerfLib perf;
+    return perf;
+}
 
 #if defined(UR_ENABLE_LATENCY_HISTOGRAM)
 
@@ -173,17 +230,16 @@ class latency_tracker {
     inline explicit latency_tracker(latency_histogram &stats)
         : stats(trackLatency ? &stats : nullptr), begin() {
         if (trackLatency) {
-            begin = std::chrono::steady_clock::now();
+            Perf().start();
+            //begin = std::chrono::steady_clock::now();
         }
     }
     inline latency_tracker() {}
     inline ~latency_tracker() {
         if (stats) {
-            auto tp = std::chrono::steady_clock::now();
-            auto diffNanos =
-                std::chrono::duration_cast<std::chrono::nanoseconds>(tp - begin)
-                    .count();
-            stats->trackValue(static_cast<int64_t>(diffNanos));
+            uint64_t count = Perf().end();
+
+            stats->trackValue(static_cast<int64_t>(count));
         }
     }
 
@@ -205,6 +261,7 @@ class latency_tracker {
 
   private:
     latency_histogram *stats{nullptr};
+    uint64_t begin_pcm;
     std::chrono::time_point<std::chrono::steady_clock> begin;
 };
 

@@ -136,7 +136,7 @@ ur_result_t ur_queue_immediate_in_order_t::queueGetNativeHandle(
 }
 
 ur_result_t ur_queue_immediate_in_order_t::queueFinish() {
-  TRACK_SCOPE_LATENCY("ur_queue_immediate_in_order_t::queueFinish");
+  //TRACK_SCOPE_LATENCY("ur_queue_immediate_in_order_t::queueFinish");
   std::unique_lock<ur_shared_mutex> lock(this->Mutex);
 
   if (!lastHandler) {
@@ -162,58 +162,85 @@ ur_result_t ur_queue_immediate_in_order_t::enqueueKernelLaunch(
     const size_t *pGlobalWorkOffset, const size_t *pGlobalWorkSize,
     const size_t *pLocalWorkSize, uint32_t numEventsInWaitList,
     const ::ur_event_handle_t *phEventWaitList, ::ur_event_handle_t *phEvent) {
-  TRACK_SCOPE_LATENCY("ur_queue_immediate_in_order_t::enqueueKernelLaunch");
 
+  
   UR_ASSERT(hKernel->hProgram, UR_RESULT_ERROR_INVALID_NULL_POINTER);
-
+  {
+    TRACK_SCOPE_LATENCY("empty");
+  }
   ze_kernel_handle_t hZeKernel;
   {
     TRACK_SCOPE_LATENCY("getZeHandle");
     hZeKernel = hKernel->getZeHandle(hDevice);
   }
+  ze_group_count_t zeThreadGroupDimensions{1, 1, 1};
+  {
+    
+    {
+      TRACK_SCOPE_LATENCY("Lock");
+      // Lock automatically releases when this goes out of scope.
+      std::scoped_lock<ur_shared_mutex, ur_shared_mutex, ur_shared_mutex> Lock(
+          hKernel->Mutex, hKernel->hProgram->Mutex, this->Mutex);
+      
+    }
+    if (pGlobalWorkOffset != NULL) {
+      UR_CALL(setKernelGlobalOffset(hContext, hZeKernel, pGlobalWorkOffset));
+    }
 
-  // Lock automatically releases when this goes out of scope.
-  std::scoped_lock<ur_shared_mutex, ur_shared_mutex, ur_shared_mutex> Lock(
-      hKernel->Mutex, hKernel->hProgram->Mutex, this->Mutex);
+    // TODO: remove this
+    // If there are any pending arguments set them now.
+    // if (!Kernel->PendingArguments.empty()) {
+    //   UR_CALL(setKernelPendingArguments(CommandBuffer, Kernel));
+    // }
 
-  if (pGlobalWorkOffset != NULL) {
-    UR_CALL(setKernelGlobalOffset(hContext, hZeKernel, pGlobalWorkOffset));
+    uint32_t WG[3];
+    {
+      TRACK_SCOPE_LATENCY("calculateKernelWorkDimensions");
+      UR_CALL(calculateKernelWorkDimensions(hZeKernel, hDevice,
+                                            zeThreadGroupDimensions, WG, workDim,
+                                            pGlobalWorkSize, pLocalWorkSize));
+    }
+
+    ZE2UR_CALL(zeKernelSetGroupSize, (hZeKernel, WG[0], WG[1], WG[2]));
   }
 
-  // TODO: remove this
-  // If there are any pending arguments set them now.
-  // if (!Kernel->PendingArguments.empty()) {
-  //   UR_CALL(setKernelPendingArguments(CommandBuffer, Kernel));
-  // }
+  //TRACK_SCOPE_LATENCY("afterSetting");
 
-  ze_group_count_t zeThreadGroupDimensions{1, 1, 1};
-  uint32_t WG[3];
-  UR_CALL(calculateKernelWorkDimensions(hZeKernel, hDevice,
-                                        zeThreadGroupDimensions, WG, workDim,
-                                        pGlobalWorkSize, pLocalWorkSize));
+    auto handler = getCommandListHandler(CommandListPreference::Compute);
+    auto v2WaitList =
+        reinterpret_cast<const ur_event_handle_t *>(phEventWaitList);
+  ze_event_handle_t signalEvent;
+  uint32_t numWaitEvents;
+  ze_event_handle_t * pWaitEvents;
+  {
+    TRACK_SCOPE_LATENCY("events allocation");
 
-  ZE2UR_CALL(zeKernelSetGroupSize, (hZeKernel, WG[0], WG[1], WG[2]));
+    auto v2SignalEvent = reinterpret_cast<ur_event_handle_t *>(phEvent);
+    auto signalEvent2 = getSignalEvent(handler, v2SignalEvent);
+    signalEvent = signalEvent2;
+  }
 
-  TRACK_SCOPE_LATENCY("afterSetting");
+  {
+    TRACK_SCOPE_LATENCY("wait events collect");
+    auto extraWaitEvent = (lastHandler && handler != lastHandler)
+                              ? lastHandler->lastEvent.get()
+                              : nullptr;
+    auto [pWaitEvents2, numWaitEvents2] =
+        waitList.getView(v2WaitList, numEventsInWaitList, extraWaitEvent);
+        pWaitEvents = pWaitEvents2;
+        numWaitEvents = numWaitEvents2;
+  }
 
-  auto v2WaitList =
-      reinterpret_cast<const ur_event_handle_t *>(phEventWaitList);
-  auto v2SignalEvent = reinterpret_cast<ur_event_handle_t *>(phEvent);
-
-  auto handler = getCommandListHandler(CommandListPreference::Compute);
-  auto signalEvent = getSignalEvent(handler, v2SignalEvent);
-
-  auto extraWaitEvent = (lastHandler && handler != lastHandler)
-                            ? lastHandler->lastEvent.get()
-                            : nullptr;
-  auto [pWaitEvents, numWaitEvents] =
-      waitList.getView(v2WaitList, numEventsInWaitList, extraWaitEvent);
-
-  ZE2UR_CALL(zeCommandListAppendLaunchKernel,
-             (handler->commandList.get(), hZeKernel, &zeThreadGroupDimensions,
-              signalEvent, numWaitEvents, pWaitEvents));
-
+  {
+    TRACK_SCOPE_LATENCY("zeCommandListAppendLaunchKernel");
+    ZE2UR_CALL(zeCommandListAppendLaunchKernel,
+              (handler->commandList.get(), hZeKernel, &zeThreadGroupDimensions,
+                signalEvent, numWaitEvents, pWaitEvents));
+  }
+  {
+    TRACK_SCOPE_LATENCY("assign stuff");
   lastHandler = handler;
+  }
 
   return UR_RESULT_SUCCESS;
 }

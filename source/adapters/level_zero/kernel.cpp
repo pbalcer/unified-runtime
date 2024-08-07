@@ -130,7 +130,7 @@ ur_result_t ur_queue_handle_legacy_t_::enqueueKernelLaunch(
         *OutEvent ///< [in,out][optional] return an event object that identifies
                   ///< this particular kernel execution instance.
 ) {
-  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::enqueueKernelLaunch");
+  //TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::enqueueKernelLaunch");
   UR_ASSERT(WorkDim > 0, UR_RESULT_ERROR_INVALID_WORK_DIMENSION);
   UR_ASSERT(WorkDim < 4, UR_RESULT_ERROR_INVALID_WORK_DIMENSION);
 
@@ -756,7 +756,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urKernelSetArgValue(
     const void
         *PArgValue ///< [in] argument value represented as matching arg type.
 ) {
-  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::urKernelSetArgValue");
+  //TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::urKernelSetArgValue");
   std::ignore = Properties;
 
   UR_ASSERT(Kernel, UR_RESULT_ERROR_INVALID_NULL_HANDLE);

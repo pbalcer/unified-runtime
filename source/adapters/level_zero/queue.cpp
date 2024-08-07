@@ -849,7 +849,7 @@ UR_APIEXPORT ur_result_t UR_APICALL urQueueCreateWithNativeHandle(
 }
 
 ur_result_t ur_queue_handle_legacy_t_::queueFinish() {
-  TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::queueFinish");
+  //TRACK_SCOPE_LATENCY("ur_queue_handle_legacy_t_::queueFinish");
   auto Queue = this;
   if (Queue->UsingImmCmdLists) {
     // Lock automatically releases when this goes out of scope.

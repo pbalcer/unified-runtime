@@ -75,10 +75,10 @@ std::unique_ptr<provider_pool> provider_normal::createProviderPool() {
 }
 
 event_allocation provider_normal::allocate() {
-  TRACK_SCOPE_LATENCY("provider_normal::allocate");
+  //TRACK_SCOPE_LATENCY("provider_normal::allocate");
 
   if (pools.empty()) {
-    TRACK_SCOPE_LATENCY("provider_normal::allocate#createProviderPool");
+    //TRACK_SCOPE_LATENCY("provider_normal::allocate#createProviderPool");
     pools.emplace_back(createProviderPool());
   }
 
@@ -90,7 +90,7 @@ event_allocation provider_normal::allocate() {
     }
   }
 
-  TRACK_SCOPE_LATENCY("provider_normal::allocate#slowPath");
+  //TRACK_SCOPE_LATENCY("provider_normal::allocate#slowPath");
   std::sort(pools.begin(), pools.end(), [](auto &a, auto &b) {
     return a->nfree() < b->nfree(); // asceding
   });

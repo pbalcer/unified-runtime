@@ -10,6 +10,7 @@
 
 #include "kernel_helpers.hpp"
 #include "../device.hpp"
+#include "latency_tracker.hpp"
 
 ur_result_t calculateKernelWorkDimensions(
     ze_kernel_handle_t Kernel, ur_device_handle_t Device,

@@ -81,7 +81,7 @@ command_list_cache_t::getImmediateCommandList(
     ze_device_handle_t ZeDevice, bool IsInOrder, uint32_t Ordinal,
     ze_command_queue_mode_t Mode, ze_command_queue_priority_t Priority,
     std::optional<uint32_t> Index) {
-  TRACK_SCOPE_LATENCY("command_list_cache_t::getImmediateCommandList");
+  //TRACK_SCOPE_LATENCY("command_list_cache_t::getImmediateCommandList");
 
   immediate_command_list_descriptor_t Desc;
   Desc.ZeDevice = ZeDevice;
@@ -102,7 +102,7 @@ command_list_cache_t::getImmediateCommandList(
 raii::cache_borrowed_command_list_t
 command_list_cache_t::getRegularCommandList(ze_device_handle_t ZeDevice,
                                             bool IsInOrder, uint32_t Ordinal) {
-  TRACK_SCOPE_LATENCY("command_list_cache_t::getRegularCommandList");
+  //TRACK_SCOPE_LATENCY("command_list_cache_t::getRegularCommandList");
 
   regular_command_list_descriptor_t Desc;
   Desc.ZeDevice = ZeDevice;
