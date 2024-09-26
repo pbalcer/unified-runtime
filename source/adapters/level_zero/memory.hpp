@@ -67,6 +67,7 @@ struct ur_mem_handle_t_ : _ur_object {
   // Keeps device of this memory handle
   ur_device_handle_t UrDevice;
 
+  _ur_ze_event_list_t *TmpWaitList = nullptr;
   // Enumerates all possible types of accesses.
   enum access_mode_t { unknown, read_write, read_only, write_only };
 
@@ -122,6 +123,7 @@ struct _ur_buffer final : ur_mem_handle_t_ {
   virtual ur_result_t
   getZeHandlePtr(char **&ZeHandlePtr, access_mode_t,
                  ur_device_handle_t Device = nullptr) override;
+
 
   bool isImage() const override { return false; }
   bool isSubBuffer() const { return SubBuffer != std::nullopt; }

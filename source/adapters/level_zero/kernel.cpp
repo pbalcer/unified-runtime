@@ -112,6 +112,12 @@ ur_result_t urEnqueueKernelLaunch(
     // the kernel argument declared as a pointer to global or constant memory.
     char **ZeHandlePtr = nullptr;
     if (Arg.Value) {
+      _ur_ze_event_list_t waitlist;
+      if (NumEventsInWaitList != 0) {
+        waitlist.ZeEventList = &EventWaitList[0]->ZeEvent;
+        waitlist.Length = 1;
+      }
+      Arg.Value->TmpWaitList = &waitlist;
       UR_CALL(Arg.Value->getZeHandlePtr(ZeHandlePtr, Arg.AccessMode,
                                         Queue->Device));
     }

@@ -21,6 +21,7 @@
 #include "queue.hpp"
 #include "ur_interface_loader.hpp"
 #include "ur_level_zero.hpp"
+#include "ze_api.h"
 
 // Default to using compute engine for fill operation, but allow to
 // override this with an environment variable.
@@ -2163,6 +2164,14 @@ ur_result_t _ur_buffer::getZeHandle(char *&ZeHandle, access_mode_t AccessMode,
       ZE2UR_CALL(
           zeDeviceCanAccessPeer,
           (Device->ZeDevice, LastDeviceWithValidAllocation->ZeDevice, &P2P));
+
+      ze_event_handle_t *waitlist = nullptr;
+      size_t nwait = 0;
+      if (TmpWaitList) {
+        nwait = TmpWaitList->Length;
+        waitlist = TmpWaitList->ZeEventList;
+      }
+
       if (!P2P) {
         // P2P copy is not possible, so copy through the host.
         auto &HostAllocation = Allocations[nullptr];
@@ -2188,7 +2197,7 @@ ur_result_t _ur_buffer::getZeHandle(char *&ZeHandle, access_mode_t AccessMode,
         if (!HostAllocation.Valid) {
           ZE2UR_CALL(zeCommandListAppendMemoryCopy,
                      (UrContext->ZeCommandListInit, HostAllocation.ZeHandle,
-                      ZeHandleSrc, Size, nullptr, 0, nullptr));
+                      ZeHandleSrc, Size, nullptr, nwait, waitlist));
           // Mark the host allocation data  as valid so it can be reused.
           // It will be invalidated below if the current access is not
           // read-only.
@@ -2196,13 +2205,13 @@ ur_result_t _ur_buffer::getZeHandle(char *&ZeHandle, access_mode_t AccessMode,
         }
         ZE2UR_CALL(zeCommandListAppendMemoryCopy,
                    (UrContext->ZeCommandListInit, ZeHandle,
-                    HostAllocation.ZeHandle, Size, nullptr, 0, nullptr));
+                    HostAllocation.ZeHandle, Size, nullptr, nwait, waitlist));
       } else {
         // Perform P2P copy.
         std::scoped_lock<ur_mutex> Lock(UrContext->ImmediateCommandListMutex);
         ZE2UR_CALL(zeCommandListAppendMemoryCopy,
                    (UrContext->ZeCommandListInit, ZeHandle, ZeHandleSrc, Size,
-                    nullptr, 0, nullptr));
+                    nullptr, nwait, waitlist));
       }
     }
     Allocation.Valid = true;
