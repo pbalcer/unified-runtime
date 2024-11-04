@@ -39,3 +39,7 @@ sphinxcontrib-websupport==1.2.4
 sphinx-rtd-theme==1.0.0
 urllib3==2.2.2
 dataclasses-json==0.6.7
+six==1.16.0
+matplotlib==3.9.2
+mpld3==0.5.10
+

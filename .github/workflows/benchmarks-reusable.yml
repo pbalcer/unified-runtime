@@ -1,49 +1,32 @@
-name: Compute Benchmarks
+name: Benchmarks Reusable
 
 on:
-  # Can be triggered via manual "dispatch" (from workflow view in GitHub Actions tab)
-  workflow_dispatch:
-    # acceptable input for adapter-specific runs
+  workflow_call:
     inputs:
       str_name:
-        description: Formatted adapter name
-        type: choice
         required: true
-        default: 'level_zero'
-        options:
-          - level_zero
-          - level_zero_v2
-      unit:
-        description: Test unit (cpu/gpu)
-        type: choice
-        required: true
-        default: 'gpu'
-        options:
-          - cpu
-          - gpu
-      pr_no:
-        description: PR number (if 0, it'll run on the main)
-        type: number
-        required: true
-      bench_script_params:
-        description: Parameters passed to script executing benchmark
         type: string
+      unit:
+        required: true
+        type: string
+      pr_no:
+        required: true
+        type: number
+      bench_script_params:
         required: false
+        type: string
         default: ''
       sycl_config_params:
-        description: Extra params for SYCL configuration
-        type: string
         required: false
+        type: string
         default: ''
       sycl_repo:
-        description: 'Compiler repo'
-        type: string
         required: true
+        type: string
         default: 'intel/llvm'
       sycl_commit:
-        description: 'Compiler commit'
-        type: string
         required: false
+        type: string
         default: ''
 
 permissions:
@@ -56,19 +39,17 @@ jobs:
     strategy:
       matrix:
         adapter: [
-          {str_name: "${{inputs.str_name}}",
-          sycl_config: "${{inputs.sycl_config_params}}",
-          unit: "${{inputs.unit}}"
+          {str_name: "${{ inputs.str_name }}",
+          sycl_config: "${{ inputs.sycl_config_params }}",
+          unit: "${{ inputs.unit }}"
           }
         ]
         build_type: [Release]
         compiler: [{c: clang, cxx: clang++}]
 
-    runs-on: "${{inputs.str_name}}_PERF"
+    runs-on: "${{ inputs.str_name }}_PERF"
 
     steps:
-    # Workspace on self-hosted runners is not cleaned automatically.
-    # We have to delete the files created outside of using actions.
     - name: Cleanup self-hosted workspace
       if: always()
       run: |
@@ -101,7 +82,6 @@ jobs:
     - name: Install pip packages
       run: pip install -r ${{github.workspace}}/ur-repo/third_party/requirements.txt
 
-    # We need to fetch special ref for proper PR's merge commit. Note, this ref may be absent if the PR is already merged.
     - name: Fetch PR's merge commit
       if: ${{ inputs.pr_no != 0 }}
       working-directory: ${{github.workspace}}/ur-repo
@@ -115,7 +95,7 @@ jobs:
     - name: Checkout SYCL
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
-        repository: ${{inputs.sycl_repo}}
+        repository: ${{ inputs.sycl_repo }}
         ref: refs/heads/sycl
         path: sycl-repo
         fetch-depth: 1
@@ -137,45 +117,45 @@ jobs:
     - name: Configure SYCL
       run: >
         python3 sycl-repo/buildbot/configure.py
-        -t ${{matrix.build_type}}
-        -o ${{github.workspace}}/sycl_build
+        -t ${{ matrix.build_type }}
+        -o ${{ github.workspace }}/sycl_build
         --cmake-gen "Ninja"
-        --ci-defaults ${{matrix.adapter.sycl_config}}
+        --ci-defaults ${{ matrix.adapter.sycl_config }}
         --cmake-opt="-DLLVM_INSTALL_UTILS=ON"
         --cmake-opt="-DSYCL_PI_TESTS=OFF"
         --cmake-opt="-DSYCL_UR_USE_FETCH_CONTENT=OFF"
-        --cmake-opt="-DSYCL_UR_SOURCE_DIR=${{github.workspace}}/ur-repo/"
+        --cmake-opt="-DSYCL_UR_SOURCE_DIR=${{ github.workspace }}/ur-repo/"
         --cmake-opt=-DCMAKE_C_COMPILER_LAUNCHER=ccache
         --cmake-opt=-DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
     - name: Build SYCL
-      run: cmake --build ${{github.workspace}}/sycl_build -j
+      run: cmake --build ${{ github.workspace }}/sycl_build -j
 
     - name: Configure UR
       run: >
         cmake -DCMAKE_BUILD_TYPE=Release
-        -S${{github.workspace}}/ur-repo
-        -B${{github.workspace}}/ur_build
-        -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/ur_install
+        -S${{ github.workspace }}/ur-repo
+        -B${{ github.workspace }}/ur_build
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/ur_install
         -DUR_BUILD_TESTS=OFF
         -DUR_BUILD_ADAPTER_L0=ON
         -DUR_BUILD_ADAPTER_L0_V2=ON
         -DUMF_DISABLE_HWLOC=ON
 
     - name: Build UR
-      run: cmake --build ${{github.workspace}}/ur_build -j $(nproc)
+      run: cmake --build ${{ github.workspace }}/ur_build -j $(nproc)
 
     - name: Install UR
-      run: cmake --install ${{github.workspace}}/ur_build
+      run: cmake --install ${{ github.workspace }}/ur_build
 
     - name: Run benchmarks
       id: benchmarks
       run: >
         numactl -N 0 ${{ github.workspace }}/ur-repo/scripts/benchmarks/main.py 
         ~/bench_workdir 
-        ${{github.workspace}}/sycl_build
-        ${{github.workspace}}/ur_install
-        ${{ matrix.adapter.str_name }}
+        --sycl ${{ github.workspace }}/sycl_build
+        --ur ${{ github.workspace }}/ur_install
+        --adapter ${{ matrix.adapter.str_name }}
         ${{ inputs.bench_script_params }}
 
     - name: Add comment to PR
