@@ -43,6 +43,10 @@ on:
         type: string
         required: false
         default: ''
+  schedule:
+    - cron: '0 0 * * *'  # Runs at midnight UTC every day
+  push:
+
 
 permissions:
   contents: read
@@ -50,7 +54,7 @@ permissions:
 
 jobs:
   manual:
-    if: github.event_name != 'schedule'
+    if: github.event_name == 'workflow_dispatch'
     name: Manual Compute Benchmarks
     uses: ./.github/workflows/benchmarks-reusable.yml
     with:
@@ -64,6 +68,19 @@ jobs:
 
   nightly:
     if: github.event_name == 'schedule'
+    name: Nightly Compute Benchmarks
+    uses: ./.github/workflows/benchmarks-reusable.yml
+    with:
+      str_name: 'level_zero'
+      unit: 'gpu'
+      pr_no: 0
+      bench_script_params: '--save baseline'
+      sycl_config_params: ''
+      sycl_repo: 'intel/llvm'
+      sycl_commit: ''
+
+  push:
+    if: github.event_name == 'push'
     name: Nightly Compute Benchmarks
     uses: ./.github/workflows/benchmarks-reusable.yml
     with:
