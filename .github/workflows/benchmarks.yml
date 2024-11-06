@@ -50,7 +50,7 @@ permissions:
 
 jobs:
   manual:
-    name: Compute Benchmarks
+    name: Compute Benchmarks 2
     uses: ./.github/workflows/benchmarks-reusable.yml
     with:
       str_name: ${{ inputs.str_name }}
