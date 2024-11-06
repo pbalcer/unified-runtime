@@ -43,10 +43,6 @@ on:
         type: string
         required: false
         default: ''
-  schedule:
-    - cron: '0 0 * * *'  # Runs at midnight UTC every day
-  push:
-
 
 permissions:
   contents: read
