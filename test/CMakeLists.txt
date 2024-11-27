@@ -15,6 +15,11 @@ set(UR_TEST_PLATFORMS_COUNT 1 CACHE STRING "Count of platforms on which conforma
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+set_target_properties(gtest PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(gtest_main PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(gmock PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
 enable_testing()
 
 # Conformance defines the generate_device_binaries target which should be
