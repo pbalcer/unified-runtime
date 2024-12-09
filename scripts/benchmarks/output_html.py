@@ -10,6 +10,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 import matplotlib.dates as mdates
 from benches.result import BenchmarkRun, Result
+import numpy as np
 
 @dataclass
 class BenchmarkMetadata:
@@ -23,11 +24,11 @@ class BenchmarkSeries:
     runs: list[BenchmarkRun]
 
 @dataclass
-class BenchmarkTimeSeries:
+class BenchmarkChart:
     label: str
     html: str
 
-def create_time_series_chart(benchmarks: list[BenchmarkSeries], github_repo: str) -> list[BenchmarkTimeSeries]:
+def create_time_series_chart(benchmarks: list[BenchmarkSeries], github_repo: str) -> list[BenchmarkChart]:
     plt.close('all')
 
     num_benchmarks = len(benchmarks)
@@ -94,7 +95,102 @@ def create_time_series_chart(benchmarks: list[BenchmarkSeries], github_repo: str
         ax.xaxis.set_major_formatter(mdates.ConciseDateFormatter('%Y-%m-%d %H:%M:%S'))
 
         plt.tight_layout()
-        html_charts.append(BenchmarkTimeSeries(html=mpld3.fig_to_html(fig), label=benchmark.label))
+        html_charts.append(BenchmarkChart(html=mpld3.fig_to_html(fig), label=benchmark.label))
+        plt.close(fig)
+
+    return html_charts
+
+@dataclass
+class ExplicitGroup:
+    name: str
+    nnames: int
+    metadata: BenchmarkMetadata
+    runs: dict[str, dict[str, Result]]
+
+def create_explicit_groups(benchmark_runs: list[BenchmarkRun], compare_names: list[str]) -> list[ExplicitGroup]:
+    print(compare_names)
+    groups = {}
+
+    for run in benchmark_runs:
+        if run.name in compare_names:
+            for res in run.results:
+                if res.explicit_group != '':
+                    if res.explicit_group not in groups:
+                        groups[res.explicit_group] = ExplicitGroup(name=res.explicit_group, nnames=len(compare_names),
+                                metadata=BenchmarkMetadata(unit=res.unit, lower_is_better=res.lower_is_better),
+                                runs={})
+
+                    group = groups[res.explicit_group]
+                    if res.label not in group.runs:
+                        group.runs[res.label] = {name: None for name in compare_names}
+
+                    if group.runs[res.label][run.name] is None:
+                        group.runs[res.label][run.name] = res
+
+    return list(groups.values())
+
+def create_grouped_bar_charts(groups: list[ExplicitGroup]) -> list[BenchmarkChart]:
+    plt.close('all')
+
+    html_charts = []
+
+    for group in groups:
+        i = 0
+
+        fig, ax = plt.subplots(figsize=(10, 4))
+
+        print(group.name)
+        print(group.nnames)
+
+        x = np.arange(group.nnames)
+        x_labels = []
+        width = 0.1
+
+        max_height = 0
+        for run_name, run_results in group.runs.items():
+            offset = width * i
+            positions = x + offset
+            x_labels = run_results.keys()
+            valid_data = [r.value if r is not None else 0 for r in run_results.values()]
+            print(f"{run_name} {valid_data}")
+            rects = ax.bar(positions, valid_data, width, label=run_name)
+            for rect, run, res in zip(rects, run_results.keys(), run_results.values()):
+                height = rect.get_height()
+                if height > max_height:
+                    max_height = height
+                tooltip_labels = [
+                    f"Run: {run}\n"
+                    f"Label: {res.label}\n"
+                    f"Value: {res.value:.2f} {res.unit}\n"
+                ]
+                tooltip = mpld3.plugins.LineHTMLTooltip(rect, tooltip_labels, css='.mpld3-tooltip{background:white;padding:8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;white-space:pre;}')
+                mpld3.plugins.connect(ax.figure, tooltip)
+
+            ax.bar_label(rects, padding=3)
+            i += 1
+
+        ax.set_xticks([])
+        ax.set_ylabel(f"Value ({group.metadata.unit})")
+        ax.legend(loc='upper left')
+        ax.set_title(group.name, pad=20)
+        performance_indicator = "lower is better" if group.metadata.lower_is_better else "higher is better"
+        ax.text(0.5, 1.05, f"({performance_indicator})",
+                ha='center',
+                transform=ax.transAxes,
+                style='italic',
+                fontsize=7,
+                color='#666666')
+
+        top_padding = max_height * 0.2
+        for idx, label in enumerate(x_labels):
+            y_pos = max_height + (top_padding * 0.5) + 2 - (top_padding * 0.15)
+            ax.text(idx, y_pos, label,
+                ha='center',
+                style='italic',
+                color='#666666')
+
+        plt.tight_layout()
+        html_charts.append(BenchmarkChart(label=group.name, html=mpld3.fig_to_html(fig)))
         plt.close(fig)
 
     return html_charts
@@ -137,6 +233,11 @@ def generate_html(benchmark_runs: list[BenchmarkRun], github_repo: str, compare_
 
     timeseries = create_time_series_chart(benchmarks, github_repo)
     timeseries_charts_html = '\n'.join(f'<div class="chart" data-label="{ts.label}"><div>{ts.html}</div></div>' for ts in timeseries)
+
+    explicit_groups = create_explicit_groups(benchmark_runs, compare_names)
+
+    bar_charts = create_grouped_bar_charts(explicit_groups)
+    bar_charts_html = '\n'.join(f'<div class="chart" data-label="{bc.label}"><div>{bc.html}</div></div>' for bc in bar_charts)
 
     html_template = f"""
     <!DOCTYPE html>
@@ -225,6 +326,10 @@ def generate_html(benchmark_runs: list[BenchmarkRun], github_repo: str, compare_
             <h2>Historical Results</h2>
             <div class="charts">
                 {timeseries_charts_html}
+            </div>
+            <h2>Explicit Group Results</h2>
+            <div class="charts">
+                {bar_charts_html}
             </div>
         </div>
     </body>
